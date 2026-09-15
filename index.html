@@ -33,23 +33,13 @@
         }
     </script>
 
+    <!-- Google Fonts & External Libraries -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-    <!-- Firebase SDK Modules for Real-Time Cross-Device Multiplayer -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Expose Firebase SDK to global scope for real-time room sync
-        window.FirebaseSDK = {
-            initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged,
-            getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, collection
-        };
-        window.initFirebaseServices();
-    </script>
+    <!-- PeerJS WebRTC Library for Cross-Chromebook Multiplayer -->
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 
     <style>
         body {
@@ -126,7 +116,6 @@
 
         <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col">
             
-            <!-- Lobby View -->
             <div id="viewLobby" class="flex-grow flex flex-col justify-center items-center py-6">
                 <div class="max-w-3xl w-full space-y-8 text-center">
                     <div class="space-y-4">
@@ -450,7 +439,6 @@
                 </div>
             </div>
 
-            <!-- Year Transition / Market Impact Recap Modal -->
             <div id="modalYearRecap" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-4">
                 <div class="glass-card max-w-xl w-full rounded-2xl p-6 space-y-5 border border-slate-700 shadow-2xl max-h-[90vh] overflow-y-auto">
                     <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -546,7 +534,6 @@
     </div>
 
     <script>
-        // Web Audio Synthesizer Engine
         let audioCtx = null;
         let soundEnabled = true;
 
@@ -581,9 +568,9 @@
                     osc.stop(now + 0.18);
                 } else if (type === 'advance') {
                     osc.type = 'sine';
-                    osc.frequency.setValueAtTime(523.25, now); // C5
-                    osc.frequency.setValueAtTime(659.25, now + 0.08); // E5
-                    osc.frequency.setValueAtTime(783.99, now + 0.16); // G5
+                    osc.frequency.setValueAtTime(523.25, now);
+                    osc.frequency.setValueAtTime(659.25, now + 0.08);
+                    osc.frequency.setValueAtTime(783.99, now + 0.16);
                     gain.gain.setValueAtTime(0.2, now);
                     gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
                     osc.start(now);
@@ -597,7 +584,7 @@
         function toggleAudio() {
             soundEnabled = !soundEnabled;
             const btn = document.getElementById('soundToggleBtn');
-            btn.innerText = soundEnabled ? '🔊' : '🔇';
+            if (btn) btn.innerText = soundEnabled ? '🔊' : '🔇';
             showToast(soundEnabled ? "Sound Effects Enabled" : "Sound Muted");
         }
 
@@ -619,371 +606,241 @@
             }, 3000);
         }
 
-        // Global State Variables
         let gameState = {
             currentYear: 1,
             maxYears: 15,
             cash: 100000,
-            portfolio: {}, // { assetId: quantity }
-            depositRecords: [], // [{ ticker, amount, APY, lockYearsLeft }]
+            portfolio: {},
+            depositRecords: [],
             selectedTab: 'stocks',
             isReady: false,
             mode: 'solo', // 'solo' or 'multi'
             playerName: 'Student Trader',
             roomCode: '',
-            readyPlayersCount: 0,
-            totalPlayersInRoom: 1,
-            hostAdvancingLock: false
+            myPeerId: ''
         };
 
         let aiRivals = [];
         let liveAssets = {};
         let assetPriceHistory = {};
+        let currentNews = null;
         let portfolioChartInstance = null;
         let modalChartInstance = null;
 
-        // Firebase Real-time Multiplayer Variables
-        let db = null;
-        let auth = null;
-        let currentUser = null;
-        let roomUnsubscribe = null;
+        // PeerJS Network Engine Objects
+        let peerInstance = null;
         let isHostUser = false;
-        let activeRoomData = null;
-
-        function initFirebaseServices() {
-            if (!window.FirebaseSDK) return;
-            const { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore } = window.FirebaseSDK;
-            
-            try {
-                const appId = typeof __app_id !== 'undefined' ? __app_id : 'stockbot-market-master';
-                const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-                    apiKey: "demo-key",
-                    authDomain: "demo.firebaseapp.com",
-                    projectId: "demo-project",
-                    storageBucket: "demo.appspot.com"
-                };
-
-                const app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
-                db = getFirestore(app);
-
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        currentUser = user;
-                        console.log("Firebase Auth Connected:", user.uid);
-                    }
-                });
-
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    signInWithCustomToken(auth, __initial_auth_token).catch(() => signInAnonymously(auth));
-                } else {
-                    signInAnonymously(auth).catch(err => console.log("Anonymous Auth Note:", err.message));
-                }
-            } catch (e) {
-                console.warn("Firebase initialization note:", e.message);
-            }
-        }
-        window.initFirebaseServices = initFirebaseServices;
-
-        const CATEGORY_UNLOCK_YEARS = {
-            stocks: 1,
-            bonds: 1,
-            deposits: 1,
-            etfs: 2,
-            commodities: 3,
-            crypto: 4
-        };
-
-        const COMPANY_NAME_PARTS = {
-            prefixes: ['Apex', 'Aegis', 'Nova', 'Sovereign', 'Vanguard', 'Quantum', 'Hyperion', 'Starlight', 'Omni', 'Titan', 'Zenith', 'Nexus', 'Helios', 'Cipher', 'Aura'],
-            suffixes: ['Semiconductors', 'Healthcare & Bio', 'Retail Group', 'Mining Corp', 'Banking & Trust', 'Robotics', 'Energy', 'Logistics', 'BioTech Solutions', 'Software', 'Aerospace', 'Consumer Goods'],
-            sectors: ['Tech Sector', 'Defensive Healthcare', 'Consumer Staples', 'Materials & Gold', 'Financial Services', 'Clean Energy', 'Industrial Tech']
-        };
+        let hostClientConns = {};
+        let clientHostConn = null;
+        let roomPlayersMap = {};
 
         const PESTLE_DYNAMIC_DECK = [
             {
-                category: 'PESTLE: Environmental',
-                pillar: 'Natural Disaster',
-                headline: 'Category 5 Super Typhoon "Apex" Devastates Coastal Hubs & Medical Supply Chains',
-                story: 'A record-breaking tropical super typhoon slammed key industrial ports and coastal manufacturing centers. Global freight logistics have stalled, causing widespread medical supply shortages and infrastructure emergency calls.',
-                impactText: '⚡ Healthcare & BioTech stocks surge (+35%) on urgent medical supply demands. Physical Gold (+20%) and Energy (+25%) jump due to supply disruption, while Tech & Logistics drop (-18%).',
-                categoryImpacts: {
-                    'Defensive Healthcare': +0.35,
-                    'Clean Energy': +0.25,
-                    'Tech Sector': -0.18,
-                    'commodities': +0.22,
-                    'etfs': -0.05
-                },
-                impacts: { com_gold: +0.20, com_oil: +0.28, etf_tech: -0.15 }
+                category: "Economic",
+                pillar: "Monetary Policy",
+                headline: "Central Bank Implements Aggressive Interest Rate Cuts",
+                story: "In response to slowing economic activity, the Central Bank has slashed benchmark borrowing rates by 75 basis points. Cheaper borrowing costs stimulate business expansion and lower yield payouts on newly issued debt.",
+                impactText: "Corporate Stocks & Index ETFs rally sharply (+20% to +35%). Government Treasury Yields drop, driving existing Bond prices higher (+12%). Gold prices gain (+15%) as fiat currency softens.",
+                affects: { stocks: 0.25, etfs: 0.20, bonds: 0.12, commodities: 0.15, crypto: 0.30 }
             },
             {
-                category: 'PESTLE: Social & Health',
-                pillar: 'Global Pandemic & Longevity',
-                headline: 'Novel Respiratory Health Crisis Triggers Global Emergency Medical Funding',
-                story: 'World health organizations announced heightened alerts regarding a novel virus variant. Governments immediately approved multi-billion dollar emergency healthcare grants for vaccine development and medical infrastructure.',
-                impactText: '💉 Defensive Healthcare & BioTech stocks skyrocket (+45%). Broad market index dips slightly (-8%), while Govt Sovereign Treasuries gain (+10%) as investors flee to safety.',
-                categoryImpacts: {
-                    'Defensive Healthcare': +0.45,
-                    'Tech Sector': -0.08,
-                    'Consumer Staples': +0.12,
-                    'bonds': +0.10,
-                    'crypto': -0.15
-                },
-                impacts: { bnd_treasury: +0.10, etf_sp: -0.06, com_gold: +0.18 }
+                category: "Environmental",
+                pillar: "Natural Disasters",
+                headline: "Category 5 Super Typhoon Disrupts Semiconductor & Energy Hubs",
+                story: "Extreme weather conditions severely damage key coastal silicon fabrication facilities and offshore oil platforms, creating acute global supply chain shortages.",
+                impactText: "Semiconductor and High-Tech stocks surge (+30%) due to supply scarcity. Crude Oil jumps (+22%). General retail and industrial stocks fall (-15%).",
+                affects: { stocks: -0.05, etfs: -0.08, commodities: 0.22, crypto: 0.10 }
             },
             {
-                category: 'PESTLE: Technological',
-                pillar: 'AI Infrastructure Breakthrough',
-                headline: 'Quantum Photonic Semiconductor Commercialized for Enterprise AI',
-                story: 'Tech research consortiums unveiled a revolutionary photonics chip that cuts neural network training times by 90%. Tech conglomerates are scrambling to sign exclusive supply contracts.',
-                impactText: '🚀 Semiconductor and Tech Sector equities surge (+32%). Global Tech ETFs shoot up (+28%), while traditional commodity miners face capital reallocation (-5%).',
-                categoryImpacts: {
-                    'Tech Sector': +0.32,
-                    'Industrial Tech': +0.20,
-                    'Consumer Staples': -0.05,
-                    'crypto': +0.25
-                },
-                impacts: { etf_tech: +0.28, cry_btc: +0.25, com_oil: -0.08 }
+                category: "Technological",
+                pillar: "Artificial Intelligence",
+                headline: "Breakthrough Enterprise AI Automation Released Globally",
+                story: "Major technological advances boost corporate productivity across tech, finance, and logistics. Operational cost ratios drop significantly.",
+                impactText: "Technology & High-Beta Stocks skyrocket (+35%). Tech Index ETFs perform strongly (+25%). Traditional brick-and-mortar retail dips (-10%).",
+                affects: { stocks: 0.20, etfs: 0.25, bonds: 0.02, commodities: -0.05, crypto: 0.40 }
             },
             {
-                category: 'PESTLE: Economic',
-                pillar: 'Monetary Policy Shift',
-                headline: 'Central Bank Enacts Unexpected Emergency 100bps Interest Rate Cut',
-                story: 'To prevent economic stagnation following sluggish quarterly employment metrics, the Federal Reserve slashed benchmark interest rates by 1.00%. Liquidity is flooding back into capital markets.',
-                impactText: '📈 High-Yield Corporate Bonds (+14%) and Stocks (+22%) rally fiercely. Fixed CD interest rates decline on new locks, while Gold jumps (+16%) as currency yields drop.',
-                categoryImpacts: {
-                    'Tech Sector': +0.25,
-                    'Financial Services': +0.15,
-                    'Defensive Healthcare': +0.10,
-                    'bonds': +0.12
-                },
-                impacts: { bnd_treasury: +0.12, bnd_corp: +0.15, com_gold: +0.16 }
+                category: "Political",
+                pillar: "Trade Regulation",
+                headline: "Global Tariffs Imposed on Raw Metals & Agricultural Imports",
+                story: "Geopolitical tensions prompt sudden tariff hikes on imported steel, grain, and fertilizer, stoking headline inflation expectations.",
+                impactText: "Gold & Commodities jump (+28%). Consumer goods stocks drop (-18%). Fixed CDs gain attractiveness as cash interest rates rise.",
+                affects: { stocks: -0.12, etfs: -0.10, bonds: -0.08, commodities: 0.28, crypto: -0.15 }
             },
             {
-                category: 'PESTLE: Political',
-                pillar: 'Geopolitical & Energy Alliances',
-                headline: 'International Clean Energy Mandates Impose Carbon Tariffs on Heavy Polluters',
-                story: 'Global summits finalized strict cross-border carbon border adjustment mechanisms. Companies failing to transition to clean energy face heavy penalties, while green tech and solar suppliers gain immediate subsidies.',
-                impactText: '🌱 Clean Energy and Industrial Tech stocks jump (+30%). Heavy Crude Oil commodities drop (-15%), while Dividend & ESG ETFs experience heavy inflows (+12%).',
-                categoryImpacts: {
-                    'Clean Energy': +0.30,
-                    'Materials & Gold': -0.10,
-                    'Industrial Tech': +0.18
-                },
-                impacts: { com_oil: -0.15, etf_div: +0.12, etf_sp: +0.08 }
-            },
-            {
-                category: 'PESTLE: Legal',
-                pillar: 'Antitrust & Regulation',
-                headline: 'Global Antitrust Regulator Orders Breakup of Major Tech Monopolies',
-                story: 'Supreme courts upheld sweeping antitrust rulings forcing mega-cap tech conglomerates to spin off their advertising and cloud divisions. Unvested capital is rotating into defensive healthcare and high-yield dividend stocks.',
-                impactText: '⚖️ Tech Sector and Growth ETFs sink (-20%). Defensive Healthcare (+18%) and High-Yield Dividend ETFs (+15%) benefit from massive safe-haven inflows.',
-                categoryImpacts: {
-                    'Tech Sector': -0.20,
-                    'Defensive Healthcare': +0.18,
-                    'Consumer Staples': +0.15,
-                    'Financial Services': +0.10
-                },
-                impacts: { etf_tech: -0.22, etf_div: +0.15, bnd_treasury: +0.08 }
+                category: "Social",
+                pillar: "Healthcare Shift",
+                headline: "Global Wellness & Preventive Healthcare Boom",
+                story: "Demographic trends and health consciousness drive massive adoption of biotechnology and digital healthcare services.",
+                impactText: "Healthcare and BioTech equities soar (+30%). High-yielding Defensive Dividend ETFs hold steady (+10%). Speculative crypto dips (-15%).",
+                affects: { stocks: 0.18, etfs: 0.12, bonds: 0.04, commodities: 0.05, crypto: -0.15 }
             }
         ];
 
-        let currentNews = PESTLE_DYNAMIC_DECK[0];
-
         function generateProceduralMarket() {
-            const stocks = [];
-            const prefixes = [...COMPANY_NAME_PARTS.prefixes].sort(() => 0.5 - Math.random());
-            const suffixes = [...COMPANY_NAME_PARTS.suffixes].sort(() => 0.5 - Math.random());
-            
-            for (let i = 0; i < 6; i++) {
-                const prefix = prefixes[i];
-                const suffix = suffixes[i];
-                const name = `${prefix} ${suffix}`;
-                const ticker = (prefix.substring(0, 3) + suffix.substring(0, 1)).toUpperCase();
-                const sector = COMPANY_NAME_PARTS.sectors[i % COMPANY_NAME_PARTS.sectors.length];
+            const techTickers = ["AAPX", "NVDA", "SYNX", "QBIT"];
+            const healthTickers = ["AEGS", "CRX", "BIOV", "HLTH"];
+            const retailTickers = ["NOVA", "MART", "AMZN", "SHOP"];
+            const miningTickers = ["SOVR", "GLD", "VALE", "NEM"];
 
-                const basePrice = Math.floor(Math.random() * 140) + 30;
-                const pe = parseFloat((Math.random() * 25 + 10).toFixed(1));
-                const pb = parseFloat((Math.random() * 4 + 1.2).toFixed(1));
-                const yieldVal = parseFloat((Math.random() * 0.045).toFixed(3));
-                const beta = parseFloat((Math.random() * 0.9 + 0.7).toFixed(2));
+            return {
+                // Stocks (Unlocked Yr 1)
+                'stk_gen_0': { id: 'stk_gen_0', type: 'stocks', minYear: 1, ticker: techTickers[Math.floor(Math.random()*techTickers.length)], name: 'Apex Semiconductors Inc.', price: 120.00, pe: 28.5, pb: 4.2, divYield: 1.2, beta: 1.45, debtToEquity: 0.35, revGrowth: 22.4, rating: 'Strong Buy', cat: 'Technology' },
+                'stk_gen_1': { id: 'stk_gen_1', type: 'stocks', minYear: 1, ticker: healthTickers[Math.floor(Math.random()*healthTickers.length)], name: 'Aegis Healthcare Labs', price: 85.50, pe: 16.2, pb: 2.1, divYield: 3.4, beta: 0.75, debtToEquity: 0.50, revGrowth: 8.1, rating: 'Moderate Buy', cat: 'Healthcare' },
+                'stk_gen_2': { id: 'stk_gen_2', type: 'stocks', minYear: 1, ticker: retailTickers[Math.floor(Math.random()*retailTickers.length)], name: 'Nova Retail Holdings', price: 42.00, pe: 14.0, pb: 1.5, divYield: 4.1, beta: 0.90, debtToEquity: 0.85, revGrowth: 4.5, rating: 'Hold', cat: 'Consumer Discretionary' },
+                'stk_gen_3': { id: 'stk_gen_3', type: 'stocks', minYear: 1, ticker: miningTickers[Math.floor(Math.random()*miningTickers.length)], name: 'Sovereign Mining & Metals', price: 64.00, pe: 11.8, pb: 1.2, divYield: 5.2, beta: 1.15, debtToEquity: 0.40, revGrowth: 11.0, rating: 'Moderate Buy', cat: 'Materials' },
 
-                stocks.push({
-                    id: `stk_gen_${i}`,
-                    ticker: ticker,
-                    name: name,
-                    category: sector,
-                    price: basePrice,
-                    pe: pe,
-                    pb: pb,
-                    baseYield: yieldVal,
-                    beta: beta,
-                    debt: (Math.random() * 0.8 + 0.1).toFixed(2),
-                    growth: (Math.random() * 0.2 - 0.02).toFixed(2),
-                    rating: pe < 16 ? 'Strong Buy' : pe < 22 ? 'Moderate Buy' : 'Hold',
-                    unlockYear: 1
-                });
-            }
+                // ETFs (Unlocked Yr 2)
+                'etf_sp': { id: 'etf_sp', type: 'etfs', minYear: 2, ticker: 'SPYX', name: 'S&P 500 Market Index ETF', price: 450.00, pe: 21.0, divYield: 1.8, beta: 1.00, cat: 'Broad Index' },
+                'etf_tech': { id: 'etf_tech', type: 'etfs', minYear: 2, ticker: 'QQQX', name: 'Nasdaq Tech Growth ETF', price: 380.00, pe: 31.0, divYield: 0.7, beta: 1.30, cat: 'Tech Sector' },
 
-            const etfs = [
-                { id: 'etf_sp', ticker: 'SPX500', name: 'S&P 500 Market Index Fund', category: 'Broad Market Equity', price: 250, baseYield: 0.02, volatility: 0.10, unlockYear: 2 },
-                { id: 'etf_tech', ticker: 'QQQT', name: 'Nasdaq 100 Tech Innovators ETF', category: 'High Growth Tech', price: 180, baseYield: 0.008, volatility: 0.22, unlockYear: 2 },
-                { id: 'etf_div', ticker: 'DVYU', name: 'Dividend Aristocrats Yield ETF', category: 'High Dividend Equity', price: 110, baseYield: 0.048, volatility: 0.08, unlockYear: 2 }
-            ];
+                // Bonds (Unlocked Yr 1)
+                'bnd_govt': { id: 'bnd_govt', type: 'bonds', minYear: 1, ticker: 'US10Y', name: '10-Year Treasury Govt Bond', price: 1000.00, divYield: 4.2, beta: 0.10, cat: 'Government Debt' },
+                'bnd_corp': { id: 'bnd_corp', type: 'bonds', minYear: 2, ticker: 'CORP', name: 'High-Yield Corporate Bond', price: 950.00, divYield: 6.8, beta: 0.45, cat: 'Corporate Credit' },
 
-            const bonds = [
-                { id: 'bnd_treasury', ticker: 'US10Y', name: '10-Year Government Treasury Bond', category: 'Sovereign Fixed Income', price: 1000, couponYield: 0.042, lockYears: 10, unlockYear: 1 },
-                { id: 'bnd_corp', ticker: 'HYCB', name: 'High-Yield Corporate Bond Fund', category: 'Corporate Fixed Income', price: 500, couponYield: 0.075, lockYears: 5, unlockYear: 2 }
-            ];
+                // Fixed CDs (Unlocked Yr 1)
+                'dep_1yr': { id: 'dep_1yr', type: 'deposits', minYear: 1, ticker: 'CD1Y', name: '1-Year Fixed Deposit Certificate', price: 1000.00, divYield: 5.0, beta: 0.00, cat: 'Cash Deposit' },
 
-            const deposits = [
-                { ticker: 'CD-1YR', name: '1-Year Fixed Certificate Deposit', APY: 0.038, lockYears: 1 },
-                { ticker: 'CD-3YR', name: '3-Year Premium Fixed CD', APY: 0.052, lockYears: 3 }
-            ];
+                // Commodities (Unlocked Yr 3)
+                'com_gold': { id: 'com_gold', type: 'commodities', minYear: 3, ticker: 'XAU', name: 'Physical Gold bullion', price: 2000.00, divYield: 0.0, beta: -0.20, cat: 'Precious Metals' },
+                'com_oil': { id: 'com_oil', type: 'commodities', minYear: 3, ticker: 'WTI', name: 'Crude Oil Barrel Futures', price: 75.00, divYield: 0.0, beta: 1.25, cat: 'Energy' },
 
-            const commodities = [
-                { id: 'com_gold', ticker: 'GLD', name: 'Physical Gold Bullion (oz)', category: 'Precious Metals', price: 1800, volatility: 0.14, unlockYear: 3 },
-                { id: 'com_oil', ticker: 'CRUDE', name: 'Light Sweet Crude Oil Barrel', category: 'Energy Commodity', price: 75, volatility: 0.28, unlockYear: 3 }
-            ];
-
-            const crypto = [
-                { id: 'cry_btc', ticker: 'BTCX', name: 'BitCoin Digital Store of Value', category: 'Speculative Asset', price: 35000, volatility: 0.45, unlockYear: 4 },
-                { id: 'cry_eth', ticker: 'ETHX', name: 'Ether Smart Contract Asset', category: 'Speculative Asset', price: 2200, volatility: 0.55, unlockYear: 4 }
-            ];
-
-            return { stocks, etfs, bonds, deposits, commodities, crypto };
+                // Speculative / Crypto (Unlocked Yr 4)
+                'cry_btc': { id: 'cry_btc', type: 'crypto', minYear: 4, ticker: 'BTCX', name: 'Digital Coin Token', price: 45000.00, divYield: 0.0, beta: 2.80, cat: 'Speculative Asset' }
+            };
         }
 
         function initAssetHistories() {
             assetPriceHistory = {};
-            for (let cat in liveAssets) {
-                if (cat === 'deposits') continue;
-                liveAssets[cat].forEach(ast => {
-                    assetPriceHistory[ast.id] = [ast.price];
-                });
-            }
-        }
-
-        function findAssetById(id) {
-            for (let cat in liveAssets) {
-                if (cat === 'deposits') continue;
-                let found = liveAssets[cat].find(a => a.id === id);
-                if (found) return found;
-            }
-            return null;
-        }
-
-        function switchView(viewId) {
-            ['viewLobby', 'viewRoomLobby', 'viewGame', 'viewSummary'].forEach(id => {
-                document.getElementById(id).classList.add('hidden');
+            Object.keys(liveAssets).forEach(id => {
+                const initPrice = liveAssets[id].price;
+                assetPriceHistory[id] = [
+                    Math.round(initPrice * 0.85),
+                    Math.round(initPrice * 0.92),
+                    Math.round(initPrice * 0.98),
+                    initPrice
+                ];
             });
-            document.getElementById(viewId).classList.remove('hidden');
-
-            const isGameActive = (viewId === 'viewGame');
-            document.getElementById('navGameInfo').style.display = isGameActive ? 'flex' : 'none';
-            document.getElementById('exitGameBtn').classList.toggle('hidden', !isGameActive);
-        }
-
-        function showMainMenu() {
-            switchView('viewLobby');
         }
 
         function initAIRivals() {
             aiRivals = [
-                { name: 'Warren (Value Hunter)', archetype: 'Value Investor', netWorth: 100000 },
-                { name: 'Cathie (Tech Bull)', archetype: 'Tech Titan', netWorth: 100000 },
-                { name: 'Ray (Macro Allocator)', archetype: 'Yield Hunter', netWorth: 100000 },
-                { name: 'Satoshi (YOLO Trader)', archetype: 'Speculative Trader', netWorth: 100000 }
+                { name: 'Satoshi (YOLO Trader)', netWorth: 100000, strategy: 'crypto' },
+                { name: 'Warren (Value Hunter)', netWorth: 100000, strategy: 'value' },
+                { name: 'Ray (Macro Allocator)', netWorth: 100000, strategy: 'bonds' },
+                { name: 'Cathie (Tech Bull)', netWorth: 100000, strategy: 'growth' }
             ];
         }
 
-        function startSoloGame() {
-            if (roomUnsubscribe) { roomUnsubscribe(); roomUnsubscribe = null; }
-            const nameInput = document.getElementById('playerNameInput')?.value.trim();
-            gameState.playerName = nameInput || 'Student Trader';
-            gameState.maxYears = parseInt(document.getElementById('soloYearsSelect').value) || 15;
-            gameState.currentYear = 1;
-            gameState.cash = 100000;
-            gameState.portfolio = {};
-            gameState.depositRecords = [];
-            gameState.mode = 'solo';
-            gameState.isReady = false;
+        function initPeerJS() {
+            if (peerInstance) return;
+            gameState.myPeerId = 'stk_' + Math.random().toString(36).substring(2, 9);
+            peerInstance = new Peer(gameState.myPeerId, { debug: 1 });
 
-            document.getElementById('modeBadge').innerText = 'SOLO vs AI';
-
-            liveAssets = generateProceduralMarket();
-            initAssetHistories();
-            initAIRivals();
-
-            currentNews = PESTLE_DYNAMIC_DECK[0];
-
-            switchView('viewGame');
-            renderGameUI();
-            showToast("Welcome! Year 1 Started. Analyze options and click Advance when ready.");
+            peerInstance.on('error', (err) => {
+                console.warn("PeerJS network event:", err.type);
+                if (err.type === 'unavailable-id') {
+                    showToast("Room code busy or invalid. Try hosting again.");
+                } else if (err.type === 'peer-unavailable') {
+                    showToast("Room Host not found! Verify the 6-character room code.");
+                }
+            });
         }
 
-        async function createRoom() {
+        function createRoom() {
+            initPeerJS();
             const name = document.getElementById('playerNameInput')?.value.trim() || 'Room Host';
             gameState.playerName = name;
-            gameState.roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+            const rawCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+            gameState.roomCode = rawCode;
             gameState.mode = 'multi';
             isHostUser = true;
 
-            if (!db || !currentUser) {
-                showToast("Connecting real-time service... Please try in 2 seconds.");
-                return;
-            }
+            const hostPeerId = `stockbot-${rawCode.toLowerCase()}`;
 
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'stockbot-market-master';
-            const { doc, setDoc } = window.FirebaseSDK;
-            const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', gameState.roomCode);
+            if (peerInstance) peerInstance.destroy();
+            peerInstance = new Peer(hostPeerId);
 
-            liveAssets = generateProceduralMarket();
-            initAssetHistories();
-            currentNews = PESTLE_DYNAMIC_DECK[0];
-
-            const initialRoomPayload = {
-                roomCode: gameState.roomCode,
-                hostId: currentUser.uid,
-                hostName: name,
-                status: 'lobby',
-                currentYear: 1,
-                maxYears: 15,
-                liveAssets: liveAssets,
-                assetPriceHistory: assetPriceHistory,
-                currentNews: currentNews,
-                players: {
-                    [currentUser.uid]: {
-                        id: currentUser.uid,
-                        name: name,
-                        isHost: true,
-                        isReady: false,
-                        netWorth: 100000,
-                        lastActive: Date.now()
-                    }
-                },
-                createdAt: Date.now()
-            };
-
-            try {
-                await setDoc(roomRef, initialRoomPayload);
-
+            peerInstance.on('open', (id) => {
                 document.getElementById('roomCodeDisplay').innerText = gameState.roomCode;
                 document.getElementById('hostControls').classList.remove('hidden');
                 document.getElementById('clientWaitingMsg').classList.add('hidden');
-                switchView('viewRoomLobby');
+                
+                liveAssets = generateProceduralMarket();
+                initAssetHistories();
+                currentNews = PESTLE_DYNAMIC_DECK[0];
 
-                listenToRoomUpdates(roomRef);
-                showToast(`Room ${gameState.roomCode} created! Share code with your students.`);
-            } catch (err) {
-                console.error("Create Room Error:", err);
-                showToast("Failed to create room. Please check network connection.");
+                roomPlayersMap = {};
+                roomPlayersMap[gameState.myPeerId] = {
+                    id: gameState.myPeerId,
+                    name: name,
+                    isHost: true,
+                    isReady: false,
+                    netWorth: 100000
+                };
+
+                updateLobbyPlayerList();
+                switchView('viewRoomLobby');
+                showToast(`Room ${gameState.roomCode} active! Ask students to join with code.`);
+            });
+
+            peerInstance.on('connection', (conn) => {
+                conn.on('open', () => { hostClientConns[conn.peer] = conn; });
+                conn.on('data', (data) => { handleHostIncomingMessage(conn, data); });
+                conn.on('close', () => {
+                    delete hostClientConns[conn.peer];
+                    delete roomPlayersMap[conn.peer];
+                    updateLobbyPlayerList();
+                    broadcastRoomStateToClients();
+                });
+            });
+        }
+
+        function handleHostIncomingMessage(conn, msg) {
+            if (msg.type === 'JOIN') {
+                roomPlayersMap[conn.peer] = {
+                    id: conn.peer,
+                    name: msg.name,
+                    isHost: false,
+                    isReady: false,
+                    netWorth: 100000
+                };
+                updateLobbyPlayerList();
+                broadcastRoomStateToClients();
+                showToast(`Student ${msg.name} joined the room!`);
+            } else if (msg.type === 'PLAYER_UPDATE') {
+                if (roomPlayersMap[conn.peer]) {
+                    roomPlayersMap[conn.peer].isReady = msg.isReady;
+                    roomPlayersMap[conn.peer].netWorth = msg.netWorth;
+                }
+                broadcastRoomStateToClients();
+                checkAndAutoAdvanceHost();
             }
         }
 
-        async function joinRoomPrompt() {
+        function broadcastRoomStateToClients(gameStatus = null) {
+            const payload = {
+                type: 'ROOM_SYNC',
+                roomCode: gameState.roomCode,
+                currentYear: gameState.currentYear,
+                maxYears: gameState.maxYears,
+                liveAssets: liveAssets,
+                assetPriceHistory: assetPriceHistory,
+                currentNews: currentNews,
+                players: roomPlayersMap,
+                gameStatus: gameStatus || (document.getElementById('viewGame').classList.contains('hidden') ? 'lobby' : 'in_game')
+            };
+
+            renderMultiplayerLeaderboard(Object.values(roomPlayersMap), calculateNetWorth().total);
+
+            Object.values(hostClientConns).forEach(conn => {
+                if (conn && conn.open) conn.send(payload);
+            });
+        }
+
+        function joinRoomPrompt() {
             const name = document.getElementById('playerNameInput')?.value.trim() || 'Joined Student';
-            const code = prompt("Enter 6-Character Room Code:", "");
+            const code = prompt("Enter 6-Character Room Code from Projector:", "");
             if (!code) return;
 
             const cleanCode = code.trim().toUpperCase();
@@ -992,79 +849,41 @@
             gameState.mode = 'multi';
             isHostUser = false;
 
-            if (!db || !currentUser) {
-                showToast("Connecting real-time service... Please try in 2 seconds.");
-                return;
-            }
+            initPeerJS();
 
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'stockbot-market-master';
-            const { doc, getDoc, updateDoc } = window.FirebaseSDK;
-            const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', cleanCode);
+            const targetHostPeerId = `stockbot-${cleanCode.toLowerCase()}`;
+            showToast("Connecting to Host Chromebook...");
 
-            try {
-                const snap = await getDoc(roomRef);
-                if (!snap.exists()) {
-                    showToast(`Room code "${cleanCode}" not found. Double check code!`);
-                    return;
-                }
+            const conn = peerInstance.connect(targetHostPeerId, { reliable: true });
+            clientHostConn = conn;
 
-                const data = snap.data();
-                if (data.status !== 'lobby' && data.status !== 'in_game') {
-                    showToast("This game session has already finished.");
-                    return;
-                }
-
-                // Add real connected student to Firestore room document
-                const updatePath = `players.${currentUser.uid}`;
-                await updateDoc(roomRef, {
-                    [updatePath]: {
-                        id: currentUser.uid,
-                        name: name,
-                        isHost: false,
-                        isReady: false,
-                        netWorth: 100000,
-                        lastActive: Date.now()
-                    }
-                });
-
+            conn.on('open', () => {
+                conn.send({ type: 'JOIN', name: name });
                 document.getElementById('roomCodeDisplay').innerText = cleanCode;
                 document.getElementById('hostControls').classList.add('hidden');
                 document.getElementById('clientWaitingMsg').classList.remove('hidden');
                 switchView('viewRoomLobby');
+                showToast(`Connected to Room ${cleanCode}! Waiting for Host.`);
+            });
 
-                listenToRoomUpdates(roomRef);
-                showToast(`Successfully joined room ${cleanCode}!`);
-            } catch (err) {
-                console.error("Join Room Error:", err);
-                showToast("Could not join room. Verify room code and connection.");
-            }
+            conn.on('data', (data) => { handleClientIncomingMessage(data); });
+            conn.on('close', () => { showToast("Disconnected from Host room."); });
         }
 
-        function listenToRoomUpdates(roomRef) {
-            if (roomUnsubscribe) roomUnsubscribe();
-            const { onSnapshot } = window.FirebaseSDK;
+        function handleClientIncomingMessage(msg) {
+            if (msg.type === 'ROOM_SYNC') {
+                liveAssets = msg.liveAssets;
+                assetPriceHistory = msg.assetPriceHistory;
+                currentNews = msg.currentNews;
+                gameState.currentYear = msg.currentYear;
+                gameState.maxYears = msg.maxYears;
+                roomPlayersMap = msg.players;
 
-            roomUnsubscribe = onSnapshot(roomRef, (snapshot) => {
-                if (!snapshot.exists()) return;
-                const roomData = snapshot.data();
-                activeRoomData = roomData;
+                const playerList = Object.values(roomPlayersMap);
+                updateLobbyPlayerList(playerList);
 
-                // Sync shared market stocks, prices & news across all Chromebooks
-                if (roomData.liveAssets) liveAssets = roomData.liveAssets;
-                if (roomData.assetPriceHistory) assetPriceHistory = roomData.assetPriceHistory;
-                if (roomData.currentNews) currentNews = roomData.currentNews;
-                gameState.currentYear = roomData.currentYear || 1;
-                gameState.maxYears = roomData.maxYears || 15;
-
-                const playerList = Object.values(roomData.players || {});
-                gameState.totalPlayersInRoom = playerList.length;
-
-                // Update lobby room player list in real-time
-                renderRoomPlayersList(playerList);
-
-                // Auto-transition joined students when host starts game
                 const isInLobbyView = !document.getElementById('viewRoomLobby').classList.contains('hidden');
-                if (roomData.status === 'in_game' && isInLobbyView) {
+                if (msg.gameStatus === 'in_game' && isInLobbyView) {
                     gameState.cash = 100000;
                     gameState.portfolio = {};
                     gameState.depositRecords = [];
@@ -1073,49 +892,38 @@
                     document.getElementById('modeBadge').innerText = `ROOM: ${gameState.roomCode}`;
                     switchView('viewGame');
                     renderGameUI();
-                    showToast("Game Started by Room Host!");
+                    showToast("Game Started by Host!");
                 }
 
-                // Update in-game readiness indicators and live classroom leaderboard
-                if (roomData.status === 'in_game') {
+                if (!document.getElementById('viewGame').classList.contains('hidden')) {
                     const readyCount = playerList.filter(p => p.isReady).length;
-                    gameState.readyPlayersCount = readyCount;
-
                     const statusText = document.getElementById('readyStatusText');
                     const countText = document.getElementById('readyCountText');
 
                     if (statusText && countText) {
                         statusText.innerText = `${readyCount} / ${playerList.length} Ready`;
-                        countText.innerText = readyCount === playerList.length ? 'Advancing Year...' : 'Waiting for All Players';
+                        countText.innerText = readyCount === playerList.length ? 'Advancing Year...' : 'Waiting for All Students';
                     }
 
-                    // Render synchronized live leaderboard of real players
-                    const myNW = calculateNetWorth().total;
-                    renderMultiplayerLeaderboard(playerList, myNW);
-
-                    // Check if host should advance year when all players are ready
-                    if (isHostUser && playerList.length > 0 && readyCount === playerList.length && !gameState.hostAdvancingLock) {
-                        gameState.hostAdvancingLock = true;
-                        setTimeout(() => {
-                            hostAdvanceYear();
-                        }, 800);
-                    }
+                    renderMultiplayerLeaderboard(playerList, calculateNetWorth().total);
                 }
-            }, (err) => {
-                console.error("Realtime sync error:", err);
-            });
+            } else if (msg.type === 'YEAR_RECAP') {
+                showYearRecapModal(msg.completedYear, msg.resolvedNews, msg.oldNW);
+            }
         }
 
-        function renderRoomPlayersList(players) {
+        function updateLobbyPlayerList(customList = null) {
             const list = document.getElementById('joinedPlayersList');
             if (!list) return;
 
+            const players = customList || Object.values(roomPlayersMap);
             document.getElementById('playerCountBadge').innerText = `${players.length} / 25`;
+
             list.innerHTML = players.map(p => `
                 <div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl text-xs font-semibold text-slate-300 border border-slate-800">
                     <div class="flex items-center gap-2 truncate">
                         <span class="w-2 h-2 rounded-full ${p.isHost ? 'bg-amber-400' : 'bg-emerald-400'}"></span>
-                        <span class="truncate">${p.name} ${p.id === currentUser?.uid ? '(You)' : ''}</span>
+                        <span class="truncate">${p.name} ${p.id === gameState.myPeerId ? '(You)' : ''}</span>
                     </div>
                     <span class="text-[10px] font-bold ${p.isHost ? 'text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20' : 'text-brand-400 bg-brand-500/10 px-2 py-0.5 rounded'}">
                         ${p.isHost ? 'Host' : 'Joined'}
@@ -1124,145 +932,339 @@
             `).join('');
         }
 
-        async function startMultiplayerGame() {
-            if (!isHostUser || !activeRoomData || !db) return;
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'stockbot-market-master';
-            const { doc, updateDoc } = window.FirebaseSDK;
-            const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', gameState.roomCode);
+        function startMultiplayerGame() {
+            if (!isHostUser) return;
+            gameState.cash = 100000;
+            gameState.portfolio = {};
+            gameState.depositRecords = [];
+            gameState.isReady = false;
 
-            try {
-                await updateDoc(roomRef, {
-                    status: 'in_game'
-                });
-            } catch (e) {
-                console.error("Start Multiplayer Error:", e);
-                showToast("Could not start game. Try again.");
+            document.getElementById('modeBadge').innerText = `ROOM: ${gameState.roomCode}`;
+            switchView('viewGame');
+            renderGameUI();
+
+            broadcastRoomStateToClients('in_game');
+            showToast("Multiplayer Game Started!");
+        }
+
+        function calculateNetWorth() {
+            let totalInvested = 0;
+            let totalDivYield = 0;
+
+            Object.keys(gameState.portfolio).forEach(id => {
+                const qty = gameState.portfolio[id];
+                const asset = liveAssets[id];
+                if (asset && qty > 0) {
+                    const value = qty * asset.price;
+                    totalInvested += value;
+                    totalDivYield += value * ((asset.divYield || 0) / 100);
+                }
+            });
+
+            return {
+                cash: gameState.cash,
+                invested: totalInvested,
+                total: gameState.cash + totalInvested,
+                annualYield: totalDivYield
+            };
+        }
+
+        function switchAssetTab(tabKey) {
+            gameState.selectedTab = tabKey;
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = 'tab-btn px-3 py-2 rounded-lg text-slate-400 hover:text-white transition flex items-center gap-1.5';
+            });
+            
+            const activeBtn = document.getElementById(`tabBtn-${tabKey}`);
+            if (activeBtn) activeBtn.className = 'tab-btn px-3 py-2 rounded-lg bg-brand-600 text-slate-950 font-bold transition flex items-center gap-1.5';
+
+            renderAssetsGrid();
+        }
+
+        function renderAssetsGrid() {
+            const grid = document.getElementById('assetsGrid');
+            if (!grid) return;
+
+            const currentTab = gameState.selectedTab;
+            const tabAssets = Object.values(liveAssets).filter(a => a.type === currentTab);
+
+            grid.innerHTML = tabAssets.map(asset => {
+                const isLocked = asset.minYear > gameState.currentYear;
+                const owned = gameState.portfolio[asset.id] || 0;
+
+                if (isLocked) {
+                    return `
+                        <div class="p-4 rounded-xl bg-slate-900/40 border border-slate-800/80 text-center flex flex-col justify-center items-center space-y-2 opacity-60">
+                            <span class="text-2xl">🔒</span>
+                            <div class="text-xs font-bold text-slate-300">${asset.name}</div>
+                            <span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded border border-amber-500/30">
+                                Unlocks Year ${asset.minYear}
+                            </span>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="p-4 rounded-xl bg-slate-900/90 border border-slate-800 space-y-3 hover:border-slate-700 transition flex flex-col justify-between">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="font-mono text-xs font-black text-brand-400">${asset.ticker}</span>
+                                    <span class="text-[9px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded">${asset.cat}</span>
+                                </div>
+                                <h4 class="text-sm font-bold text-white mt-0.5 truncate max-w-[180px]">${asset.name}</h4>
+                            </div>
+                            <button onclick="openDeepDiveModal('${asset.id}')" class="text-[10px] bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/30 px-2 py-1 rounded font-bold transition">
+                                Ratios & Chart
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 text-center bg-slate-950 p-2.5 rounded-lg border border-slate-800/80">
+                            <div>
+                                <div class="text-[10px] text-slate-400 uppercase font-semibold">Price</div>
+                                <div class="font-mono text-sm font-bold text-white">$${asset.price.toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
+                            </div>
+                            <div>
+                                <div class="text-[10px] text-slate-400 uppercase font-semibold">Yield / Div</div>
+                                <div class="font-mono text-sm font-bold text-emerald-400">${asset.divYield}%</div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center text-xs text-slate-400 font-semibold border-t border-slate-800/80 pt-2">
+                            <span>Owned: <strong class="text-white font-mono">${owned}</strong></span>
+                            <span>Val: <strong class="text-brand-400 font-mono">$${(owned * asset.price).toLocaleString()}</strong></span>
+                        </div>
+
+                        <div class="space-y-2 pt-1">
+                            <div class="flex items-center gap-1">
+                                <input type="number" id="qty_${asset.id}" value="1" min="1" class="w-16 bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-center font-mono text-white focus:outline-none focus:border-brand-500">
+                                <button onclick="setPresetQty('${asset.id}', 10)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] rounded font-bold">+10</button>
+                                <button onclick="setPresetQty('${asset.id}', 100)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] rounded font-bold">+100</button>
+                                <button onclick="setMaxBuyQty('${asset.id}')" class="px-2 py-1 bg-brand-500/20 hover:bg-brand-500/30 text-brand-400 text-[10px] rounded font-bold border border-brand-500/30">Max</button>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2">
+                                <button onclick="buyAsset('${asset.id}')" class="py-2 bg-brand-600 hover:bg-brand-500 text-slate-950 font-extrabold text-xs rounded-xl transition shadow">
+                                    Buy
+                                </button>
+                                <button onclick="sellAsset('${asset.id}')" class="py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl border border-slate-700 transition">
+                                    Sell
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function setPresetQty(assetId, amount) {
+            const input = document.getElementById(`qty_${assetId}`);
+            if (input) input.value = Math.max(1, parseInt(input.value || 0) + amount);
+        }
+
+        function setMaxBuyQty(assetId) {
+            const input = document.getElementById(`qty_${assetId}`);
+            const asset = liveAssets[assetId];
+            if (input && asset && asset.price > 0) {
+                const max = Math.floor(gameState.cash / asset.price);
+                input.value = Math.max(1, max);
             }
         }
 
-        async function toggleReadyState() {
-            if (gameState.mode === 'solo') {
-                soloAdvanceYear();
+        function buyAsset(id) {
+            const input = document.getElementById(`qty_${id}`);
+            const qty = Math.max(1, parseInt(input?.value || 1));
+            const asset = liveAssets[id];
+
+            if (!asset) return;
+            const cost = qty * asset.price;
+
+            if (gameState.cash < cost) {
+                showToast("Insufficient Cash Balance!");
                 return;
             }
 
-            // Multiplayer Ready Toggle
-            if (!db || !currentUser || !gameState.roomCode) return;
-
-            playSound('advance');
-            gameState.isReady = !gameState.isReady;
-
-            const myNW = calculateNetWorth().total;
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'stockbot-market-master';
-            const { doc, updateDoc } = window.FirebaseSDK;
-            const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', gameState.roomCode);
-
-            try {
-                const readyPath = `players.${currentUser.uid}.isReady`;
-                const nwPath = `players.${currentUser.uid}.netWorth`;
-
-                await updateDoc(roomRef, {
-                    [readyPath]: gameState.isReady,
-                    [nwPath]: myNW
-                });
-
-                const btn = document.getElementById('advanceYearBtn');
-                if (btn) {
-                    btn.classList.toggle('bg-amber-600', gameState.isReady);
-                    btn.classList.toggle('bg-brand-600', !gameState.isReady);
-                    btn.innerHTML = gameState.isReady ? 
-                        `<span>✓ Ready! Waiting for Others...</span>` : 
-                        `<span>Advance to Next Year</span><span class="text-xs">➔</span>`;
-                }
-
-                showToast(gameState.isReady ? "Locked in decisions! Waiting for classmates." : "Status set to pending.");
-            } catch (err) {
-                console.error("Toggle Ready Error:", err);
-            }
+            gameState.cash -= cost;
+            gameState.portfolio[id] = (gameState.portfolio[id] || 0) + qty;
+            
+            playSound('buy');
+            showToast(`Bought ${qty} unit(s) of ${asset.ticker}`);
+            renderGameUI();
         }
 
-        async function hostAdvanceYear() {
-            if (!isHostUser || !db || !activeRoomData) return;
+        function sellAsset(id) {
+            const input = document.getElementById(`qty_${id}`);
+            const qty = Math.max(1, parseInt(input?.value || 1));
+            const asset = liveAssets[id];
 
-            const oldNW = calculateNetWorth().total;
-            const resolvedNews = currentNews;
-            const completedYear = gameState.currentYear;
-
-            // Host computes market shifts
-            simulateYearMarketChanges(resolvedNews);
-
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'stockbot-market-master';
-            const { doc, updateDoc } = window.FirebaseSDK;
-            const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', gameState.roomCode);
-
-            const nextNews = PESTLE_DYNAMIC_DECK[Math.floor(Math.random() * PESTLE_DYNAMIC_DECK.length)];
-
-            // Reset all player ready statuses for next year
-            const resetPlayers = {};
-            for (let pid in activeRoomData.players) {
-                resetPlayers[`players.${pid}.isReady`] = false;
+            const currentOwned = gameState.portfolio[id] || 0;
+            if (currentOwned < qty) {
+                showToast("You don't own that many shares!");
+                return;
             }
 
-            try {
-                await updateDoc(roomRef, {
-                    currentYear: completedYear + 1,
-                    liveAssets: liveAssets,
-                    assetPriceHistory: assetPriceHistory,
-                    currentNews: nextNews,
-                    ...resetPlayers
+            const revenue = qty * asset.price;
+            gameState.cash += revenue;
+            gameState.portfolio[id] -= qty;
+
+            playSound('sell');
+            showToast(`Sold ${qty} unit(s) of ${asset.ticker}`);
+            renderGameUI();
+        }
+
+        function renderGameUI() {
+            const nw = calculateNetWorth();
+
+            document.getElementById('currentYearBadge').innerText = `${gameState.currentYear} / ${gameState.maxYears}`;
+            document.getElementById('navNetWorth').innerText = `$${nw.total.toLocaleString()}`;
+            document.getElementById('cashBalanceDisplay').innerText = `Cash: $${gameState.cash.toLocaleString()}`;
+            document.getElementById('centerNetWorthText').innerText = `$${nw.total.toLocaleString()}`;
+            document.getElementById('investedTotalText').innerText = `$${nw.invested.toLocaleString()}`;
+            document.getElementById('annualYieldText').innerText = `$${Math.round(nw.annualYield).toLocaleString()} / yr`;
+
+            if (currentNews) {
+                document.getElementById('newsCategoryBadge').innerText = `PESTLE: ${currentNews.category}`;
+                document.getElementById('newsPillarBadge').innerText = `Pillar: ${currentNews.pillar}`;
+                document.getElementById('newsHeadline').innerText = currentNews.headline;
+                document.getElementById('newsStory').innerText = currentNews.story;
+            }
+
+            renderAssetsGrid();
+            renderPortfolioChart(nw);
+            renderLeaderboard(nw.total);
+        }
+
+        function renderPortfolioChart(nw) {
+            const ctx = document.getElementById('portfolioChart')?.getContext('2d');
+            if (!ctx) return;
+
+            if (portfolioChartInstance) portfolioChartInstance.destroy();
+
+            portfolioChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Cash', 'Invested Assets'],
+                    datasets: [{
+                        data: [gameState.cash, nw.invested],
+                        backgroundColor: ['#10b981', '#3b82f6'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function openDeepDiveModal(id) {
+            const asset = liveAssets[id];
+            if (!asset) return;
+
+            document.getElementById('modalTickerIcon').innerText = asset.ticker;
+            document.getElementById('modalAssetName').innerText = asset.name;
+            document.getElementById('modalAssetCategory').innerText = `${asset.cat} • Volatility Beta ${asset.beta || 1.0}`;
+            document.getElementById('modalPriceText').innerText = `$${asset.price.toFixed(2)}`;
+            document.getElementById('modalPeText').innerText = asset.pe ? `${asset.pe}x` : 'N/A';
+            document.getElementById('modalDivText').innerText = `${asset.divYield || 0}%`;
+            document.getElementById('modalBetaText').innerText = asset.beta || '1.0';
+            document.getElementById('modalPbText').innerText = asset.pb ? `${asset.pb}x` : 'N/A';
+            document.getElementById('modalDebtText').innerText = asset.debtToEquity || 'N/A';
+            document.getElementById('modalRevText').innerText = asset.revGrowth ? `+${asset.revGrowth}%` : 'N/A';
+            document.getElementById('modalRatingText').innerText = asset.rating || 'Hold';
+
+            const ctx = document.getElementById('modalPriceChart')?.getContext('2d');
+            if (ctx) {
+                if (modalChartInstance) modalChartInstance.destroy();
+                const history = assetPriceHistory[id] || [asset.price];
+
+                modalChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: history.map((_, i) => `Yr ${i+1}`),
+                        datasets: [{
+                            data: history,
+                            borderColor: '#22c55e',
+                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } }
+                    }
                 });
-
-                gameState.hostAdvancingLock = false;
-                showYearRecapModal(completedYear, resolvedNews, oldNW);
-            } catch (e) {
-                console.error("Host Advance Error:", e);
-                gameState.hostAdvancingLock = false;
             }
+
+            document.getElementById('modalDeepDive').classList.remove('hidden');
+        }
+
+        function closeDeepDiveModal() {
+            document.getElementById('modalDeepDive').classList.add('hidden');
         }
 
         function soloAdvanceYear() {
-            if (gameState.currentYear > gameState.maxYears) {
-                endSimulationGame();
-                return;
-            }
-
             playSound('advance');
-
             const oldNW = calculateNetWorth().total;
             const resolvedNews = currentNews;
             const completedYear = gameState.currentYear;
 
-            // Apply market updates based on the current turn's news
             simulateYearMarketChanges(resolvedNews);
-            simulateAIRivals();
 
             currentNews = PESTLE_DYNAMIC_DECK[Math.floor(Math.random() * PESTLE_DYNAMIC_DECK.length)];
+            gameState.currentYear++;
 
             showYearRecapModal(completedYear, resolvedNews, oldNW);
         }
 
-        function showYearRecapModal(completedYear, resolvedNews, oldNW) {
+        function simulateYearMarketChanges(news) {
+            Object.keys(liveAssets).forEach(id => {
+                const asset = liveAssets[id];
+                const affects = news?.affects || {};
+                const impactFactor = affects[asset.type] || 0.05;
+
+                const randomVol = (Math.random() - 0.48) * 0.15;
+                const netPct = impactFactor + randomVol;
+
+                asset.price = Math.max(1.00, Math.round(asset.price * (1 + netPct) * 100) / 100);
+
+                if (!assetPriceHistory[id]) assetPriceHistory[id] = [];
+                assetPriceHistory[id].push(asset.price);
+            });
+
+            // Update AI rivals for solo mode
+            aiRivals.forEach(r => {
+                const gain = (Math.random() - 0.4) * 0.22;
+                r.netWorth = Math.round(r.netWorth * (1 + gain));
+            });
+        }
+
+        function showYearRecapModal(year, news, oldNW) {
             const newNW = calculateNetWorth().total;
-            const pnl = newNW - oldNW;
+            const profit = newNW - oldNW;
 
-            document.getElementById('recapTitle').innerText = `Year ${completedYear} Market Impact Report`;
-            document.getElementById('recapYearBadge').innerText = `Year ${completedYear} Resolved`;
-            document.getElementById('recapHeadline').innerText = resolvedNews.headline;
-            document.getElementById('recapStory').innerText = resolvedNews.story;
-            document.getElementById('recapImpactBox').innerText = resolvedNews.impactText;
+            document.getElementById('recapTitle').innerText = `Year ${year} Market Impact Report`;
+            document.getElementById('recapYearBadge').innerText = `Year ${year} Complete`;
+            document.getElementById('recapHeadline').innerText = news.headline;
+            document.getElementById('recapStory').innerText = news.story;
+            document.getElementById('recapImpactBox').innerText = news.impactText;
 
-            const pnlElem = document.getElementById('recapProfitText');
-            pnlElem.innerText = `${pnl >= 0 ? '+' : ''}$${pnl.toLocaleString()}`;
-            pnlElem.className = `font-mono text-base font-bold ${pnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+            const profitElem = document.getElementById('recapProfitText');
+            profitElem.innerText = `${profit >= 0 ? '+' : ''}$${profit.toLocaleString()}`;
+            profitElem.className = `font-mono text-base font-bold ${profit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
 
             document.getElementById('recapNetWorthText').innerText = `$${newNW.toLocaleString()}`;
 
-            const btnText = document.getElementById('recapContinueBtnText');
-
-            if (completedYear >= gameState.maxYears) {
-                btnText.innerText = "View Final Leaderboard Results";
+            const continueBtnText = document.getElementById('recapContinueBtnText');
+            if (gameState.currentYear > gameState.maxYears) {
+                continueBtnText.innerText = "View Final Championship Results";
             } else {
-                btnText.innerText = `Proceed to Year ${completedYear + 1} Trading Desk`;
+                continueBtnText.innerText = "Continue to Next Year Trading Desk";
             }
 
             document.getElementById('modalYearRecap').classList.remove('hidden');
@@ -1271,32 +1273,30 @@
         function closeYearRecapModal() {
             document.getElementById('modalYearRecap').classList.add('hidden');
 
-            // Reset advance button UI
-            const btn = document.getElementById('advanceYearBtn');
-            if (btn) {
-                btn.className = "w-full sm:w-auto px-6 py-3.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-slate-950 font-extrabold text-sm shadow-xl shadow-brand-600/30 transition flex items-center justify-center gap-2";
-                btn.innerHTML = `<span>Advance to Next Year</span><span class="text-xs">➔</span>`;
-            }
-            gameState.isReady = false;
-
-            if (gameState.mode === 'solo') gameState.currentYear++;
-
-            if (gameState.currentYear >= gameState.maxYears) {
+            if (gameState.currentYear > gameState.maxYears) {
                 endSimulationGame();
-                return;
+            } else {
+                checkUnlockNotifications();
+                gameState.isReady = false;
+                renderGameUI();
             }
+        }
 
-            // Check unlock banner notifications
-            if (gameState.currentYear === 2) {
-                showUnlockNotification("Index ETFs & High-Yield Corporate Bonds are now unlocked!");
-            } else if (gameState.currentYear === 3) {
-                showUnlockNotification("Physical Gold & Commodities market unlocked!");
-            } else if (gameState.currentYear === 4) {
-                showUnlockNotification("Speculative Assets & Crypto unlocked!");
+        function checkUnlockNotifications() {
+            const year = gameState.currentYear;
+            const banner = document.getElementById('unlockNotificationBanner');
+            const text = document.getElementById('unlockNotificationText');
+
+            if (year === 2) {
+                text.innerText = "🎉 New Asset Unlocked: Index ETFs and Corporate Bonds are now tradeable!";
+                banner.classList.remove('hidden');
+            } else if (year === 3) {
+                text.innerText = "🎉 New Asset Unlocked: Physical Gold and Commodities are now tradeable!";
+                banner.classList.remove('hidden');
+            } else if (year === 4) {
+                text.innerText = "🎉 New Asset Unlocked: Speculative Digital Assets / Crypto are now tradeable!";
+                banner.classList.remove('hidden');
             }
-
-            renderGameUI();
-            showToast(`Started Year ${gameState.currentYear}! Analyze the new PESTLE news.`);
         }
 
         function renderMultiplayerLeaderboard(players, myNW) {
@@ -1307,7 +1307,7 @@
             list.sort((a, b) => (b.netWorth || 100000) - (a.netWorth || 100000));
 
             container.innerHTML = list.map((item, idx) => {
-                const isUser = item.id === currentUser?.uid;
+                const isUser = item.id === gameState.myPeerId;
                 const nw = isUser ? myNW : (item.netWorth || 100000);
                 return `
                     <div class="p-2.5 rounded-xl border flex items-center justify-between text-xs ${isUser ? 'bg-brand-500/20 border-brand-500/60 text-white font-bold' : 'bg-slate-900/80 border-slate-800 text-slate-300'}">
@@ -1323,8 +1323,8 @@
         }
 
         function renderLeaderboard(playerNW) {
-            if (gameState.mode === 'multi' && activeRoomData) {
-                const playerList = Object.values(activeRoomData.players || {});
+            if (gameState.mode === 'multi') {
+                const playerList = Object.values(roomPlayersMap);
                 renderMultiplayerLeaderboard(playerList, playerNW);
                 return;
             }
@@ -1348,60 +1348,45 @@
             `).join('');
         }
 
-        function openDeepDiveModal(assetId) {
-            const ast = findAssetById(assetId);
-            if (!ast) return;
-
-            document.getElementById('modalTickerIcon').innerText = ast.ticker;
-            document.getElementById('modalAssetName').innerText = ast.name;
-            document.getElementById('modalAssetCategory').innerText = `${ast.category} • Financial Valuation`;
-            document.getElementById('modalPriceText').innerText = `$${ast.price.toLocaleString()}`;
-            document.getElementById('modalPeText').innerText = `${ast.pe || '18.5'}x`;
-            document.getElementById('modalDivText').innerText = ast.baseYield ? `${(ast.baseYield*100).toFixed(1)}%` : '0.0%';
-            document.getElementById('modalBetaText').innerText = ast.beta || '1.1';
-            document.getElementById('modalPbText').innerText = `${ast.pb || '2.1'}x`;
-            document.getElementById('modalDebtText').innerText = `${ast.debt || '0.35'}`;
-            document.getElementById('modalRevText').innerText = `+${((ast.growth || 0.08)*100).toFixed(1)}%`;
-            document.getElementById('modalRatingText').innerText = ast.rating || 'Moderate Buy';
-
-            document.getElementById('modalDeepDive').classList.remove('hidden');
-
-            const ctx = document.getElementById('modalPriceChart')?.getContext('2d');
-            if (!ctx) return;
-
-            if (modalChartInstance) modalChartInstance.destroy();
-
-            const history = assetPriceHistory[assetId] || [ast.price];
-            const labels = history.map((_, i) => `Yr ${i+1}`);
-
-            modalChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Price History ($)',
-                        data: history,
-                        borderColor: '#22c55e',
-                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                        fill: true,
-                        tension: 0.3,
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { grid: { color: 'rgba(255,255,255,0.05)' } },
-                        y: { grid: { color: 'rgba(255,255,255,0.05)' } }
-                    }
-                }
+        function switchView(viewId) {
+            ['viewLobby', 'viewRoomLobby', 'viewGame', 'viewSummary'].forEach(v => {
+                const el = document.getElementById(v);
+                if (el) el.classList.add('hidden');
             });
+            document.getElementById(viewId)?.classList.remove('hidden');
+
+            const navInfo = document.getElementById('navGameInfo');
+            const exitBtn = document.getElementById('exitGameBtn');
+
+            if (viewId === 'viewGame') {
+                navInfo?.classList.remove('hidden');
+                exitBtn?.classList.remove('hidden');
+            } else {
+                navInfo?.classList.add('hidden');
+                exitBtn?.classList.add('hidden');
+            }
         }
 
-        function closeDeepDiveModal() {
-            document.getElementById('modalDeepDive').classList.add('hidden');
+        function showMainMenu() {
+            switchView('viewLobby');
+        }
+
+        function startSoloGame() {
+            gameState.mode = 'solo';
+            gameState.currentYear = 1;
+            gameState.maxYears = parseInt(document.getElementById('soloYearsSelect')?.value || '15');
+            gameState.cash = 100000;
+            gameState.portfolio = {};
+            gameState.isReady = false;
+
+            liveAssets = generateProceduralMarket();
+            initAssetHistories();
+            initAIRivals();
+            currentNews = PESTLE_DYNAMIC_DECK[0];
+
+            document.getElementById('modeBadge').innerText = 'SOLO vs AI';
+            switchView('viewGame');
+            renderGameUI();
         }
 
         function endSimulationGame() {
@@ -1416,10 +1401,19 @@
             else if ((gameState.portfolio['com_gold'] || 0) > 5) archetype = "Gold Inflation Hedger";
             document.getElementById('summaryArchetype').innerText = archetype;
 
-            let allPlayers = [
-                { name: `${gameState.playerName} (You)`, netWorth: nw.total, isPlayer: true },
-                ...aiRivals.map(r => ({ name: r.name, netWorth: r.netWorth, isPlayer: false }))
-            ];
+            let allPlayers = [];
+            if (gameState.mode === 'multi') {
+                allPlayers = Object.values(roomPlayersMap).map(p => ({
+                    name: p.name,
+                    netWorth: p.id === gameState.myPeerId ? nw.total : (p.netWorth || 100000),
+                    isPlayer: p.id === gameState.myPeerId
+                }));
+            } else {
+                allPlayers = [
+                    { name: `${gameState.playerName} (You)`, netWorth: nw.total, isPlayer: true },
+                    ...aiRivals.map(r => ({ name: r.name, netWorth: r.netWorth, isPlayer: false }))
+                ];
+            }
             allPlayers.sort((a, b) => b.netWorth - a.netWorth);
 
             const podium = document.getElementById('podiumContainer');
@@ -1444,7 +1438,6 @@
             if (window.confetti) confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
         }
 
-        // Window Initialization Loop
         window.onload = function() {
             liveAssets = generateProceduralMarket();
             initAssetHistories();
