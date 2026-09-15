@@ -38,9 +38,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-    <!-- PeerJS WebRTC Library for Cross-Chromebook Multiplayer -->
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -126,7 +123,7 @@
                             Stock Market Simulation <br><span class="bg-gradient-to-r from-brand-400 via-emerald-300 to-cyan-400 bg-clip-text text-transparent">- Mr. Felim's Finance Club</span>
                         </h1>
                         <p class="text-slate-400 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
-                            A competitive turn-based stock & asset simulator designed for finance club. Take your time analyzing stock ratios, PESTLE news, bonds, gold, and commodities. Advance years when you're ready.
+                            A competitive turn-based stock & asset simulator. Analyze financial ratios, PESTLE news, bonds, gold, and commodities. Advance years when you're ready!
                         </p>
                     </div>
 
@@ -137,9 +134,9 @@
                                 <div class="w-12 h-12 rounded-xl bg-brand-500/20 flex items-center justify-center text-2xl group-hover:scale-110 transition">
                                     🎯
                                 </div>
-                                <h3 class="text-xl font-bold text-white">Solo Campaign & Leaderboard</h3>
+                                <h3 class="text-xl font-bold text-white">Solo Campaign & AI Rivals</h3>
                                 <p class="text-xs text-slate-400 leading-relaxed">
-                                    Compete against 4 distinct AI Investor personalities (Value, Growth, High-Yield, Speculative) over 10-20 market years. Submit your score to the leaderboard!
+                                    Compete against 4 distinct AI Investor personalities (Value, Growth, High-Yield, Speculative) over 10-20 market years.
                                 </p>
                             </div>
                             <div class="pt-6 space-y-3">
@@ -161,9 +158,9 @@
                                 <div class="w-12 h-12 rounded-xl bg-accent/20 flex items-center justify-center text-2xl group-hover:scale-110 transition">
                                     👥
                                 </div>
-                                <h3 class="text-xl font-bold text-white">Classroom Multiplayer Room</h3>
+                                <h3 class="text-xl font-bold text-white">Classroom Live Cloud Room</h3>
                                 <p class="text-xs text-slate-400 leading-relaxed">
-                                    Create or join a room code. Everyone analyzes options on their own screen. The year only advances when all players lock in their ready status!
+                                    Create or join a room code. Real-time Firebase cloud sync works across any computer, tablet, or Chromebook!
                                 </p>
                             </div>
                             <div class="pt-6 space-y-3">
@@ -179,50 +176,26 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Feature Badges -->
-                    <div class="pt-6 border-t border-slate-800 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
-                        <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
-                            <div class="text-lg">📈</div>
-                            <div class="text-xs font-semibold text-slate-300 mt-1">Procedural Stocks</div>
-                            <div class="text-[10px] text-slate-500">Fresh Companies Every Game</div>
-                        </div>
-                        <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
-                            <div class="text-lg">🔓</div>
-                            <div class="text-xs font-semibold text-slate-300 mt-1">Paced Learning</div>
-                            <div class="text-[10px] text-slate-500">Unlocks Y1-Y5 Graduated</div>
-                        </div>
-                        <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
-                            <div class="text-lg">📰</div>
-                            <div class="text-xs font-semibold text-slate-300 mt-1">PESTLE Scenarios</div>
-                            <div class="text-[10px] text-slate-500">Dynamic Macro Drivers</div>
-                        </div>
-                        <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
-                            <div class="text-lg">👥</div>
-                            <div class="text-xs font-semibold text-slate-300 mt-1">25-Player Rooms</div>
-                            <div class="text-[10px] text-slate-500">Classroom Simultaneous Play</div>
-                        </div>
-                    </div>
                 </div>
             </div>
 
             <div id="viewRoomLobby" class="hidden flex-grow flex flex-col justify-center items-center py-8">
                 <div class="max-w-md w-full glass-card p-8 rounded-2xl space-y-6 text-center">
                     <div class="inline-block px-3 py-1 rounded-full bg-accent/20 text-accent font-bold text-xs uppercase tracking-wider">
-                        Multiplayer Room (Up to 25 Players)
+                        Live Cloud Room
                     </div>
                     <div>
                         <h2 class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Room Code</h2>
                         <div id="roomCodeDisplay" class="font-mono text-5xl font-black text-brand-400 tracking-widest my-2 select-all">
                             ----
                         </div>
-                        <p class="text-xs text-slate-400">Share this code with your classmates to join</p>
+                        <p class="text-xs text-slate-400">Share this 6-letter code with your classmates</p>
                     </div>
 
                     <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 text-left space-y-2">
                         <div class="flex justify-between items-center text-xs font-bold text-slate-400 uppercase">
                             <span>Players Joined</span>
-                            <span id="playerCountBadge" class="bg-brand-500/20 text-brand-400 px-2 py-0.5 rounded-full font-mono">1 / 25</span>
+                            <span id="playerCountBadge" class="bg-brand-500/20 text-brand-400 px-2 py-0.5 rounded-full font-mono">1 Player</span>
                         </div>
                         <div id="joinedPlayersList" class="space-y-1.5 max-h-60 overflow-y-auto pr-1"></div>
                     </div>
@@ -233,7 +206,7 @@
                         </button>
                     </div>
                     <div id="clientWaitingMsg" class="hidden text-xs text-slate-400 animate-pulse">
-                        Waiting for room host to start the game...
+                        Waiting for host to start the game...
                     </div>
                 </div>
             </div>
@@ -244,7 +217,7 @@
                 <div id="unlockNotificationBanner" class="hidden bg-gradient-to-r from-amber-500/20 via-yellow-500/10 to-amber-500/20 border border-amber-500/40 p-3 rounded-xl flex items-center justify-between text-amber-200 text-xs font-bold shadow-lg">
                     <div class="flex items-center gap-2">
                         <span class="text-lg">🎉</span>
-                        <span id="unlockNotificationText">New Asset Unlocked: Index ETFs and Corporate Bonds are now tradeable!</span>
+                        <span id="unlockNotificationText">New Asset Unlocked!</span>
                     </div>
                     <button onclick="document.getElementById('unlockNotificationBanner').classList.add('hidden')" class="text-amber-400 hover:text-white font-mono text-sm">✕</button>
                 </div>
@@ -268,12 +241,8 @@
                                 Federal Reserve adjusts benchmark interest rate...
                             </h2>
                             <p id="newsStory" class="text-xs text-slate-300 leading-relaxed font-normal">
-                                Comprehensive macro background context details will appear here...
+                                Context details will appear here...
                             </p>
-                            <div id="newsImpactSummary" class="text-xs font-semibold text-amber-300 bg-slate-950/70 p-2.5 rounded-xl border border-amber-500/30 leading-relaxed flex items-center gap-2">
-                                <span>💡</span>
-                                <span><strong>Market Challenge:</strong> Analyze this macro event and predict which sectors or assets will benefit or suffer before advancing the year!</span>
-                            </div>
                         </div>
                     </div>
 
@@ -283,7 +252,7 @@
                             <div id="readyCountText" class="text-[10px] text-slate-400">Ready to Advance</div>
                         </div>
                         <button id="advanceYearBtn" onclick="toggleReadyState()" class="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-slate-950 font-extrabold text-sm shadow-xl shadow-brand-600/30 transition flex items-center justify-center gap-2">
-                            <span>Advance to Next Year</span>
+                            <span id="advanceBtnLabel">Ready / Advance Year</span>
                             <span class="text-xs">➔</span>
                         </button>
                     </div>
@@ -305,10 +274,6 @@
                                 🏛️ Bonds
                                 <span id="badge-bonds" class="text-[9px] bg-slate-800 text-amber-400 px-1.5 py-0.5 rounded border border-amber-500/30">Yr 1</span>
                             </button>
-                            <button onclick="switchAssetTab('deposits')" id="tabBtn-deposits" class="tab-btn px-3 py-2 rounded-lg text-slate-400 hover:text-white transition flex items-center gap-1.5">
-                                🏦 Fixed CDs
-                                <span id="badge-deposits" class="text-[9px] bg-slate-800 text-amber-400 px-1.5 py-0.5 rounded border border-amber-500/30">Yr 1</span>
-                            </button>
                             <button onclick="switchAssetTab('commodities')" id="tabBtn-commodities" class="tab-btn px-3 py-2 rounded-lg text-slate-400 hover:text-white transition flex items-center gap-1.5">
                                 🪙 Gold & Commodities
                                 <span id="badge-commodities" class="text-[9px] bg-slate-800 text-amber-400 px-1.5 py-0.5 rounded border border-amber-500/30">Yr 3</span>
@@ -320,13 +285,6 @@
                         </div>
 
                         <div class="glass-card p-5 rounded-2xl space-y-4 flex-grow flex flex-col">
-                            <div class="flex justify-between items-center">
-                                <div>
-                                    <h3 id="tabTitle" class="text-base font-bold text-white">Individual Corporate Stocks</h3>
-                                    <p id="tabDesc" class="text-xs text-slate-400">Analyze financials, valuation ratios, and dividend yields before buying.</p>
-                                </div>
-                            </div>
-
                             <div id="assetsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow overflow-y-auto max-h-[520px] pr-1"></div>
                         </div>
                     </div>
@@ -335,25 +293,25 @@
                     <div class="lg:col-span-4 space-y-6 flex flex-col">
                         <div class="glass-card p-5 rounded-2xl space-y-4">
                             <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                                <span class="text-xs font-bold uppercase text-slate-400 tracking-wider">Your Balance & Allocation</span>
+                                <span class="text-xs font-bold uppercase text-slate-400 tracking-wider">Your Portfolio</span>
                                 <span class="text-xs font-semibold text-brand-400 font-mono" id="cashBalanceDisplay">Cash: $100,000</span>
                             </div>
 
                             <div class="relative h-44 flex items-center justify-center">
                                 <canvas id="portfolioChart"></canvas>
                                 <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                                    <span class="text-[10px] text-slate-400 font-bold uppercase">Total Net Worth</span>
+                                    <span class="text-[10px] text-slate-400 font-bold uppercase">Net Worth</span>
                                     <span id="centerNetWorthText" class="font-mono text-lg font-extrabold text-white">$100,000</span>
                                 </div>
                             </div>
 
                             <div class="grid grid-cols-2 gap-2 text-center pt-2">
                                 <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
-                                    <div class="text-[10px] text-slate-400 uppercase font-bold">Invested Assets</div>
+                                    <div class="text-[10px] text-slate-400 uppercase font-bold">Invested</div>
                                     <div id="investedTotalText" class="font-mono text-sm font-bold text-blue-400">$0</div>
                                 </div>
                                 <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
-                                    <div class="text-[10px] text-slate-400 uppercase font-bold">Annual Yield / Dividends</div>
+                                    <div class="text-[10px] text-slate-400 uppercase font-bold">Annual Yield</div>
                                     <div id="annualYieldText" class="font-mono text-sm font-bold text-emerald-400">$0 / yr</div>
                                 </div>
                             </div>
@@ -361,8 +319,8 @@
 
                         <div class="glass-card p-5 rounded-2xl space-y-3 flex-grow flex flex-col">
                             <div class="flex justify-between items-center">
-                                <h4 class="text-xs font-bold uppercase text-slate-400 tracking-wider">Live Player Leaderboard</h4>
-                                <span class="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-mono" id="modeBadge">SOLO vs AI</span>
+                                <h4 class="text-xs font-bold uppercase text-slate-400 tracking-wider">Live Standings</h4>
+                                <span class="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-mono" id="modeBadge">SOLO</span>
                             </div>
                             <div id="leaderboardList" class="space-y-2 flex-grow overflow-y-auto max-h-[320px] pr-1"></div>
                         </div>
@@ -379,7 +337,7 @@
                             </div>
                             <div>
                                 <h2 id="modalAssetName" class="text-xl font-bold text-white">Apex Semiconductors Inc.</h2>
-                                <p id="modalAssetCategory" class="text-xs text-slate-400">Technology Sector • Large Cap Growth</p>
+                                <p id="modalAssetCategory" class="text-xs text-slate-400">Technology Sector</p>
                             </div>
                         </div>
                         <button onclick="closeDeepDiveModal()" class="text-slate-400 hover:text-white text-xl font-bold p-1">✕</button>
@@ -405,36 +363,14 @@
                     </div>
 
                     <div class="space-y-2">
-                        <div class="text-xs font-bold text-slate-400 uppercase">Historical Price Trend Graph</div>
+                        <div class="text-xs font-bold text-slate-400 uppercase">Historical Price Chart</div>
                         <div class="h-48 bg-slate-900/90 rounded-xl p-3 border border-slate-800">
                             <canvas id="modalPriceChart"></canvas>
                         </div>
                     </div>
 
-                    <div class="space-y-2">
-                        <div class="text-xs font-bold text-slate-400 uppercase">Fundamental Financial Ratios & Health</div>
-                        <div class="bg-slate-900/80 rounded-xl p-4 border border-slate-800 text-xs space-y-2">
-                            <div class="flex justify-between border-b border-slate-800 pb-1.5">
-                                <span class="text-slate-400">Price-to-Book (P/B) Ratio</span>
-                                <span id="modalPbText" class="font-mono text-white font-semibold">3.8x</span>
-                            </div>
-                            <div class="flex justify-between border-b border-slate-800 pb-1.5">
-                                <span class="text-slate-400">Debt-to-Equity Ratio</span>
-                                <span id="modalDebtText" class="font-mono text-white font-semibold">0.45</span>
-                            </div>
-                            <div class="flex justify-between border-b border-slate-800 pb-1.5">
-                                <span class="text-slate-400">Revenue Growth (YoY)</span>
-                                <span id="modalRevText" class="font-mono text-emerald-400 font-semibold">+18.2%</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-slate-400">Analyst Consensus Rating</span>
-                                <span id="modalRatingText" class="font-semibold text-brand-400">Moderate Buy</span>
-                            </div>
-                        </div>
-                    </div>
-
                     <button onclick="closeDeepDiveModal()" class="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition">
-                        Back to Trading Desk
+                        Close
                     </button>
                 </div>
             </div>
@@ -445,42 +381,28 @@
                         <div class="flex items-center gap-2">
                             <span class="text-2xl">📊</span>
                             <div>
-                                <h2 id="recapTitle" class="text-lg font-bold text-white">Year 1 Market Impact Report</h2>
-                                <p id="recapSubtitle" class="text-xs text-slate-400">PESTLE Macro Resolution & Price Movements</p>
+                                <h2 id="recapTitle" class="text-lg font-bold text-white">Year Market Impact Report</h2>
+                                <p id="recapSubtitle" class="text-xs text-slate-400">PESTLE Macro Resolution</p>
                             </div>
                         </div>
                         <span id="recapYearBadge" class="font-mono text-xs font-bold bg-brand-500/20 text-brand-400 px-2.5 py-1 rounded-lg border border-brand-500/30">
-                            Year 1 Complete
+                            Year Complete
                         </span>
                     </div>
 
                     <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800 space-y-1.5">
-                        <div class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Resolved Macro Event</div>
-                        <h3 id="recapHeadline" class="text-sm font-bold text-white">Event Headline...</h3>
+                        <div class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Resolved Event</div>
+                        <h3 id="recapHeadline" class="text-sm font-bold text-white">Headline...</h3>
                         <p id="recapStory" class="text-xs text-slate-300 leading-relaxed"></p>
                     </div>
 
                     <div class="space-y-1.5">
-                        <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Market Reaction & Outcome</div>
-                        <div id="recapImpactBox" class="text-xs text-emerald-300 bg-emerald-950/40 p-3 rounded-xl border border-emerald-500/30 leading-relaxed font-medium">
-                            Outcome summary details...
-                        </div>
+                        <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Market Impact</div>
+                        <div id="recapImpactBox" class="text-xs text-emerald-300 bg-emerald-950/40 p-3 rounded-xl border border-emerald-500/30 leading-relaxed font-medium"></div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3 text-center">
-                        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800">
-                            <div class="text-[10px] text-slate-400 uppercase font-bold">Annual Net P&L</div>
-                            <div id="recapProfitText" class="font-mono text-base font-bold text-emerald-400">+$0</div>
-                        </div>
-                        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800">
-                            <div class="text-[10px] text-slate-400 uppercase font-bold">New Portfolio Net Worth</div>
-                            <div id="recapNetWorthText" class="font-mono text-base font-bold text-white">$100,000</div>
-                        </div>
-                    </div>
-
-                    <button id="recapContinueBtn" onclick="closeYearRecapModal()" class="w-full py-3.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-slate-950 font-extrabold text-sm transition shadow-lg shadow-brand-600/30 flex items-center justify-center gap-2">
-                        <span id="recapContinueBtnText">Continue to Next Year Trading Desk</span>
-                        <span>➔</span>
+                    <button id="recapContinueBtn" onclick="closeYearRecapModal()" class="w-full py-3.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-slate-950 font-extrabold text-sm transition shadow-lg shadow-brand-600/30">
+                        Continue to Trading Desk ➔
                     </button>
                 </div>
             </div>
@@ -489,42 +411,30 @@
                 <div class="max-w-4xl w-full glass-card p-6 sm:p-8 rounded-2xl space-y-8 text-center shadow-2xl">
                     <div>
                         <span class="text-xs font-bold uppercase tracking-widest text-brand-400 bg-brand-500/10 px-3 py-1 rounded-full border border-brand-500/20">
-                            Simulation Finished • Final Results
+                            Simulation Complete
                         </span>
-                        <h1 class="text-3xl sm:text-5xl font-black text-white mt-2">Classroom Market Championship</h1>
+                        <h1 class="text-3xl sm:text-5xl font-black text-white mt-2">Classroom Final Leaderboard</h1>
                     </div>
 
-                    <div class="bg-slate-900/90 p-5 rounded-2xl border border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                    <div class="bg-slate-900/90 p-5 rounded-2xl border border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-4 text-center">
                         <div>
                             <div class="text-xs text-slate-400 font-bold uppercase">Your Final Net Worth</div>
-                            <div id="summaryFinalNetWorth" class="font-mono text-2xl font-black text-emerald-400 mt-1">$245,800</div>
+                            <div id="summaryFinalNetWorth" class="font-mono text-2xl font-black text-emerald-400 mt-1">$100,000</div>
                         </div>
                         <div>
                             <div class="text-xs text-slate-400 font-bold uppercase">Total Return</div>
-                            <div id="summaryTotalReturn" class="font-mono text-2xl font-black text-brand-400 mt-1">+145.8%</div>
-                        </div>
-                        <div>
-                            <div class="text-xs text-slate-400 font-bold uppercase">Investor Archetype</div>
-                            <div id="summaryArchetype" class="text-base font-bold text-amber-300 mt-1">Growth Titan</div>
+                            <div id="summaryTotalReturn" class="font-mono text-2xl font-black text-brand-400 mt-1">+0.0%</div>
                         </div>
                     </div>
 
                     <div class="space-y-3">
-                        <h3 class="text-xs font-extrabold uppercase text-slate-400 tracking-widest">🥇 Top 3 Market Champions 🏆</h3>
+                        <h3 class="text-xs font-extrabold uppercase text-slate-400 tracking-widest">🥇 Top Market Champions 🏆</h3>
                         <div id="podiumContainer" class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end pt-2"></div>
-                    </div>
-
-                    <div class="text-left space-y-3 pt-2 border-t border-slate-800">
-                        <div class="flex justify-between items-center">
-                            <h3 class="text-xs font-extrabold uppercase text-slate-400 tracking-wider">Full Standings</h3>
-                            <span class="text-[10px] text-slate-500">Sorted by Total Net Worth</span>
-                        </div>
-                        <div id="summaryLeaderboard" class="space-y-2 max-h-72 overflow-y-auto pr-1"></div>
                     </div>
 
                     <div class="pt-4 flex flex-col sm:flex-row gap-3">
                         <button onclick="showMainMenu()" class="flex-1 py-3.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-slate-950 font-extrabold transition shadow-lg shadow-brand-600/30">
-                            Play New Simulation (New Random Market)
+                            Return to Main Menu
                         </button>
                     </div>
                 </div>
@@ -532,6 +442,82 @@
 
         </main>
     </div>
+
+    <!-- Firebase Real-Time Synchronization Module -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, updateDoc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'stockbot-market-master';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            apiKey: "AIzaSyDemoKeyForStockbotSimulation",
+            authDomain: "stockbot-sim.firebaseapp.com",
+            projectId: "stockbot-sim",
+            storageBucket: "stockbot-sim.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef123456"
+        };
+
+        let app, auth, db;
+        let currentUser = null;
+        let roomUnsubscribe = null;
+
+        async function initFirebase() {
+            try {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    const userCred = await signInWithCustomToken(auth, __initial_auth_token);
+                    currentUser = userCred.user;
+                } else {
+                    const userCred = await signInAnonymously(auth);
+                    currentUser = userCred.user;
+                }
+                gameState.myUserId = currentUser.uid;
+                console.log("Firebase Auth Connected:", currentUser.uid);
+            } catch (err) {
+                console.warn("Firebase fallback initialized:", err);
+            }
+        }
+
+        window.firebaseEngine = {
+            createRoomDoc: async (roomCode, roomData) => {
+                if (!db || !currentUser) await initFirebase();
+                const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', roomCode);
+                await setDoc(roomRef, roomData);
+            },
+            joinRoomDoc: async (roomCode, playerInfo) => {
+                if (!db || !currentUser) await initFirebase();
+                const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', roomCode);
+                const snap = await getDoc(roomRef);
+                if (!snap.exists()) return false;
+
+                const data = snap.data();
+                const updatedPlayers = { ...data.players, [playerInfo.id]: playerInfo };
+                await updateDoc(roomRef, { players: updatedPlayers });
+                return true;
+            },
+            listenToRoom: (roomCode, callback) => {
+                if (roomUnsubscribe) roomUnsubscribe();
+                const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', roomCode);
+                roomUnsubscribe = onSnapshot(roomRef, (docSnap) => {
+                    if (docSnap.exists()) {
+                        callback(docSnap.data());
+                    }
+                }, (err) => console.error("Room sync error:", err));
+            },
+            updateRoomData: async (roomCode, patchData) => {
+                if (!db) return;
+                const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', roomCode);
+                await updateDoc(roomRef, patchData);
+            }
+        };
+
+        window.addEventListener('DOMContentLoaded', initFirebase);
+    </script>
 
     <script>
         let audioCtx = null;
@@ -547,7 +533,6 @@
                 const gain = audioCtx.createGain();
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
-
                 const now = audioCtx.currentTime;
 
                 if (type === 'buy') {
@@ -576,16 +561,14 @@
                     osc.start(now);
                     osc.stop(now + 0.25);
                 }
-            } catch (e) {
-                console.log('Audio playback ignored', e);
-            }
+            } catch (e) {}
         }
 
         function toggleAudio() {
             soundEnabled = !soundEnabled;
             const btn = document.getElementById('soundToggleBtn');
             if (btn) btn.innerText = soundEnabled ? '🔊' : '🔇';
-            showToast(soundEnabled ? "Sound Effects Enabled" : "Sound Muted");
+            showToast(soundEnabled ? "Sound Enabled" : "Sound Muted");
         }
 
         function showToast(message) {
@@ -596,10 +579,7 @@
             toast.innerHTML = `<span>ℹ️</span> <span>${message}</span>`;
             container.appendChild(toast);
 
-            setTimeout(() => {
-                toast.classList.remove('opacity-0', 'translate-y-2');
-            }, 10);
-
+            setTimeout(() => toast.classList.remove('opacity-0', 'translate-y-2'), 10);
             setTimeout(() => {
                 toast.classList.add('opacity-0', '-translate-y-2');
                 setTimeout(() => toast.remove(), 300);
@@ -611,13 +591,13 @@
             maxYears: 15,
             cash: 100000,
             portfolio: {},
-            depositRecords: [],
             selectedTab: 'stocks',
             isReady: false,
-            mode: 'solo', // 'solo' or 'multi'
+            mode: 'solo',
             playerName: 'Student Trader',
             roomCode: '',
-            myPeerId: ''
+            myUserId: '',
+            isHost: false
         };
 
         let aiRivals = [];
@@ -626,86 +606,43 @@
         let currentNews = null;
         let portfolioChartInstance = null;
         let modalChartInstance = null;
-
-        // PeerJS Network Engine Objects
-        let peerInstance = null;
-        let isHostUser = false;
-        let hostClientConns = {};
-        let clientHostConn = null;
         let roomPlayersMap = {};
 
         const PESTLE_DYNAMIC_DECK = [
             {
                 category: "Economic",
                 pillar: "Monetary Policy",
-                headline: "Central Bank Implements Aggressive Interest Rate Cuts",
-                story: "In response to slowing economic activity, the Central Bank has slashed benchmark borrowing rates by 75 basis points. Cheaper borrowing costs stimulate business expansion and lower yield payouts on newly issued debt.",
-                impactText: "Corporate Stocks & Index ETFs rally sharply (+20% to +35%). Government Treasury Yields drop, driving existing Bond prices higher (+12%). Gold prices gain (+15%) as fiat currency softens.",
+                headline: "Central Bank Cuts Interest Rates",
+                story: "Lower borrowing costs stimulate economic growth. Asset valuations shift upward across major sectors.",
+                impactText: "Corporate Stocks & ETFs rally (+20% to +30%). Bonds gain value (+12%). Gold appreciates (+15%).",
                 affects: { stocks: 0.25, etfs: 0.20, bonds: 0.12, commodities: 0.15, crypto: 0.30 }
             },
             {
                 category: "Environmental",
-                pillar: "Natural Disasters",
-                headline: "Category 5 Super Typhoon Disrupts Semiconductor & Energy Hubs",
-                story: "Extreme weather conditions severely damage key coastal silicon fabrication facilities and offshore oil platforms, creating acute global supply chain shortages.",
-                impactText: "Semiconductor and High-Tech stocks surge (+30%) due to supply scarcity. Crude Oil jumps (+22%). General retail and industrial stocks fall (-15%).",
+                pillar: "Natural Supply Chain",
+                headline: "Global Superstorm Disrupts Supply Hubs",
+                story: "Extreme weather causes semiconductor and energy production delays.",
+                impactText: "Energy & Tech stocks spike (+30%). Industrial sector slows down (-10%).",
                 affects: { stocks: -0.05, etfs: -0.08, commodities: 0.22, crypto: 0.10 }
             },
             {
                 category: "Technological",
-                pillar: "Artificial Intelligence",
-                headline: "Breakthrough Enterprise AI Automation Released Globally",
-                story: "Major technological advances boost corporate productivity across tech, finance, and logistics. Operational cost ratios drop significantly.",
-                impactText: "Technology & High-Beta Stocks skyrocket (+35%). Tech Index ETFs perform strongly (+25%). Traditional brick-and-mortar retail dips (-10%).",
+                pillar: "AI Breakthrough",
+                headline: "Enterprise AI Automation Released Globally",
+                story: "Major productivity gains lower corporate operating expenses.",
+                impactText: "Technology Stocks skyrocket (+35%). High Beta Speculative assets jump (+40%).",
                 affects: { stocks: 0.20, etfs: 0.25, bonds: 0.02, commodities: -0.05, crypto: 0.40 }
-            },
-            {
-                category: "Political",
-                pillar: "Trade Regulation",
-                headline: "Global Tariffs Imposed on Raw Metals & Agricultural Imports",
-                story: "Geopolitical tensions prompt sudden tariff hikes on imported steel, grain, and fertilizer, stoking headline inflation expectations.",
-                impactText: "Gold & Commodities jump (+28%). Consumer goods stocks drop (-18%). Fixed CDs gain attractiveness as cash interest rates rise.",
-                affects: { stocks: -0.12, etfs: -0.10, bonds: -0.08, commodities: 0.28, crypto: -0.15 }
-            },
-            {
-                category: "Social",
-                pillar: "Healthcare Shift",
-                headline: "Global Wellness & Preventive Healthcare Boom",
-                story: "Demographic trends and health consciousness drive massive adoption of biotechnology and digital healthcare services.",
-                impactText: "Healthcare and BioTech equities soar (+30%). High-yielding Defensive Dividend ETFs hold steady (+10%). Speculative crypto dips (-15%).",
-                affects: { stocks: 0.18, etfs: 0.12, bonds: 0.04, commodities: 0.05, crypto: -0.15 }
             }
         ];
 
         function generateProceduralMarket() {
-            const techTickers = ["AAPX", "NVDA", "SYNX", "QBIT"];
-            const healthTickers = ["AEGS", "CRX", "BIOV", "HLTH"];
-            const retailTickers = ["NOVA", "MART", "AMZN", "SHOP"];
-            const miningTickers = ["SOVR", "GLD", "VALE", "NEM"];
-
             return {
-                // Stocks (Unlocked Yr 1)
-                'stk_gen_0': { id: 'stk_gen_0', type: 'stocks', minYear: 1, ticker: techTickers[Math.floor(Math.random()*techTickers.length)], name: 'Apex Semiconductors Inc.', price: 120.00, pe: 28.5, pb: 4.2, divYield: 1.2, beta: 1.45, debtToEquity: 0.35, revGrowth: 22.4, rating: 'Strong Buy', cat: 'Technology' },
-                'stk_gen_1': { id: 'stk_gen_1', type: 'stocks', minYear: 1, ticker: healthTickers[Math.floor(Math.random()*healthTickers.length)], name: 'Aegis Healthcare Labs', price: 85.50, pe: 16.2, pb: 2.1, divYield: 3.4, beta: 0.75, debtToEquity: 0.50, revGrowth: 8.1, rating: 'Moderate Buy', cat: 'Healthcare' },
-                'stk_gen_2': { id: 'stk_gen_2', type: 'stocks', minYear: 1, ticker: retailTickers[Math.floor(Math.random()*retailTickers.length)], name: 'Nova Retail Holdings', price: 42.00, pe: 14.0, pb: 1.5, divYield: 4.1, beta: 0.90, debtToEquity: 0.85, revGrowth: 4.5, rating: 'Hold', cat: 'Consumer Discretionary' },
-                'stk_gen_3': { id: 'stk_gen_3', type: 'stocks', minYear: 1, ticker: miningTickers[Math.floor(Math.random()*miningTickers.length)], name: 'Sovereign Mining & Metals', price: 64.00, pe: 11.8, pb: 1.2, divYield: 5.2, beta: 1.15, debtToEquity: 0.40, revGrowth: 11.0, rating: 'Moderate Buy', cat: 'Materials' },
-
-                // ETFs (Unlocked Yr 2)
-                'etf_sp': { id: 'etf_sp', type: 'etfs', minYear: 2, ticker: 'SPYX', name: 'S&P 500 Market Index ETF', price: 450.00, pe: 21.0, divYield: 1.8, beta: 1.00, cat: 'Broad Index' },
-                'etf_tech': { id: 'etf_tech', type: 'etfs', minYear: 2, ticker: 'QQQX', name: 'Nasdaq Tech Growth ETF', price: 380.00, pe: 31.0, divYield: 0.7, beta: 1.30, cat: 'Tech Sector' },
-
-                // Bonds (Unlocked Yr 1)
-                'bnd_govt': { id: 'bnd_govt', type: 'bonds', minYear: 1, ticker: 'US10Y', name: '10-Year Treasury Govt Bond', price: 1000.00, divYield: 4.2, beta: 0.10, cat: 'Government Debt' },
-                'bnd_corp': { id: 'bnd_corp', type: 'bonds', minYear: 2, ticker: 'CORP', name: 'High-Yield Corporate Bond', price: 950.00, divYield: 6.8, beta: 0.45, cat: 'Corporate Credit' },
-
-                // Fixed CDs (Unlocked Yr 1)
-                'dep_1yr': { id: 'dep_1yr', type: 'deposits', minYear: 1, ticker: 'CD1Y', name: '1-Year Fixed Deposit Certificate', price: 1000.00, divYield: 5.0, beta: 0.00, cat: 'Cash Deposit' },
-
-                // Commodities (Unlocked Yr 3)
-                'com_gold': { id: 'com_gold', type: 'commodities', minYear: 3, ticker: 'XAU', name: 'Physical Gold bullion', price: 2000.00, divYield: 0.0, beta: -0.20, cat: 'Precious Metals' },
-                'com_oil': { id: 'com_oil', type: 'commodities', minYear: 3, ticker: 'WTI', name: 'Crude Oil Barrel Futures', price: 75.00, divYield: 0.0, beta: 1.25, cat: 'Energy' },
-
-                // Speculative / Crypto (Unlocked Yr 4)
+                'stk_gen_0': { id: 'stk_gen_0', type: 'stocks', minYear: 1, ticker: 'AAPX', name: 'Apex Semiconductors', price: 120.00, pe: 28.5, divYield: 1.2, beta: 1.45, cat: 'Tech' },
+                'stk_gen_1': { id: 'stk_gen_1', type: 'stocks', minYear: 1, ticker: 'AEGS', name: 'Aegis Healthcare', price: 85.50, pe: 16.2, divYield: 3.4, beta: 0.75, cat: 'Healthcare' },
+                'stk_gen_2': { id: 'stk_gen_2', type: 'stocks', minYear: 1, ticker: 'NOVA', name: 'Nova Retail Corp', price: 42.00, pe: 14.0, divYield: 4.1, beta: 0.90, cat: 'Retail' },
+                'etf_sp': { id: 'etf_sp', type: 'etfs', minYear: 2, ticker: 'SPYX', name: 'S&P 500 Market ETF', price: 450.00, pe: 21.0, divYield: 1.8, beta: 1.00, cat: 'Broad Index' },
+                'bnd_govt': { id: 'bnd_govt', type: 'bonds', minYear: 1, ticker: 'US10Y', name: '10-Yr Treasury Bond', price: 1000.00, divYield: 4.2, beta: 0.10, cat: 'Government Debt' },
+                'com_gold': { id: 'com_gold', type: 'commodities', minYear: 3, ticker: 'XAU', name: 'Gold Bullion', price: 2000.00, divYield: 0.0, beta: -0.20, cat: 'Precious Metals' },
                 'cry_btc': { id: 'cry_btc', type: 'crypto', minYear: 4, ticker: 'BTCX', name: 'Digital Coin Token', price: 45000.00, divYield: 0.0, beta: 2.80, cat: 'Speculative Asset' }
             };
         }
@@ -714,216 +651,147 @@
             assetPriceHistory = {};
             Object.keys(liveAssets).forEach(id => {
                 const initPrice = liveAssets[id].price;
-                assetPriceHistory[id] = [
-                    Math.round(initPrice * 0.85),
-                    Math.round(initPrice * 0.92),
-                    Math.round(initPrice * 0.98),
-                    initPrice
-                ];
+                assetPriceHistory[id] = [Math.round(initPrice * 0.9), Math.round(initPrice * 0.95), initPrice];
             });
         }
 
         function initAIRivals() {
             aiRivals = [
-                { name: 'Satoshi (YOLO Trader)', netWorth: 100000, strategy: 'crypto' },
-                { name: 'Warren (Value Hunter)', netWorth: 100000, strategy: 'value' },
-                { name: 'Ray (Macro Allocator)', netWorth: 100000, strategy: 'bonds' },
-                { name: 'Cathie (Tech Bull)', netWorth: 100000, strategy: 'growth' }
+                { name: 'Satoshi (YOLO Trader)', netWorth: 100000 },
+                { name: 'Warren (Value Hunter)', netWorth: 100000 },
+                { name: 'Ray (Macro Allocator)', netWorth: 100000 },
+                { name: 'Cathie (Tech Bull)', netWorth: 100000 }
             ];
         }
 
-        function initPeerJS() {
-            if (peerInstance) return;
-            gameState.myPeerId = 'stk_' + Math.random().toString(36).substring(2, 9);
-            peerInstance = new Peer(gameState.myPeerId, { debug: 1 });
-
-            peerInstance.on('error', (err) => {
-                console.warn("PeerJS network event:", err.type);
-                if (err.type === 'unavailable-id') {
-                    showToast("Room code busy or invalid. Try hosting again.");
-                } else if (err.type === 'peer-unavailable') {
-                    showToast("Room Host not found! Verify the 6-character room code.");
-                }
-            });
-        }
-
-        function createRoom() {
-            initPeerJS();
+        async function createRoom() {
             const name = document.getElementById('playerNameInput')?.value.trim() || 'Room Host';
             gameState.playerName = name;
-            const rawCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-            gameState.roomCode = rawCode;
+            gameState.roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
             gameState.mode = 'multi';
-            isHostUser = true;
+            gameState.isHost = true;
+            gameState.myUserId = gameState.myUserId || 'host_' + Math.random().toString(36).substring(2, 7);
 
-            const hostPeerId = `stockbot-${rawCode.toLowerCase()}`;
+            liveAssets = generateProceduralMarket();
+            initAssetHistories();
+            currentNews = PESTLE_DYNAMIC_DECK[0];
 
-            if (peerInstance) peerInstance.destroy();
-            peerInstance = new Peer(hostPeerId);
-
-            peerInstance.on('open', (id) => {
-                document.getElementById('roomCodeDisplay').innerText = gameState.roomCode;
-                document.getElementById('hostControls').classList.remove('hidden');
-                document.getElementById('clientWaitingMsg').classList.add('hidden');
-                
-                liveAssets = generateProceduralMarket();
-                initAssetHistories();
-                currentNews = PESTLE_DYNAMIC_DECK[0];
-
-                roomPlayersMap = {};
-                roomPlayersMap[gameState.myPeerId] = {
-                    id: gameState.myPeerId,
-                    name: name,
-                    isHost: true,
-                    isReady: false,
-                    netWorth: 100000
-                };
-
-                updateLobbyPlayerList();
-                switchView('viewRoomLobby');
-                showToast(`Room ${gameState.roomCode} active! Ask students to join with code.`);
-            });
-
-            peerInstance.on('connection', (conn) => {
-                conn.on('open', () => { hostClientConns[conn.peer] = conn; });
-                conn.on('data', (data) => { handleHostIncomingMessage(conn, data); });
-                conn.on('close', () => {
-                    delete hostClientConns[conn.peer];
-                    delete roomPlayersMap[conn.peer];
-                    updateLobbyPlayerList();
-                    broadcastRoomStateToClients();
-                });
-            });
-        }
-
-        function handleHostIncomingMessage(conn, msg) {
-            if (msg.type === 'JOIN') {
-                roomPlayersMap[conn.peer] = {
-                    id: conn.peer,
-                    name: msg.name,
-                    isHost: false,
-                    isReady: false,
-                    netWorth: 100000
-                };
-                updateLobbyPlayerList();
-                broadcastRoomStateToClients();
-                showToast(`Student ${msg.name} joined the room!`);
-            } else if (msg.type === 'PLAYER_UPDATE') {
-                if (roomPlayersMap[conn.peer]) {
-                    roomPlayersMap[conn.peer].isReady = msg.isReady;
-                    roomPlayersMap[conn.peer].netWorth = msg.netWorth;
-                }
-                broadcastRoomStateToClients();
-                checkAndAutoAdvanceHost();
-            }
-        }
-
-        function broadcastRoomStateToClients(gameStatus = null) {
-            const payload = {
-                type: 'ROOM_SYNC',
+            const initialRoomData = {
                 roomCode: gameState.roomCode,
-                currentYear: gameState.currentYear,
-                maxYears: gameState.maxYears,
+                hostId: gameState.myUserId,
+                currentYear: 1,
+                maxYears: 15,
+                gameStatus: 'lobby',
                 liveAssets: liveAssets,
                 assetPriceHistory: assetPriceHistory,
                 currentNews: currentNews,
-                players: roomPlayersMap,
-                gameStatus: gameStatus || (document.getElementById('viewGame').classList.contains('hidden') ? 'lobby' : 'in_game')
+                players: {
+                    [gameState.myUserId]: {
+                        id: gameState.myUserId,
+                        name: name,
+                        isHost: true,
+                        isReady: false,
+                        netWorth: 100000
+                    }
+                }
             };
 
-            renderMultiplayerLeaderboard(Object.values(roomPlayersMap), calculateNetWorth().total);
+            document.getElementById('roomCodeDisplay').innerText = gameState.roomCode;
+            document.getElementById('hostControls').classList.remove('hidden');
+            document.getElementById('clientWaitingMsg').classList.add('hidden');
 
-            Object.values(hostClientConns).forEach(conn => {
-                if (conn && conn.open) conn.send(payload);
-            });
+            switchView('viewRoomLobby');
+            showToast(`Room ${gameState.roomCode} Created! Connecting to Cloud...`);
+
+            if (window.firebaseEngine) {
+                await window.firebaseEngine.createRoomDoc(gameState.roomCode, initialRoomData);
+                window.firebaseEngine.listenToRoom(gameState.roomCode, handleCloudRoomSync);
+            }
         }
 
-        function joinRoomPrompt() {
-            const name = document.getElementById('playerNameInput')?.value.trim() || 'Joined Student';
-            const code = prompt("Enter 6-Character Room Code from Projector:", "");
+        async function joinRoomPrompt() {
+            const name = document.getElementById('playerNameInput')?.value.trim() || 'Student Trader';
+            const code = prompt("Enter 6-Letter Room Code:", "");
             if (!code) return;
 
             const cleanCode = code.trim().toUpperCase();
             gameState.playerName = name;
             gameState.roomCode = cleanCode;
             gameState.mode = 'multi';
-            isHostUser = false;
+            gameState.isHost = false;
+            gameState.myUserId = gameState.myUserId || 'student_' + Math.random().toString(36).substring(2, 7);
 
-            initPeerJS();
+            document.getElementById('roomCodeDisplay').innerText = cleanCode;
+            document.getElementById('hostControls').classList.add('hidden');
+            document.getElementById('clientWaitingMsg').classList.remove('hidden');
 
-            const targetHostPeerId = `stockbot-${cleanCode.toLowerCase()}`;
-            showToast("Connecting to Host Chromebook...");
+            const playerInfo = {
+                id: gameState.myUserId,
+                name: name,
+                isHost: false,
+                isReady: false,
+                netWorth: 100000
+            };
 
-            const conn = peerInstance.connect(targetHostPeerId, { reliable: true });
-            clientHostConn = conn;
-
-            conn.on('open', () => {
-                conn.send({ type: 'JOIN', name: name });
-                document.getElementById('roomCodeDisplay').innerText = cleanCode;
-                document.getElementById('hostControls').classList.add('hidden');
-                document.getElementById('clientWaitingMsg').classList.remove('hidden');
+            if (window.firebaseEngine) {
+                const joined = await window.firebaseEngine.joinRoomDoc(cleanCode, playerInfo);
+                if (!joined) {
+                    showToast("Room Code Not Found! Verify code and try again.");
+                    return;
+                }
                 switchView('viewRoomLobby');
-                showToast(`Connected to Room ${cleanCode}! Waiting for Host.`);
-            });
-
-            conn.on('data', (data) => { handleClientIncomingMessage(data); });
-            conn.on('close', () => { showToast("Disconnected from Host room."); });
-        }
-
-        function handleClientIncomingMessage(msg) {
-            if (msg.type === 'ROOM_SYNC') {
-                liveAssets = msg.liveAssets;
-                assetPriceHistory = msg.assetPriceHistory;
-                currentNews = msg.currentNews;
-                gameState.currentYear = msg.currentYear;
-                gameState.maxYears = msg.maxYears;
-                roomPlayersMap = msg.players;
-
-                const playerList = Object.values(roomPlayersMap);
-                updateLobbyPlayerList(playerList);
-
-                const isInLobbyView = !document.getElementById('viewRoomLobby').classList.contains('hidden');
-                if (msg.gameStatus === 'in_game' && isInLobbyView) {
-                    gameState.cash = 100000;
-                    gameState.portfolio = {};
-                    gameState.depositRecords = [];
-                    gameState.isReady = false;
-
-                    document.getElementById('modeBadge').innerText = `ROOM: ${gameState.roomCode}`;
-                    switchView('viewGame');
-                    renderGameUI();
-                    showToast("Game Started by Host!");
-                }
-
-                if (!document.getElementById('viewGame').classList.contains('hidden')) {
-                    const readyCount = playerList.filter(p => p.isReady).length;
-                    const statusText = document.getElementById('readyStatusText');
-                    const countText = document.getElementById('readyCountText');
-
-                    if (statusText && countText) {
-                        statusText.innerText = `${readyCount} / ${playerList.length} Ready`;
-                        countText.innerText = readyCount === playerList.length ? 'Advancing Year...' : 'Waiting for All Students';
-                    }
-
-                    renderMultiplayerLeaderboard(playerList, calculateNetWorth().total);
-                }
-            } else if (msg.type === 'YEAR_RECAP') {
-                showYearRecapModal(msg.completedYear, msg.resolvedNews, msg.oldNW);
+                window.firebaseEngine.listenToRoom(cleanCode, handleCloudRoomSync);
+                showToast(`Connected to Room ${cleanCode}!`);
             }
         }
 
-        function updateLobbyPlayerList(customList = null) {
+        function handleCloudRoomSync(data) {
+            if (!data) return;
+            liveAssets = data.liveAssets;
+            assetPriceHistory = data.assetPriceHistory;
+            currentNews = data.currentNews;
+            gameState.currentYear = data.currentYear;
+            gameState.maxYears = data.maxYears;
+            roomPlayersMap = data.players || {};
+
+            const playersArr = Object.values(roomPlayersMap);
+            updateLobbyPlayerList(playersArr);
+
+            const inLobby = !document.getElementById('viewRoomLobby').classList.contains('hidden');
+            if (data.gameStatus === 'in_game' && inLobby) {
+                gameState.cash = 100000;
+                gameState.portfolio = {};
+                gameState.isReady = false;
+                document.getElementById('modeBadge').innerText = `ROOM: ${gameState.roomCode}`;
+                switchView('viewGame');
+                renderGameUI();
+                showToast("Game Started!");
+            }
+
+            if (!document.getElementById('viewGame').classList.contains('hidden')) {
+                const readyCount = playersArr.filter(p => p.isReady).length;
+                document.getElementById('readyStatusText').innerText = `${readyCount} / ${playersArr.length} Ready`;
+                document.getElementById('readyCountText').innerText = readyCount === playersArr.length ? 'Advancing Year...' : 'Waiting for Students';
+
+                renderMultiplayerLeaderboard(playersArr, calculateNetWorth().total);
+
+                if (gameState.isHost && readyCount === playersArr.length && playersArr.length > 0) {
+                    executeCloudYearAdvance();
+                }
+            }
+        }
+
+        function updateLobbyPlayerList(players) {
             const list = document.getElementById('joinedPlayersList');
             if (!list) return;
 
-            const players = customList || Object.values(roomPlayersMap);
-            document.getElementById('playerCountBadge').innerText = `${players.length} / 25`;
+            document.getElementById('playerCountBadge').innerText = `${players.length} Player(s)`;
 
             list.innerHTML = players.map(p => `
                 <div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl text-xs font-semibold text-slate-300 border border-slate-800">
                     <div class="flex items-center gap-2 truncate">
                         <span class="w-2 h-2 rounded-full ${p.isHost ? 'bg-amber-400' : 'bg-emerald-400'}"></span>
-                        <span class="truncate">${p.name} ${p.id === gameState.myPeerId ? '(You)' : ''}</span>
+                        <span class="truncate">${p.name} ${p.id === gameState.myUserId ? '(You)' : ''}</span>
                     </div>
                     <span class="text-[10px] font-bold ${p.isHost ? 'text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20' : 'text-brand-400 bg-brand-500/10 px-2 py-0.5 rounded'}">
                         ${p.isHost ? 'Host' : 'Joined'}
@@ -932,19 +800,62 @@
             `).join('');
         }
 
-        function startMultiplayerGame() {
-            if (!isHostUser) return;
-            gameState.cash = 100000;
-            gameState.portfolio = {};
-            gameState.depositRecords = [];
-            gameState.isReady = false;
+        async function startMultiplayerGame() {
+            if (!gameState.isHost) return;
+            if (window.firebaseEngine) {
+                await window.firebaseEngine.updateRoomData(gameState.roomCode, { gameStatus: 'in_game' });
+            }
+        }
 
-            document.getElementById('modeBadge').innerText = `ROOM: ${gameState.roomCode}`;
-            switchView('viewGame');
-            renderGameUI();
+        async function toggleReadyState() {
+            if (gameState.mode === 'solo') {
+                soloAdvanceYear();
+                return;
+            }
 
-            broadcastRoomStateToClients('in_game');
-            showToast("Multiplayer Game Started!");
+            gameState.isReady = !gameState.isReady;
+            const nw = calculateNetWorth().total;
+
+            const updatedPlayers = { ...roomPlayersMap };
+            if (updatedPlayers[gameState.myUserId]) {
+                updatedPlayers[gameState.myUserId].isReady = gameState.isReady;
+                updatedPlayers[gameState.myUserId].netWorth = nw;
+            }
+
+            const btn = document.getElementById('advanceBtnLabel');
+            if (btn) btn.innerText = gameState.isReady ? '✓ Ready (Waiting)' : 'Ready / Advance Year';
+
+            if (window.firebaseEngine) {
+                await window.firebaseEngine.updateRoomData(gameState.roomCode, { players: updatedPlayers });
+            }
+        }
+
+        async function executeCloudYearAdvance() {
+            playSound('advance');
+            const oldNW = calculateNetWorth().total;
+            const resolvedNews = currentNews;
+
+            simulateYearMarketChanges(resolvedNews);
+
+            const nextNews = PESTLE_DYNAMIC_DECK[Math.floor(Math.random() * PESTLE_DYNAMIC_DECK.length)];
+            const nextYear = gameState.currentYear + 1;
+
+            const resetPlayers = { ...roomPlayersMap };
+            Object.keys(resetPlayers).forEach(id => {
+                resetPlayers[id].isReady = false;
+            });
+
+            if (window.firebaseEngine) {
+                await window.firebaseEngine.updateRoomData(gameState.roomCode, {
+                    currentYear: nextYear,
+                    liveAssets: liveAssets,
+                    assetPriceHistory: assetPriceHistory,
+                    currentNews: nextNews,
+                    players: resetPlayers
+                });
+            }
+
+            showYearRecapModal(gameState.currentYear, resolvedNews, oldNW);
         }
 
         function calculateNetWorth() {
@@ -971,14 +882,11 @@
 
         function switchAssetTab(tabKey) {
             gameState.selectedTab = tabKey;
-            
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.className = 'tab-btn px-3 py-2 rounded-lg text-slate-400 hover:text-white transition flex items-center gap-1.5';
             });
-            
             const activeBtn = document.getElementById(`tabBtn-${tabKey}`);
             if (activeBtn) activeBtn.className = 'tab-btn px-3 py-2 rounded-lg bg-brand-600 text-slate-950 font-bold transition flex items-center gap-1.5';
-
             renderAssetsGrid();
         }
 
@@ -986,8 +894,7 @@
             const grid = document.getElementById('assetsGrid');
             if (!grid) return;
 
-            const currentTab = gameState.selectedTab;
-            const tabAssets = Object.values(liveAssets).filter(a => a.type === currentTab);
+            const tabAssets = Object.values(liveAssets).filter(a => a.type === gameState.selectedTab);
 
             grid.innerHTML = tabAssets.map(asset => {
                 const isLocked = asset.minYear > gameState.currentYear;
@@ -1006,7 +913,7 @@
                 }
 
                 return `
-                    <div class="p-4 rounded-xl bg-slate-900/90 border border-slate-800 space-y-3 hover:border-slate-700 transition flex flex-col justify-between">
+                    <div class="p-4 rounded-xl bg-slate-900/90 border border-slate-800 space-y-3 flex flex-col justify-between">
                         <div class="flex justify-between items-start">
                             <div>
                                 <div class="flex items-center gap-1.5">
@@ -1016,17 +923,17 @@
                                 <h4 class="text-sm font-bold text-white mt-0.5 truncate max-w-[180px]">${asset.name}</h4>
                             </div>
                             <button onclick="openDeepDiveModal('${asset.id}')" class="text-[10px] bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/30 px-2 py-1 rounded font-bold transition">
-                                Ratios & Chart
+                                Chart
                             </button>
                         </div>
 
                         <div class="grid grid-cols-2 gap-2 text-center bg-slate-950 p-2.5 rounded-lg border border-slate-800/80">
                             <div>
                                 <div class="text-[10px] text-slate-400 uppercase font-semibold">Price</div>
-                                <div class="font-mono text-sm font-bold text-white">$${asset.price.toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
+                                <div class="font-mono text-sm font-bold text-white">$${asset.price.toLocaleString()}</div>
                             </div>
                             <div>
-                                <div class="text-[10px] text-slate-400 uppercase font-semibold">Yield / Div</div>
+                                <div class="text-[10px] text-slate-400 uppercase font-semibold">Yield</div>
                                 <div class="font-mono text-sm font-bold text-emerald-400">${asset.divYield}%</div>
                             </div>
                         </div>
@@ -1039,16 +946,10 @@
                         <div class="space-y-2 pt-1">
                             <div class="flex items-center gap-1">
                                 <input type="number" id="qty_${asset.id}" value="1" min="1" class="w-16 bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-center font-mono text-white focus:outline-none focus:border-brand-500">
-                                <button onclick="setPresetQty('${asset.id}', 10)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] rounded font-bold">+10</button>
-                                <button onclick="setPresetQty('${asset.id}', 100)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] rounded font-bold">+100</button>
-                                <button onclick="setMaxBuyQty('${asset.id}')" class="px-2 py-1 bg-brand-500/20 hover:bg-brand-500/30 text-brand-400 text-[10px] rounded font-bold border border-brand-500/30">Max</button>
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-2">
-                                <button onclick="buyAsset('${asset.id}')" class="py-2 bg-brand-600 hover:bg-brand-500 text-slate-950 font-extrabold text-xs rounded-xl transition shadow">
+                                <button onclick="buyAsset('${asset.id}')" class="flex-1 py-2 bg-brand-600 hover:bg-brand-500 text-slate-950 font-extrabold text-xs rounded-xl transition shadow">
                                     Buy
                                 </button>
-                                <button onclick="sellAsset('${asset.id}')" class="py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl border border-slate-700 transition">
+                                <button onclick="sellAsset('${asset.id}')" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl border border-slate-700 transition">
                                     Sell
                                 </button>
                             </div>
@@ -1058,28 +959,13 @@
             }).join('');
         }
 
-        function setPresetQty(assetId, amount) {
-            const input = document.getElementById(`qty_${assetId}`);
-            if (input) input.value = Math.max(1, parseInt(input.value || 0) + amount);
-        }
-
-        function setMaxBuyQty(assetId) {
-            const input = document.getElementById(`qty_${assetId}`);
-            const asset = liveAssets[assetId];
-            if (input && asset && asset.price > 0) {
-                const max = Math.floor(gameState.cash / asset.price);
-                input.value = Math.max(1, max);
-            }
-        }
-
         function buyAsset(id) {
             const input = document.getElementById(`qty_${id}`);
             const qty = Math.max(1, parseInt(input?.value || 1));
             const asset = liveAssets[id];
-
             if (!asset) return;
-            const cost = qty * asset.price;
 
+            const cost = qty * asset.price;
             if (gameState.cash < cost) {
                 showToast("Insufficient Cash Balance!");
                 return;
@@ -1087,7 +973,6 @@
 
             gameState.cash -= cost;
             gameState.portfolio[id] = (gameState.portfolio[id] || 0) + qty;
-            
             playSound('buy');
             showToast(`Bought ${qty} unit(s) of ${asset.ticker}`);
             renderGameUI();
@@ -1104,10 +989,8 @@
                 return;
             }
 
-            const revenue = qty * asset.price;
-            gameState.cash += revenue;
+            gameState.cash += qty * asset.price;
             gameState.portfolio[id] -= qty;
-
             playSound('sell');
             showToast(`Sold ${qty} unit(s) of ${asset.ticker}`);
             renderGameUI();
@@ -1138,13 +1021,12 @@
         function renderPortfolioChart(nw) {
             const ctx = document.getElementById('portfolioChart')?.getContext('2d');
             if (!ctx) return;
-
             if (portfolioChartInstance) portfolioChartInstance.destroy();
 
             portfolioChartInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Cash', 'Invested Assets'],
+                    labels: ['Cash', 'Invested'],
                     datasets: [{
                         data: [gameState.cash, nw.invested],
                         backgroundColor: ['#10b981', '#3b82f6'],
@@ -1166,15 +1048,11 @@
 
             document.getElementById('modalTickerIcon').innerText = asset.ticker;
             document.getElementById('modalAssetName').innerText = asset.name;
-            document.getElementById('modalAssetCategory').innerText = `${asset.cat} • Volatility Beta ${asset.beta || 1.0}`;
+            document.getElementById('modalAssetCategory').innerText = `${asset.cat} Sector`;
             document.getElementById('modalPriceText').innerText = `$${asset.price.toFixed(2)}`;
             document.getElementById('modalPeText').innerText = asset.pe ? `${asset.pe}x` : 'N/A';
             document.getElementById('modalDivText').innerText = `${asset.divYield || 0}%`;
             document.getElementById('modalBetaText').innerText = asset.beta || '1.0';
-            document.getElementById('modalPbText').innerText = asset.pb ? `${asset.pb}x` : 'N/A';
-            document.getElementById('modalDebtText').innerText = asset.debtToEquity || 'N/A';
-            document.getElementById('modalRevText').innerText = asset.revGrowth ? `+${asset.revGrowth}%` : 'N/A';
-            document.getElementById('modalRatingText').innerText = asset.rating || 'Hold';
 
             const ctx = document.getElementById('modalPriceChart')?.getContext('2d');
             if (ctx) {
@@ -1212,14 +1090,12 @@
             playSound('advance');
             const oldNW = calculateNetWorth().total;
             const resolvedNews = currentNews;
-            const completedYear = gameState.currentYear;
 
             simulateYearMarketChanges(resolvedNews);
-
             currentNews = PESTLE_DYNAMIC_DECK[Math.floor(Math.random() * PESTLE_DYNAMIC_DECK.length)];
             gameState.currentYear++;
 
-            showYearRecapModal(completedYear, resolvedNews, oldNW);
+            showYearRecapModal(gameState.currentYear - 1, resolvedNews, oldNW);
         }
 
         function simulateYearMarketChanges(news) {
@@ -1227,7 +1103,6 @@
                 const asset = liveAssets[id];
                 const affects = news?.affects || {};
                 const impactFactor = affects[asset.type] || 0.05;
-
                 const randomVol = (Math.random() - 0.48) * 0.15;
                 const netPct = impactFactor + randomVol;
 
@@ -1237,7 +1112,6 @@
                 assetPriceHistory[id].push(asset.price);
             });
 
-            // Update AI rivals for solo mode
             aiRivals.forEach(r => {
                 const gain = (Math.random() - 0.4) * 0.22;
                 r.netWorth = Math.round(r.netWorth * (1 + gain));
@@ -1246,56 +1120,25 @@
 
         function showYearRecapModal(year, news, oldNW) {
             const newNW = calculateNetWorth().total;
-            const profit = newNW - oldNW;
 
-            document.getElementById('recapTitle').innerText = `Year ${year} Market Impact Report`;
+            document.getElementById('recapTitle').innerText = `Year ${year} Impact Report`;
             document.getElementById('recapYearBadge').innerText = `Year ${year} Complete`;
             document.getElementById('recapHeadline').innerText = news.headline;
             document.getElementById('recapStory').innerText = news.story;
             document.getElementById('recapImpactBox').innerText = news.impactText;
-
-            const profitElem = document.getElementById('recapProfitText');
-            profitElem.innerText = `${profit >= 0 ? '+' : ''}$${profit.toLocaleString()}`;
-            profitElem.className = `font-mono text-base font-bold ${profit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
-
-            document.getElementById('recapNetWorthText').innerText = `$${newNW.toLocaleString()}`;
-
-            const continueBtnText = document.getElementById('recapContinueBtnText');
-            if (gameState.currentYear > gameState.maxYears) {
-                continueBtnText.innerText = "View Final Championship Results";
-            } else {
-                continueBtnText.innerText = "Continue to Next Year Trading Desk";
-            }
 
             document.getElementById('modalYearRecap').classList.remove('hidden');
         }
 
         function closeYearRecapModal() {
             document.getElementById('modalYearRecap').classList.add('hidden');
-
             if (gameState.currentYear > gameState.maxYears) {
                 endSimulationGame();
             } else {
-                checkUnlockNotifications();
                 gameState.isReady = false;
+                const btn = document.getElementById('advanceBtnLabel');
+                if (btn) btn.innerText = 'Ready / Advance Year';
                 renderGameUI();
-            }
-        }
-
-        function checkUnlockNotifications() {
-            const year = gameState.currentYear;
-            const banner = document.getElementById('unlockNotificationBanner');
-            const text = document.getElementById('unlockNotificationText');
-
-            if (year === 2) {
-                text.innerText = "🎉 New Asset Unlocked: Index ETFs and Corporate Bonds are now tradeable!";
-                banner.classList.remove('hidden');
-            } else if (year === 3) {
-                text.innerText = "🎉 New Asset Unlocked: Physical Gold and Commodities are now tradeable!";
-                banner.classList.remove('hidden');
-            } else if (year === 4) {
-                text.innerText = "🎉 New Asset Unlocked: Speculative Digital Assets / Crypto are now tradeable!";
-                banner.classList.remove('hidden');
             }
         }
 
@@ -1307,7 +1150,7 @@
             list.sort((a, b) => (b.netWorth || 100000) - (a.netWorth || 100000));
 
             container.innerHTML = list.map((item, idx) => {
-                const isUser = item.id === gameState.myPeerId;
+                const isUser = item.id === gameState.myUserId;
                 const nw = isUser ? myNW : (item.netWorth || 100000);
                 return `
                     <div class="p-2.5 rounded-xl border flex items-center justify-between text-xs ${isUser ? 'bg-brand-500/20 border-brand-500/60 text-white font-bold' : 'bg-slate-900/80 border-slate-800 text-slate-300'}">
@@ -1334,7 +1177,6 @@
                 { name: `${gameState.playerName} (You)`, netWorth: playerNW, isUser: true },
                 ...aiRivals.map(r => ({ name: r.name, netWorth: r.netWorth, isUser: false }))
             ];
-
             list.sort((a, b) => b.netWorth - a.netWorth);
 
             container.innerHTML = list.map((item, idx) => `
@@ -1377,14 +1219,13 @@
             gameState.maxYears = parseInt(document.getElementById('soloYearsSelect')?.value || '15');
             gameState.cash = 100000;
             gameState.portfolio = {};
-            gameState.isReady = false;
 
             liveAssets = generateProceduralMarket();
             initAssetHistories();
             initAIRivals();
             currentNews = PESTLE_DYNAMIC_DECK[0];
 
-            document.getElementById('modeBadge').innerText = 'SOLO vs AI';
+            document.getElementById('modeBadge').innerText = 'SOLO';
             switchView('viewGame');
             renderGameUI();
         }
@@ -1396,19 +1237,13 @@
             document.getElementById('summaryFinalNetWorth').innerText = `$${nw.total.toLocaleString()}`;
             document.getElementById('summaryTotalReturn').innerText = `${returnPct >= 0 ? '+' : ''}${returnPct}%`;
 
-            let archetype = "Macro Allocator";
-            if ((gameState.portfolio['stk_gen_0'] || 0) > 5) archetype = "Growth Tech Titan";
-            else if ((gameState.portfolio['com_gold'] || 0) > 5) archetype = "Gold Inflation Hedger";
-            document.getElementById('summaryArchetype').innerText = archetype;
+            let allPlayers = Object.values(roomPlayersMap).map(p => ({
+                name: p.name,
+                netWorth: p.id === gameState.myUserId ? nw.total : (p.netWorth || 100000),
+                isPlayer: p.id === gameState.myUserId
+            }));
 
-            let allPlayers = [];
-            if (gameState.mode === 'multi') {
-                allPlayers = Object.values(roomPlayersMap).map(p => ({
-                    name: p.name,
-                    netWorth: p.id === gameState.myPeerId ? nw.total : (p.netWorth || 100000),
-                    isPlayer: p.id === gameState.myPeerId
-                }));
-            } else {
+            if (allPlayers.length === 0) {
                 allPlayers = [
                     { name: `${gameState.playerName} (You)`, netWorth: nw.total, isPlayer: true },
                     ...aiRivals.map(r => ({ name: r.name, netWorth: r.netWorth, isPlayer: false }))
@@ -1423,14 +1258,6 @@
                     <div class="text-xs font-bold text-slate-400">Rank #${i+1}</div>
                     <div class="font-extrabold text-white text-sm truncate">${p.name}</div>
                     <div class="font-mono font-bold text-brand-400 text-base">$${p.netWorth.toLocaleString()}</div>
-                </div>
-            `).join('');
-
-            const fullList = document.getElementById('summaryLeaderboard');
-            fullList.innerHTML = allPlayers.map((item, idx) => `
-                <div class="p-3 rounded-xl border flex items-center justify-between text-xs ${item.isPlayer ? 'bg-brand-500/20 border-brand-500/60 text-white font-bold' : 'bg-slate-900/90 border-slate-800 text-slate-300'}">
-                    <span class="font-mono text-slate-400">#${idx + 1} ${item.name}</span>
-                    <span class="font-mono font-bold text-brand-400">$${item.netWorth.toLocaleString()}</span>
                 </div>
             `).join('');
 
