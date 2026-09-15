@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stockbot - Mr. Felim's Finance Club Simulation</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            900: '#14532d',
+                        },
+                        accent: '#3b82f6',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0f19;
+            color: #f1f5f9;
+        }
+        .glass-card {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glow-green {
+            box-shadow: 0 0 25px rgba(34, 197, 94, 0.25);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between antialiased selection:bg-brand-500 selection:text-slate-950">
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed top-20 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <div class="min-h-screen flex flex-col">
+        <header class="border-b border-slate-800/80 bg-slate-950/90 sticky top-0 z-40 backdrop-blur-md">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+                <div class="flex items-center gap-3 cursor-pointer" onclick="showMainMenu()">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 via-emerald-500 to-cyan-400 flex items-center justify-center font-black text-slate-950 text-xl shadow-lg shadow-brand-500/20">
+                        📈
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h1 class="font-black text-lg tracking-tight text-white">Stockbot</h1>
+                            <span class="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-brand-500/10 text-brand-400 border border-brand-500/20">Market Master</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400">Mr. Felim's Finance Club Simulation</p>
+                    </div>
+                </div>
+
+                <div id="navGameInfo" class="hidden flex items-center gap-3 sm:gap-6">
+                    <div class="bg-slate-900/90 px-3 py-1.5 rounded-xl border border-slate-800 flex items-center gap-2">
+                        <span class="text-xs text-slate-400 uppercase font-semibold">Year</span>
+                        <span id="currentYearBadge" class="font-mono text-base font-bold text-brand-400">1 / 15</span>
+                    </div>
+                    <div class="bg-slate-900/90 px-3 py-1.5 rounded-xl border border-slate-800 flex items-center gap-2">
+                        <span class="text-xs text-slate-400 uppercase font-semibold">Net Worth</span>
+                        <span id="navNetWorth" class="font-mono text-base font-bold text-emerald-400">$100,000</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <button onclick="toggleAudio()" id="soundToggleBtn" class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 transition text-sm" title="Toggle Sound">
+                        🔊
+                    </button>
+                    <button onclick="showMainMenu()" id="exitGameBtn" class="hidden px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 text-xs sm:text-sm font-semibold transition">
+                        Exit Session
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col">
+            
+            <!-- Lobby View -->
+            <div id="viewLobby" class="flex-grow flex flex-col justify-center items-center py-6">
+                <div class="max-w-3xl w-full space-y-8 text-center">
+                    <div class="space-y-4">
+                        <span class="px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-brand-500/10 text-brand-400 border border-brand-500/30">
+                            Finance Club Trading Simulation
+                        </span>
+                        <h1 class="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
+                            Stock Market Simulation <br><span class="bg-gradient-to-r from-brand-400 via-emerald-300 to-cyan-400 bg-clip-text text-transparent">- Mr. Felim's Finance Club</span>
+                        </h1>
+                        <p class="text-slate-400 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
+                            A competitive turn-based stock & asset simulator designed for finance club. Take your time analyzing stock ratios, PESTLE news, bonds, gold, and commodities. Advance years when you're ready.
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2 text-left">
+                        <!-- Solo Mode -->
+                        <div class="glass-card p-6 rounded-2xl hover:border-brand-500/50 transition duration-300 flex flex-col justify-between group">
+                            <div class="space-y-3">
+                                <div class="w-12 h-12 rounded-xl bg-brand-500/20 flex items-center justify-center text-2xl group-hover:scale-110 transition">
+                                    🎯
+                                </div>
+                                <h3 class="text-xl font-bold text-white">Solo Campaign & Leaderboard</h3>
+                                <p class="text-xs text-slate-400 leading-relaxed">
+                                    Compete against 4 distinct AI Investor personalities (Value, Growth, High-Yield, Speculative) over 10-20 market years. Submit your score to the leaderboard!
+                                </p>
+                            </div>
+                            <div class="pt-6 space-y-3">
+                                <label class="block text-xs font-medium text-slate-400">Game Length (Years)</label>
+                                <select id="soloYearsSelect" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-500">
+                                    <option value="10">10 Years (Quick Match - 15 mins)</option>
+                                    <option value="15" selected>15 Years (Standard Match - 25 mins)</option>
+                                    <option value="20">20 Years (Full Macro Cycle - 35 mins)</option>
+                                </select>
+                                <button onclick="startSoloGame()" class="w-full py-3 px-4 rounded-xl bg-brand-600 hover:bg-brand-500 text-slate-950 font-extrabold text-sm transition shadow-lg shadow-brand-600/30">
+                                    Play Solo vs AI Rivals
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Multiplayer Mode -->
+                        <div class="glass-card p-6 rounded-2xl hover:border-accent/50 transition duration-300 flex flex-col justify-between group">
+                            <div class="space-y-3">
+                                <div class="w-12 h-12 rounded-xl bg-accent/20 flex items-center justify-center text-2xl group-hover:scale-110 transition">
+                                    👥
+                                </div>
+                                <h3 class="text-xl font-bold text-white">Classroom Multiplayer Room</h3>
+                                <p class="text-xs text-slate-400 leading-relaxed">
+                                    Create or join a room code. Everyone analyzes options on their own screen. The year only advances when all players lock in their ready status!
+                                </p>
+                            </div>
+                            <div class="pt-6 space-y-3">
+                                <input type="text" id="playerNameInput" placeholder="Enter Your Name / Student ID" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-accent">
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button onclick="createRoom()" class="py-2.5 px-3 rounded-xl bg-accent hover:bg-blue-600 text-white font-bold text-xs transition">
+                                        Host Room
+                                    </button>
+                                    <button onclick="joinRoomPrompt()" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs transition">
+                                        Join Code
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Feature Badges -->
+                    <div class="pt-6 border-t border-slate-800 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+                        <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+                            <div class="text-lg">📈</div>
+                            <div class="text-xs font-semibold text-slate-300 mt-1">Procedural Stocks</div>
+                            <div class="text-[10px] text-slate-500">Fresh Companies Every Game</div>
+                        </div>
+                        <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+                            <div class="text-lg">🔓</div>
+                            <div class="text-xs font-semibold text-slate-300 mt-1">Paced Learning</div>
+                            <div class="text-[10px] text-slate-500">Unlocks Y1-Y5 Graduated</div>
+                        </div>
+                        <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+                            <div class="text-lg">📰</div>
+                            <div class="text-xs font-semibold text-slate-300 mt-1">PESTLE Scenarios</div>
+                            <div class="text-[10px] text-slate-500">Dynamic Macro Drivers</div>
+                        </div>
+                        <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+                            <div class="text-lg">👥</div>
+                            <div class="text-xs font-semibold text-slate-300 mt-1">25-Player Rooms</div>
+                            <div class="text-[10px] text-slate-500">Classroom Simultaneous Play</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="viewRoomLobby" class="hidden flex-grow flex flex-col justify-center items-center py-8">
+                <div class="max-w-md w-full glass-card p-8 rounded-2xl space-y-6 text-center">
+                    <div class="inline-block px-3 py-1 rounded-full bg-accent/20 text-accent font-bold text-xs uppercase tracking-wider">
+                        Multiplayer Room (Up to 25 Players)
+                    </div>
+                    <div>
+                        <h2 class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Room Code</h2>
+                        <div id="roomCodeDisplay" class="font-mono text-5xl font-black text-brand-400 tracking-widest my-2 select-all">
+                            ----
+                        </div>
+                        <p class="text-xs text-slate-400">Share this code with your classmates to join</p>
+                    </div>
+
+                    <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 text-left space-y-2">
+                        <div class="flex justify-between items-center text-xs font-bold text-slate-400 uppercase">
+                            <span>Players Joined</span>
+                            <span id="playerCountBadge" class="bg-brand-500/20 text-brand-400 px-2 py-0.5 rounded-full font-mono">1 / 25</span>
+                        </div>
+                        <div id="joinedPlayersList" class="space-y-1.5 max-h-60 overflow-y-auto pr-1"></div>
+                    </div>
+
+                    <div id="hostControls" class="space-y-3">
+                        <button onclick="startMultiplayerGame()" class="w-full py-3 rounded-xl bg-brand-600 hover:bg-brand-500 text-slate-950 font-extrabold transition shadow-lg shadow-brand-600/30">
+                            Start Simulation Game
+                        </button>
+                    </div>
+                    <div id="clientWaitingMsg" class="hidden text-xs text-slate-400 animate-pulse">
+                        Waiting for room host to start the game...
+                    </div>
+                </div>
+            </div>
+
+            <div id="viewGame" class="hidden flex-grow flex flex-col space-y-6">
+                
+                <!-- Unlock Alert Banner -->
+                <div id="unlockNotificationBanner" class="hidden bg-gradient-to-r from-amber-500/20 via-yellow-500/10 to-amber-500/20 border border-amber-500/40 p-3 rounded-xl flex items-center justify-between text-amber-200 text-xs font-bold shadow-lg">
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg">🎉</span>
+                        <span id="unlockNotificationText">New Asset Unlocked: Index ETFs and Corporate Bonds are now tradeable!</span>
+                    </div>
+                    <button onclick="document.getElementById('unlockNotificationBanner').classList.add('hidden')" class="text-amber-400 hover:text-white font-mono text-sm">✕</button>
+                </div>
+
+                <!-- Macro News Alert Banner (PESTLE Framework) -->
+                <div class="bg-gradient-to-r from-slate-900 via-indigo-950/70 to-slate-900 border border-indigo-500/40 p-4 sm:p-5 rounded-2xl flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5 shadow-2xl">
+                    <div class="flex items-start gap-3.5 flex-1">
+                        <div class="p-3 bg-indigo-500/20 text-indigo-400 rounded-xl text-2xl font-bold flex-shrink-0 border border-indigo-500/30 shadow-inner">
+                            📰
+                        </div>
+                        <div class="space-y-2 flex-1">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span id="newsCategoryBadge" class="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                                    PESTLE: Macro Economic
+                                </span>
+                                <span id="newsPillarBadge" class="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                    Pillar: Environmental
+                                </span>
+                            </div>
+                            <h2 id="newsHeadline" class="text-base sm:text-lg font-black text-white tracking-tight">
+                                Federal Reserve adjusts benchmark interest rate...
+                            </h2>
+                            <p id="newsStory" class="text-xs text-slate-300 leading-relaxed font-normal">
+                                Comprehensive macro background context details will appear here...
+                            </p>
+                            <div id="newsImpactSummary" class="text-xs font-semibold text-amber-300 bg-slate-950/70 p-2.5 rounded-xl border border-amber-500/30 leading-relaxed flex items-center gap-2">
+                                <span>💡</span>
+                                <span><strong>Market Challenge:</strong> Analyze this macro event and predict which sectors or assets will benefit or suffer before advancing the year!</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="w-full lg:w-auto flex flex-col sm:flex-row lg:flex-col items-center justify-center gap-3 border-t lg:border-t-0 lg:border-l border-slate-800/80 pt-3 lg:pt-0 lg:pl-5">
+                        <div id="readyStatusBox" class="text-center lg:text-right hidden sm:block">
+                            <div id="readyStatusText" class="text-xs font-bold text-amber-400">Decision Pending</div>
+                            <div id="readyCountText" class="text-[10px] text-slate-400">Ready to Advance</div>
+                        </div>
+                        <button id="advanceYearBtn" onclick="toggleReadyState()" class="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-slate-950 font-extrabold text-sm shadow-xl shadow-brand-600/30 transition flex items-center justify-center gap-2">
+                            <span>Advance to Next Year</span>
+                            <span class="text-xs">➔</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Main Game Workspace Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-grow">
+                    <!-- Assets Tab Columns -->
+                    <div class="lg:col-span-8 flex flex-col space-y-4">
+                        <div class="flex flex-wrap gap-2 p-1.5 bg-slate-900 rounded-xl border border-slate-800 text-xs font-bold">
+                            <button onclick="switchAssetTab('stocks')" id="tabBtn-stocks" class="tab-btn px-3 py-2 rounded-lg bg-brand-600 text-slate-950 transition flex items-center gap-1.5">
+                                🏢 Stocks & Equity
+                            </button>
+                            <button onclick="switchAssetTab('etfs')" id="tabBtn-etfs" class="tab-btn px-3 py-2 rounded-lg text-slate-400 hover:text-white transition flex items-center gap-1.5">
+                                📊 Index ETFs
+                                <span id="badge-etfs" class="text-[9px] bg-slate-800 text-amber-400 px-1.5 py-0.5 rounded border border-amber-500/30">Yr 2</span>
+                            </button>
+                            <button onclick="switchAssetTab('bonds')" id="tabBtn-bonds" class="tab-btn px-3 py-2 rounded-lg text-slate-400 hover:text-white transition flex items-center gap-1.5">
+                                🏛️ Bonds
+                                <span id="badge-bonds" class="text-[9px] bg-slate-800 text-amber-400 px-1.5 py-0.5 rounded border border-amber-500/30">Yr 1</span>
+                            </button>
+                            <button onclick="switchAssetTab('deposits')" id="tabBtn-deposits" class="tab-btn px-3 py-2 rounded-lg text-slate-400 hover:text-white transition flex items-center gap-1.5">
+                                🏦 Fixed CDs
+                                <span id="badge-deposits" class="text-[9px] bg-slate-800 text-amber-400 px-1.5 py-0.5 rounded border border-amber-500/30">Yr 1</span>
+                            </button>
+                            <button onclick="switchAssetTab('commodities')" id="tabBtn-commodities" class="tab-btn px-3 py-2 rounded-lg text-slate-400 hover:text-white transition flex items-center gap-1.5">
+                                🪙 Gold & Commodities
+                                <span id="badge-commodities" class="text-[9px] bg-slate-800 text-amber-400 px-1.5 py-0.5 rounded border border-amber-500/30">Yr 3</span>
+                            </button>
+                            <button onclick="switchAssetTab('crypto')" id="tabBtn-crypto" class="tab-btn px-3 py-2 rounded-lg text-slate-400 hover:text-white transition flex items-center gap-1.5">
+                                ⚡ Speculative Assets
+                                <span id="badge-crypto" class="text-[9px] bg-slate-800 text-amber-400 px-1.5 py-0.5 rounded border border-amber-500/30">Yr 4</span>
+                            </button>
+                        </div>
+
+                        <div class="glass-card p-5 rounded-2xl space-y-4 flex-grow flex flex-col">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h3 id="tabTitle" class="text-base font-bold text-white">Individual Corporate Stocks</h3>
+                                    <p id="tabDesc" class="text-xs text-slate-400">Analyze financials, valuation ratios, and dividend yields before buying.</p>
+                                </div>
+                            </div>
+
+                            <div id="assetsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow overflow-y-auto max-h-[520px] pr-1"></div>
+                        </div>
+                    </div>
+
+                    <!-- Portfolio & Standings Sidebar -->
+                    <div class="lg:col-span-4 space-y-6 flex flex-col">
+                        <div class="glass-card p-5 rounded-2xl space-y-4">
+                            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                                <span class="text-xs font-bold uppercase text-slate-400 tracking-wider">Your Balance & Allocation</span>
+                                <span class="text-xs font-semibold text-brand-400 font-mono" id="cashBalanceDisplay">Cash: $100,000</span>
+                            </div>
+
+                            <div class="relative h-44 flex items-center justify-center">
+                                <canvas id="portfolioChart"></canvas>
+                                <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                    <span class="text-[10px] text-slate-400 font-bold uppercase">Total Net Worth</span>
+                                    <span id="centerNetWorthText" class="font-mono text-lg font-extrabold text-white">$100,000</span>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2 text-center pt-2">
+                                <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+                                    <div class="text-[10px] text-slate-400 uppercase font-bold">Invested Assets</div>
+                                    <div id="investedTotalText" class="font-mono text-sm font-bold text-blue-400">$0</div>
+                                </div>
+                                <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+                                    <div class="text-[10px] text-slate-400 uppercase font-bold">Annual Yield / Dividends</div>
+                                    <div id="annualYieldText" class="font-mono text-sm font-bold text-emerald-400">$0 / yr</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass-card p-5 rounded-2xl space-y-3 flex-grow flex flex-col">
+                            <div class="flex justify-between items-center">
+                                <h4 class="text-xs font-bold uppercase text-slate-400 tracking-wider">Live Player Leaderboard</h4>
+                                <span class="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-mono" id="modeBadge">SOLO vs AI</span>
+                            </div>
+                            <div id="leaderboardList" class="space-y-2 flex-grow overflow-y-auto max-h-[320px] pr-1"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="modalDeepDive" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4">
+                <div class="glass-card max-w-2xl w-full rounded-2xl p-6 space-y-6 border border-slate-700 shadow-2xl max-h-[90vh] overflow-y-auto">
+                    <div class="flex justify-between items-start border-b border-slate-800 pb-4">
+                        <div class="flex items-center gap-3">
+                            <div id="modalTickerIcon" class="w-12 h-12 rounded-xl bg-brand-500/20 text-brand-400 font-mono font-bold flex items-center justify-center text-lg border border-brand-500/30">
+                                AAPX
+                            </div>
+                            <div>
+                                <h2 id="modalAssetName" class="text-xl font-bold text-white">Apex Semiconductors Inc.</h2>
+                                <p id="modalAssetCategory" class="text-xs text-slate-400">Technology Sector • Large Cap Growth</p>
+                            </div>
+                        </div>
+                        <button onclick="closeDeepDiveModal()" class="text-slate-400 hover:text-white text-xl font-bold p-1">✕</button>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800">
+                            <div class="text-[10px] text-slate-400 uppercase font-semibold">Current Price</div>
+                            <div id="modalPriceText" class="font-mono text-base font-bold text-white">$120.00</div>
+                        </div>
+                        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800">
+                            <div class="text-[10px] text-slate-400 uppercase font-semibold">P/E Ratio</div>
+                            <div id="modalPeText" class="font-mono text-base font-bold text-amber-400">24.5x</div>
+                        </div>
+                        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800">
+                            <div class="text-[10px] text-slate-400 uppercase font-semibold">Dividend Yield</div>
+                            <div id="modalDivText" class="font-mono text-base font-bold text-emerald-400">1.8%</div>
+                        </div>
+                        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800">
+                            <div class="text-[10px] text-slate-400 uppercase font-semibold">Volatility Beta</div>
+                            <div id="modalBetaText" class="font-mono text-base font-bold text-cyan-400">1.35</div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="text-xs font-bold text-slate-400 uppercase">Historical Price Trend Graph</div>
+                        <div class="h-48 bg-slate-900/90 rounded-xl p-3 border border-slate-800">
+                            <canvas id="modalPriceChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="text-xs font-bold text-slate-400 uppercase">Fundamental Financial Ratios & Health</div>
+                        <div class="bg-slate-900/80 rounded-xl p-4 border border-slate-800 text-xs space-y-2">
+                            <div class="flex justify-between border-b border-slate-800 pb-1.5">
+                                <span class="text-slate-400">Price-to-Book (P/B) Ratio</span>
+                                <span id="modalPbText" class="font-mono text-white font-semibold">3.8x</span>
+                            </div>
+                            <div class="flex justify-between border-b border-slate-800 pb-1.5">
+                                <span class="text-slate-400">Debt-to-Equity Ratio</span>
+                                <span id="modalDebtText" class="font-mono text-white font-semibold">0.45</span>
+                            </div>
+                            <div class="flex justify-between border-b border-slate-800 pb-1.5">
+                                <span class="text-slate-400">Revenue Growth (YoY)</span>
+                                <span id="modalRevText" class="font-mono text-emerald-400 font-semibold">+18.2%</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Analyst Consensus Rating</span>
+                                <span id="modalRatingText" class="font-semibold text-brand-400">Moderate Buy</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="closeDeepDiveModal()" class="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition">
+                        Back to Trading Desk
+                    </button>
+                </div>
+            </div>
+
+            <!-- Year Transition / Market Impact Recap Modal -->
+            <div id="modalYearRecap" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-4">
+                <div class="glass-card max-w-xl w-full rounded-2xl p-6 space-y-5 border border-slate-700 shadow-2xl max-h-[90vh] overflow-y-auto">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-2xl">📊</span>
+                            <div>
+                                <h2 id="recapTitle" class="text-lg font-bold text-white">Year 1 Market Impact Report</h2>
+                                <p id="recapSubtitle" class="text-xs text-slate-400">PESTLE Macro Resolution & Price Movements</p>
+                            </div>
+                        </div>
+                        <span id="recapYearBadge" class="font-mono text-xs font-bold bg-brand-500/20 text-brand-400 px-2.5 py-1 rounded-lg border border-brand-500/30">
+                            Year 1 Complete
+                        </span>
+                    </div>
+
+                    <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800 space-y-1.5">
+                        <div class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Resolved Macro Event</div>
+                        <h3 id="recapHeadline" class="text-sm font-bold text-white">Event Headline...</h3>
+                        <p id="recapStory" class="text-xs text-slate-300 leading-relaxed"></p>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Market Reaction & Outcome</div>
+                        <div id="recapImpactBox" class="text-xs text-emerald-300 bg-emerald-950/40 p-3 rounded-xl border border-emerald-500/30 leading-relaxed font-medium">
+                            Outcome summary details...
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 text-center">
+                        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800">
+                            <div class="text-[10px] text-slate-400 uppercase font-bold">Annual Net P&L</div>
+                            <div id="recapProfitText" class="font-mono text-base font-bold text-emerald-400">+$0</div>
+                        </div>
+                        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800">
+                            <div class="text-[10px] text-slate-400 uppercase font-bold">New Portfolio Net Worth</div>
+                            <div id="recapNetWorthText" class="font-mono text-base font-bold text-white">$100,000</div>
+                        </div>
+                    </div>
+
+                    <button id="recapContinueBtn" onclick="closeYearRecapModal()" class="w-full py-3.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-slate-950 font-extrabold text-sm transition shadow-lg shadow-brand-600/30 flex items-center justify-center gap-2">
+                        <span id="recapContinueBtnText">Continue to Next Year Trading Desk</span>
+                        <span>➔</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="viewSummary" class="hidden flex-grow flex flex-col justify-center items-center py-8">
+                <div class="max-w-4xl w-full glass-card p-6 sm:p-8 rounded-2xl space-y-8 text-center shadow-2xl">
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-widest text-brand-400 bg-brand-500/10 px-3 py-1 rounded-full border border-brand-500/20">
+                            Simulation Finished • Final Results
+                        </span>
+                        <h1 class="text-3xl sm:text-5xl font-black text-white mt-2">Classroom Market Championship</h1>
+                    </div>
+
+                    <div class="bg-slate-900/90 p-5 rounded-2xl border border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                        <div>
+                            <div class="text-xs text-slate-400 font-bold uppercase">Your Final Net Worth</div>
+                            <div id="summaryFinalNetWorth" class="font-mono text-2xl font-black text-emerald-400 mt-1">$245,800</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-slate-400 font-bold uppercase">Total Return</div>
+                            <div id="summaryTotalReturn" class="font-mono text-2xl font-black text-brand-400 mt-1">+145.8%</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-slate-400 font-bold uppercase">Investor Archetype</div>
+                            <div id="summaryArchetype" class="text-base font-bold text-amber-300 mt-1">Growth Titan</div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <h3 class="text-xs font-extrabold uppercase text-slate-400 tracking-widest">🥇 Top 3 Market Champions 🏆</h3>
+                        <div id="podiumContainer" class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end pt-2"></div>
+                    </div>
+
+                    <div class="text-left space-y-3 pt-2 border-t border-slate-800">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-xs font-extrabold uppercase text-slate-400 tracking-wider">Full Standings</h3>
+                            <span class="text-[10px] text-slate-500">Sorted by Total Net Worth</span>
+                        </div>
+                        <div id="summaryLeaderboard" class="space-y-2 max-h-72 overflow-y-auto pr-1"></div>
+                    </div>
+
+                    <div class="pt-4 flex flex-col sm:flex-row gap-3">
+                        <button onclick="showMainMenu()" class="flex-1 py-3.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-slate-950 font-extrabold transition shadow-lg shadow-brand-600/30">
+                            Play New Simulation (New Random Market)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // Web Audio Synthesizer Engine
+        let audioCtx = null;
+        let soundEnabled = true;
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'buy') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.frequency.exponentialRampToValueAtTime(880, now + 0.15);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                    osc.start(now);
+                    osc.stop(now + 0.15);
+                } else if (type === 'sell') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(600, now);
+                    osc.frequency.exponentialRampToValueAtTime(300, now + 0.18);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+                    osc.start(now);
+                    osc.stop(now + 0.18);
+                } else if (type === 'advance') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.setValueAtTime(659.25, now + 0.08); // E5
+                    osc.frequency.setValueAtTime(783.99, now + 0.16); // G5
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                }
+            } catch (e) {
+                console.log('Audio playback ignored', e);
+            }
+        }
+
+        function toggleAudio() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('soundToggleBtn');
+            btn.innerText = soundEnabled ? '🔊' : '🔇';
+            showToast(soundEnabled ? "Sound Effects Enabled" : "Sound Muted");
+        }
+
+        function showToast(message) {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = 'bg-slate-900 border border-slate-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold shadow-2xl flex items-center gap-2 transition-all duration-300 opacity-0 transform translate-y-2';
+            toast.innerHTML = `<span>ℹ️</span> <span>${message}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('opacity-0', 'translate-y-2');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', '-translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Global State Variables
+        let gameState = {
+            currentYear: 1,
+            maxYears: 15,
+            cash: 100000,
+            portfolio: {}, // { assetId: quantity }
+            depositRecords: [], // [{ ticker, amount, APY, lockYearsLeft }]
+            selectedTab: 'stocks',
+            isReady: false,
+            mode: 'solo', // 'solo' or 'multi'
+            playerName: 'Student Trader',
+            roomCode: '',
+            readyPlayersCount: 0,
+            totalPlayersInRoom: 1
+        };
+
+        let aiRivals = [];
+        let liveAssets = {};
+        let assetPriceHistory = {};
+        let portfolioChartInstance = null;
+        let modalChartInstance = null;
+
+        const CATEGORY_UNLOCK_YEARS = {
+            stocks: 1,
+            bonds: 1,
+            deposits: 1,
+            etfs: 2,
+            commodities: 3,
+            crypto: 4
+        };
+
+        const COMPANY_NAME_PARTS = {
+            prefixes: ['Apex', 'Aegis', 'Nova', 'Sovereign', 'Vanguard', 'Quantum', 'Hyperion', 'Starlight', 'Omni', 'Titan', 'Zenith', 'Nexus', 'Helios', 'Cipher', 'Aura'],
+            suffixes: ['Semiconductors', 'Healthcare & Bio', 'Retail Group', 'Mining Corp', 'Banking & Trust', 'Robotics', 'Energy', 'Logistics', 'BioTech Solutions', 'Software', 'Aerospace', 'Consumer Goods'],
+            sectors: ['Tech Sector', 'Defensive Healthcare', 'Consumer Staples', 'Materials & Gold', 'Financial Services', 'Clean Energy', 'Industrial Tech']
+        };
+
+        const PESTLE_DYNAMIC_DECK = [
+            {
+                category: 'PESTLE: Environmental',
+                pillar: 'Natural Disaster',
+                headline: 'Category 5 Super Typhoon "Apex" Devastates Coastal Hubs & Medical Supply Chains',
+                story: 'A record-breaking tropical super typhoon slammed key industrial ports and coastal manufacturing centers. Global freight logistics have stalled, causing widespread medical supply shortages and infrastructure emergency calls.',
+                impactText: '⚡ Healthcare & BioTech stocks surge (+35%) on urgent medical supply demands. Physical Gold (+20%) and Energy (+25%) jump due to supply disruption, while Tech & Logistics drop (-18%).',
+                categoryImpacts: {
+                    'Defensive Healthcare': +0.35,
+                    'Clean Energy': +0.25,
+                    'Tech Sector': -0.18,
+                    'commodities': +0.22,
+                    'etfs': -0.05
+                },
+                impacts: { com_gold: +0.20, com_oil: +0.28, etf_tech: -0.15 }
+            },
+            {
+                category: 'PESTLE: Social & Health',
+                pillar: 'Global Pandemic & Longevity',
+                headline: 'Novel Respiratory Health Crisis Triggers Global Emergency Medical Funding',
+                story: 'World health organizations announced heightened alerts regarding a novel virus variant. Governments immediately approved multi-billion dollar emergency healthcare grants for vaccine development and medical infrastructure.',
+                impactText: '💉 Defensive Healthcare & BioTech stocks skyrocket (+45%). Broad market index dips slightly (-8%), while Govt Sovereign Treasuries gain (+10%) as investors flee to safety.',
+                categoryImpacts: {
+                    'Defensive Healthcare': +0.45,
+                    'Tech Sector': -0.08,
+                    'Consumer Staples': +0.12,
+                    'bonds': +0.10,
+                    'crypto': -0.15
+                },
+                impacts: { bnd_treasury: +0.10, etf_sp: -0.06, com_gold: +0.18 }
+            },
+            {
+                category: 'PESTLE: Technological',
+                pillar: 'AI Infrastructure Breakthrough',
+                headline: 'Quantum Photonic Semiconductor Commercialized for Enterprise AI',
+                story: 'Tech research consortiums unveiled a revolutionary photonics chip that cuts neural network training times by 90%. Tech conglomerates are scrambling to sign exclusive supply contracts.',
+                impactText: '🚀 Semiconductor and Tech Sector equities surge (+32%). Global Tech ETFs shoot up (+28%), while traditional commodity miners face capital reallocation (-5%).',
+                categoryImpacts: {
+                    'Tech Sector': +0.32,
+                    'Industrial Tech': +0.20,
+                    'Consumer Staples': -0.05,
+                    'crypto': +0.25
+                },
+                impacts: { etf_tech: +0.28, cry_btc: +0.25, com_oil: -0.08 }
+            },
+            {
+                category: 'PESTLE: Economic',
+                pillar: 'Monetary Policy Shift',
+                headline: 'Central Bank Enacts Unexpected Emergency 100bps Interest Rate Cut',
+                story: 'To prevent economic stagnation following sluggish quarterly employment metrics, the Federal Reserve slashed benchmark interest rates by 1.00%. Liquidity is flooding back into capital markets.',
+                impactText: '📈 High-Yield Corporate Bonds (+14%) and Stocks (+22%) rally fiercely. Fixed CD interest rates decline on new locks, while Gold jumps (+16%) as currency yields drop.',
+                categoryImpacts: {
+                    'Tech Sector': +0.25,
+                    'Financial Services': +0.15,
+                    'Defensive Healthcare': +0.10,
+                    'bonds': +0.12
+                },
+                impacts: { bnd_treasury: +0.12, bnd_corp: +0.15, com_gold: +0.16 }
+            },
+            {
+                category: 'PESTLE: Political',
+                pillar: 'Geopolitical & Energy Alliances',
+                headline: 'International Clean Energy Mandates Impose Carbon Tariffs on Heavy Polluters',
+                story: 'Global summits finalized strict cross-border carbon border adjustment mechanisms. Companies failing to transition to clean energy face heavy penalties, while green tech and solar suppliers gain immediate subsidies.',
+                impactText: '🌱 Clean Energy and Industrial Tech stocks jump (+30%). Heavy Crude Oil commodities drop (-15%), while Dividend & ESG ETFs experience heavy inflows (+12%).',
+                categoryImpacts: {
+                    'Clean Energy': +0.30,
+                    'Materials & Gold': -0.10,
+                    'Industrial Tech': +0.18
+                },
+                impacts: { com_oil: -0.15, etf_div: +0.12, etf_sp: +0.08 }
+            },
+            {
+                category: 'PESTLE: Legal',
+                pillar: 'Antitrust & Regulation',
+                headline: 'Global Antitrust Regulator Orders Breakup of Major Tech Monopolies',
+                story: 'Supreme courts upheld sweeping antitrust rulings forcing mega-cap tech conglomerates to spin off their advertising and cloud divisions. Unvested capital is rotating into defensive healthcare and high-yield dividend stocks.',
+                impactText: '⚖️ Tech Sector and Growth ETFs sink (-20%). Defensive Healthcare (+18%) and High-Yield Dividend ETFs (+15%) benefit from massive safe-haven inflows.',
+                categoryImpacts: {
+                    'Tech Sector': -0.20,
+                    'Defensive Healthcare': +0.18,
+                    'Consumer Staples': +0.15,
+                    'Financial Services': +0.10
+                },
+                impacts: { etf_tech: -0.22, etf_div: +0.15, bnd_treasury: +0.08 }
+            }
+        ];
+
+        let currentNews = PESTLE_DYNAMIC_DECK[0];
+
+        function generateProceduralMarket() {
+            const stocks = [];
+            const prefixes = [...COMPANY_NAME_PARTS.prefixes].sort(() => 0.5 - Math.random());
+            const suffixes = [...COMPANY_NAME_PARTS.suffixes].sort(() => 0.5 - Math.random());
+            
+            for (let i = 0; i < 6; i++) {
+                const prefix = prefixes[i];
+                const suffix = suffixes[i];
+                const name = `${prefix} ${suffix}`;
+                const ticker = (prefix.substring(0, 3) + suffix.substring(0, 1)).toUpperCase();
+                const sector = COMPANY_NAME_PARTS.sectors[i % COMPANY_NAME_PARTS.sectors.length];
+
+                const basePrice = Math.floor(Math.random() * 140) + 30;
+                const pe = parseFloat((Math.random() * 25 + 10).toFixed(1));
+                const pb = parseFloat((Math.random() * 4 + 1.2).toFixed(1));
+                const yieldVal = parseFloat((Math.random() * 0.045).toFixed(3));
+                const beta = parseFloat((Math.random() * 0.9 + 0.7).toFixed(2));
+
+                stocks.push({
+                    id: `stk_gen_${i}`,
+                    ticker: ticker,
+                    name: name,
+                    category: sector,
+                    price: basePrice,
+                    pe: pe,
+                    pb: pb,
+                    baseYield: yieldVal,
+                    beta: beta,
+                    debt: (Math.random() * 0.8 + 0.1).toFixed(2),
+                    growth: (Math.random() * 0.2 - 0.02).toFixed(2),
+                    rating: pe < 16 ? 'Strong Buy' : pe < 22 ? 'Moderate Buy' : 'Hold',
+                    unlockYear: 1
+                });
+            }
+
+            const etfs = [
+                { id: 'etf_sp', ticker: 'SPX500', name: 'S&P 500 Market Index Fund', category: 'Broad Market Equity', price: 250, baseYield: 0.02, volatility: 0.10, unlockYear: 2 },
+                { id: 'etf_tech', ticker: 'QQQT', name: 'Nasdaq 100 Tech Innovators ETF', category: 'High Growth Tech', price: 180, baseYield: 0.008, volatility: 0.22, unlockYear: 2 },
+                { id: 'etf_div', ticker: 'DVYU', name: 'Dividend Aristocrats Yield ETF', category: 'High Dividend Equity', price: 110, baseYield: 0.048, volatility: 0.08, unlockYear: 2 }
+            ];
+
+            const bonds = [
+                { id: 'bnd_treasury', ticker: 'US10Y', name: '10-Year Government Treasury Bond', category: 'Sovereign Fixed Income', price: 1000, couponYield: 0.042, lockYears: 10, unlockYear: 1 },
+                { id: 'bnd_corp', ticker: 'HYCB', name: 'High-Yield Corporate Bond Fund', category: 'Corporate Fixed Income', price: 500, couponYield: 0.075, lockYears: 5, unlockYear: 2 }
+            ];
+
+            const deposits = [
+                { ticker: 'CD-1YR', name: '1-Year Fixed Certificate Deposit', APY: 0.038, lockYears: 1 },
+                { ticker: 'CD-3YR', name: '3-Year Premium Fixed CD', APY: 0.052, lockYears: 3 }
+            ];
+
+            const commodities = [
+                { id: 'com_gold', ticker: 'GLD', name: 'Physical Gold Bullion (oz)', category: 'Precious Metals', price: 1800, volatility: 0.14, unlockYear: 3 },
+                { id: 'com_oil', ticker: 'CRUDE', name: 'Light Sweet Crude Oil Barrel', category: 'Energy Commodity', price: 75, volatility: 0.28, unlockYear: 3 }
+            ];
+
+            const crypto = [
+                { id: 'cry_btc', ticker: 'BTCX', name: 'BitCoin Digital Store of Value', category: 'Speculative Asset', price: 35000, volatility: 0.45, unlockYear: 4 },
+                { id: 'cry_eth', ticker: 'ETHX', name: 'Ether Smart Contract Asset', category: 'Speculative Asset', price: 2200, volatility: 0.55, unlockYear: 4 }
+            ];
+
+            return { stocks, etfs, bonds, deposits, commodities, crypto };
+        }
+
+        function initAssetHistories() {
+            assetPriceHistory = {};
+            for (let cat in liveAssets) {
+                if (cat === 'deposits') continue;
+                liveAssets[cat].forEach(ast => {
+                    assetPriceHistory[ast.id] = [ast.price];
+                });
+            }
+        }
+
+        function findAssetById(id) {
+            for (let cat in liveAssets) {
+                if (cat === 'deposits') continue;
+                let found = liveAssets[cat].find(a => a.id === id);
+                if (found) return found;
+            }
+            return null;
+        }
+
+        function switchView(viewId) {
+            ['viewLobby', 'viewRoomLobby', 'viewGame', 'viewSummary'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(viewId).classList.remove('hidden');
+
+            const isGameActive = (viewId === 'viewGame');
+            document.getElementById('navGameInfo').style.display = isGameActive ? 'flex' : 'none';
+            document.getElementById('exitGameBtn').classList.toggle('hidden', !isGameActive);
+        }
+
+        function showMainMenu() {
+            switchView('viewLobby');
+        }
+
+        function initAIRivals() {
+            aiRivals = [
+                { name: 'Warren (Value Hunter)', archetype: 'Value Investor', netWorth: 100000 },
+                { name: 'Cathie (Tech Bull)', archetype: 'Tech Titan', netWorth: 100000 },
+                { name: 'Ray (Macro Allocator)', archetype: 'Yield Hunter', netWorth: 100000 },
+                { name: 'Satoshi (YOLO Trader)', archetype: 'Speculative Trader', netWorth: 100000 }
+            ];
+        }
+
+        function startSoloGame() {
+            const nameInput = document.getElementById('playerNameInput')?.value.trim();
+            gameState.playerName = nameInput || 'Student Trader';
+            gameState.maxYears = parseInt(document.getElementById('soloYearsSelect').value) || 15;
+            gameState.currentYear = 1;
+            gameState.cash = 100000;
+            gameState.portfolio = {};
+            gameState.depositRecords = [];
+            gameState.mode = 'solo';
+            gameState.isReady = false;
+
+            document.getElementById('modeBadge').innerText = 'SOLO vs AI';
+
+            liveAssets = generateProceduralMarket();
+            initAssetHistories();
+            initAIRivals();
+
+            currentNews = PESTLE_DYNAMIC_DECK[0];
+
+            switchView('viewGame');
+            renderGameUI();
+            showToast("Welcome! Year 1 Started. Analyze options and click Advance when ready.");
+        }
+
+        function createRoom() {
+            const name = document.getElementById('playerNameInput')?.value.trim() || 'Room Host';
+            gameState.playerName = name;
+            gameState.roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+            gameState.mode = 'multi';
+            
+            document.getElementById('roomCodeDisplay').innerText = gameState.roomCode;
+            document.getElementById('hostControls').classList.remove('hidden');
+            document.getElementById('clientWaitingMsg').classList.add('hidden');
+
+            renderRoomPlayersList([name, 'Student_Alex', 'Student_Jordan', 'Student_Taylor']);
+            switchView('viewRoomLobby');
+        }
+
+        function joinRoomPrompt() {
+            const name = document.getElementById('playerNameInput')?.value.trim() || 'Joined Student';
+            const code = prompt("Enter 6-Character Room Code:", "X7K2P9");
+            if (!code) return;
+
+            gameState.playerName = name;
+            gameState.roomCode = code.toUpperCase();
+            gameState.mode = 'multi';
+
+            document.getElementById('roomCodeDisplay').innerText = gameState.roomCode;
+            document.getElementById('hostControls').classList.add('hidden');
+            document.getElementById('clientWaitingMsg').classList.remove('hidden');
+
+            renderRoomPlayersList([name, 'Host_Teacher', 'Classmate_B']);
+            switchView('viewRoomLobby');
+        }
+
+        function renderRoomPlayersList(players) {
+            const list = document.getElementById('joinedPlayersList');
+            document.getElementById('playerCountBadge').innerText = `${players.length} / 25`;
+            list.innerHTML = players.map(p => `
+                <div class="flex justify-between items-center bg-slate-950 p-2 rounded-lg text-xs font-semibold text-slate-300">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                        <span>${p}</span>
+                    </div>
+                    <span class="text-[10px] text-brand-400">Ready</span>
+                </div>
+            `).join('');
+        }
+
+        function startMultiplayerGame() {
+            gameState.maxYears = 15;
+            gameState.currentYear = 1;
+            gameState.cash = 100000;
+            gameState.portfolio = {};
+            gameState.depositRecords = [];
+            gameState.isReady = false;
+
+            document.getElementById('modeBadge').innerText = `ROOM: ${gameState.roomCode}`;
+
+            liveAssets = generateProceduralMarket();
+            initAssetHistories();
+            initAIRivals();
+
+            currentNews = PESTLE_DYNAMIC_DECK[0];
+
+            switchView('viewGame');
+            renderGameUI();
+        }
+
+        function calculateNetWorth() {
+            let invested = 0;
+            for (let id in gameState.portfolio) {
+                let qty = gameState.portfolio[id];
+                let ast = findAssetById(id);
+                if (ast && qty > 0) {
+                    invested += (ast.price * qty);
+                }
+            }
+
+            let depositTotal = gameState.depositRecords.reduce((sum, d) => sum + d.amount, 0);
+            invested += depositTotal;
+
+            return {
+                cash: gameState.cash,
+                invested: invested,
+                total: gameState.cash + invested
+            };
+        }
+
+        function calculateAnnualYield() {
+            let yieldVal = 0;
+            for (let id in gameState.portfolio) {
+                let qty = gameState.portfolio[id];
+                let ast = findAssetById(id);
+                if (ast && qty > 0) {
+                    let rate = ast.baseYield || ast.couponYield || 0;
+                    yieldVal += (ast.price * qty * rate);
+                }
+            }
+            gameState.depositRecords.forEach(dep => {
+                yieldVal += (dep.amount * dep.APY);
+            });
+            return Math.round(yieldVal);
+        }
+
+        function toggleReadyState() {
+            if (gameState.currentYear > gameState.maxYears) {
+                endSimulationGame();
+                return;
+            }
+
+            playSound('advance');
+
+            const oldNW = calculateNetWorth().total;
+            const resolvedNews = currentNews;
+            const completedYear = gameState.currentYear;
+
+            // Apply market updates based on the current turn's news
+            simulateYearMarketChanges(resolvedNews);
+            simulateAIRivals();
+
+            const newNW = calculateNetWorth().total;
+            const pnl = newNW - oldNW;
+
+            // Prepare news story for the coming new year
+            currentNews = PESTLE_DYNAMIC_DECK[Math.floor(Math.random() * PESTLE_DYNAMIC_DECK.length)];
+
+            // Populate Year Recap outcome modal
+            document.getElementById('recapTitle').innerText = `Year ${completedYear} Market Impact Report`;
+            document.getElementById('recapYearBadge').innerText = `Year ${completedYear} Resolved`;
+            document.getElementById('recapHeadline').innerText = resolvedNews.headline;
+            document.getElementById('recapStory').innerText = resolvedNews.story;
+            document.getElementById('recapImpactBox').innerText = resolvedNews.impactText;
+
+            const pnlElem = document.getElementById('recapProfitText');
+            pnlElem.innerText = `${pnl >= 0 ? '+' : ''}$${pnl.toLocaleString()}`;
+            pnlElem.className = `font-mono text-base font-bold ${pnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+
+            document.getElementById('recapNetWorthText').innerText = `$${newNW.toLocaleString()}`;
+
+            const btnText = document.getElementById('recapContinueBtnText');
+
+            if (completedYear >= gameState.maxYears) {
+                btnText.innerText = "View Final Leaderboard Results";
+            } else {
+                btnText.innerText = `Proceed to Year ${completedYear + 1} Trading Desk`;
+            }
+
+            document.getElementById('modalYearRecap').classList.remove('hidden');
+        }
+
+        function closeYearRecapModal() {
+            document.getElementById('modalYearRecap').classList.add('hidden');
+
+            if (gameState.currentYear >= gameState.maxYears) {
+                endSimulationGame();
+                return;
+            }
+
+            gameState.currentYear++;
+
+            // Check unlock banner notifications
+            if (gameState.currentYear === 2) {
+                showUnlockNotification("Index ETFs & High-Yield Corporate Bonds are now unlocked!");
+            } else if (gameState.currentYear === 3) {
+                showUnlockNotification("Physical Gold & Commodities market unlocked!");
+            } else if (gameState.currentYear === 4) {
+                showUnlockNotification("Speculative Assets & Crypto unlocked!");
+            }
+
+            renderGameUI();
+            showToast(`Started Year ${gameState.currentYear}! Analyze the new PESTLE news.`);
+        }
+
+        function showUnlockNotification(msg) {
+            const banner = document.getElementById('unlockNotificationBanner');
+            document.getElementById('unlockNotificationText').innerText = msg;
+            banner.classList.remove('hidden');
+        }
+
+        function simulateYearMarketChanges(eventNews) {
+            const dividendEarnings = calculateAnnualYield();
+            gameState.cash += dividendEarnings;
+
+            gameState.depositRecords.forEach(dep => { dep.lockYearsLeft--; });
+            const matured = gameState.depositRecords.filter(dep => dep.lockYearsLeft <= 0);
+            matured.forEach(dep => { gameState.cash += dep.amount; });
+            gameState.depositRecords = gameState.depositRecords.filter(dep => dep.lockYearsLeft > 0);
+
+            const activeNews = eventNews || currentNews;
+
+            ['stocks', 'etfs', 'bonds', 'commodities', 'crypto'].forEach(cat => {
+                (liveAssets[cat] || []).forEach(ast => {
+                    let impact = 0;
+
+                    if (activeNews.impacts && activeNews.impacts[ast.id] !== undefined) {
+                        impact += activeNews.impacts[ast.id];
+                    }
+
+                    if (activeNews.categoryImpacts) {
+                        if (ast.category && activeNews.categoryImpacts[ast.category] !== undefined) {
+                            impact += activeNews.categoryImpacts[ast.category];
+                        }
+                        if (activeNews.categoryImpacts[cat] !== undefined) {
+                            impact += activeNews.categoryImpacts[cat];
+                        }
+                    }
+
+                    let organic = (Math.random() * 0.18) - 0.08;
+                    if (ast.volatility) organic *= (ast.volatility * 3.5);
+
+                    let pctChange = impact + organic;
+                    let newPrice = Math.max(1, ast.price * (1 + pctChange));
+                    ast.price = Math.round(newPrice * 100) / 100;
+
+                    if (!assetPriceHistory[ast.id]) assetPriceHistory[ast.id] = [ast.price];
+                    assetPriceHistory[ast.id].push(ast.price);
+                });
+            });
+        }
+
+        function simulateAIRivals() {
+            aiRivals.forEach(rival => {
+                let returnRate = 0.04 + (Math.random() * 0.16) - 0.04;
+                if (rival.archetype.includes('Tech')) returnRate += (Math.random() * 0.12 - 0.05);
+                if (rival.archetype.includes('Speculative')) returnRate += (Math.random() * 0.30 - 0.12);
+                rival.netWorth = Math.round(rival.netWorth * (1 + returnRate));
+            });
+        }
+
+        function buyAssetFromInput(id, category) {
+            const input = document.getElementById(`qty-${id}`);
+            const qty = parseInt(input?.value) || 1;
+            buyAsset(id, qty);
+        }
+
+        function sellAssetFromInput(id, category) {
+            const input = document.getElementById(`qty-${id}`);
+            const qty = parseInt(input?.value) || 1;
+            sellAsset(id, qty);
+        }
+
+        function buyAsset(id, qty) {
+            const ast = findAssetById(id);
+            if (!ast) return;
+            const cost = ast.price * qty;
+
+            if (gameState.cash >= cost) {
+                gameState.cash -= cost;
+                gameState.portfolio[id] = (gameState.portfolio[id] || 0) + qty;
+                playSound('buy');
+                renderGameUI();
+                showToast(`Purchased ${qty} units of ${ast.ticker} for $${cost.toLocaleString()}`);
+            } else {
+                showToast(`Insufficient cash! Buying ${qty} units costs $${cost.toLocaleString()}`);
+            }
+        }
+
+        function sellAsset(id, qty) {
+            const ast = findAssetById(id);
+            if (!ast) return;
+            const currentQty = gameState.portfolio[id] || 0;
+
+            if (currentQty >= qty) {
+                gameState.portfolio[id] -= qty;
+                if (gameState.portfolio[id] === 0) delete gameState.portfolio[id];
+                gameState.cash += (ast.price * qty);
+                playSound('sell');
+                renderGameUI();
+                showToast(`Sold ${qty} units of ${ast.ticker} for $${(ast.price * qty).toLocaleString()}`);
+            } else {
+                showToast(`You only own ${currentQty} units of ${ast.ticker}`);
+            }
+        }
+
+        function createFixedDeposit(ticker) {
+            const cd = liveAssets.deposits.find(d => d.ticker === ticker);
+            if (!cd) return;
+
+            const amount = 10000;
+            if (gameState.cash >= amount) {
+                gameState.cash -= amount;
+                gameState.depositRecords.push({
+                    ticker: cd.ticker,
+                    amount: amount,
+                    APY: cd.APY,
+                    lockYearsLeft: cd.lockYears
+                });
+                playSound('buy');
+                renderGameUI();
+                showToast(`Deposited $10,000 into ${cd.name}`);
+            } else {
+                showToast("Need at least $10,000 cash for fixed deposit.");
+            }
+        }
+
+        function setQty(id, val) {
+            const input = document.getElementById(`qty-${id}`);
+            if (input) input.value = val;
+        }
+
+        function setMaxQty(id, price) {
+            const input = document.getElementById(`qty-${id}`);
+            if (input) {
+                const maxBuy = Math.floor(gameState.cash / price);
+                input.value = Math.max(1, maxBuy);
+            }
+        }
+
+        function setMaxSellQty(id) {
+            const input = document.getElementById(`qty-${id}`);
+            if (input) {
+                const owned = gameState.portfolio[id] || 0;
+                input.value = Math.max(1, owned);
+            }
+        }
+
+        function switchAssetTab(tabCategory) {
+            gameState.selectedTab = tabCategory;
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = 'tab-btn px-3 py-2 rounded-lg text-slate-400 hover:text-white transition flex items-center gap-1.5';
+            });
+            const activeBtn = document.getElementById(`tabBtn-${tabCategory}`);
+            if (activeBtn) activeBtn.className = 'tab-btn px-3 py-2 rounded-lg bg-brand-600 text-slate-950 font-bold transition flex items-center gap-1.5';
+
+            renderAssetsGrid();
+        }
+
+        function renderGameUI() {
+            const nw = calculateNetWorth();
+            
+            document.getElementById('currentYearBadge').innerText = `${gameState.currentYear} / ${gameState.maxYears}`;
+            document.getElementById('navNetWorth').innerText = `$${nw.total.toLocaleString()}`;
+            document.getElementById('cashBalanceDisplay').innerText = `Cash: $${gameState.cash.toLocaleString()}`;
+            document.getElementById('centerNetWorthText').innerText = `$${nw.total.toLocaleString()}`;
+            document.getElementById('investedTotalText').innerText = `$${nw.invested.toLocaleString()}`;
+            document.getElementById('annualYieldText').innerText = `$${calculateAnnualYield().toLocaleString()} / yr`;
+
+            document.getElementById('newsHeadline').innerText = currentNews.headline;
+            document.getElementById('newsStory').innerText = currentNews.story;
+            document.getElementById('newsImpactSummary').innerHTML = `<span>💡</span> <span><strong>Market Challenge:</strong> Read the event carefully! Predict which sectors or asset classes will gain or lose value, and adjust your portfolio before advancing the year.</span>`;
+            document.getElementById('newsCategoryBadge').innerText = currentNews.category;
+            if (document.getElementById('newsPillarBadge')) {
+                document.getElementById('newsPillarBadge').innerText = `Pillar: ${currentNews.pillar || 'Macro Event'}`;
+            }
+
+            renderAssetsGrid();
+            renderPortfolioChart(nw);
+            renderLeaderboard(nw.total);
+        }
+
+        function renderAssetsGrid() {
+            const grid = document.getElementById('assetsGrid');
+            const cat = gameState.selectedTab;
+            const requiredCategoryYear = CATEGORY_UNLOCK_YEARS[cat] || 1;
+
+            if (gameState.currentYear < requiredCategoryYear) {
+                grid.innerHTML = `
+                    <div class="col-span-full p-8 text-center glass-card rounded-2xl space-y-3 my-4">
+                        <div class="text-4xl">🔒</div>
+                        <h4 class="text-sm font-bold text-amber-400">Asset Class Locked Until Year ${requiredCategoryYear}</h4>
+                        <p class="text-xs text-slate-400 max-w-md mx-auto">
+                            This asset class unlocks in Year ${requiredCategoryYear} to help you pace your financial learning strategy.
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+
+            const items = liveAssets[cat] || [];
+
+            if (cat === 'deposits') {
+                grid.innerHTML = items.map(cd => `
+                    <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800 flex flex-col justify-between space-y-3">
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <span class="font-mono text-xs font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">${cd.ticker}</span>
+                                <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">${(cd.APY*100).toFixed(1)}% APY</span>
+                            </div>
+                            <h4 class="text-sm font-bold text-white mt-2">${cd.name}</h4>
+                            <p class="text-xs text-slate-400 mt-1">Locks funds for ${cd.lockYears} year(s) with guaranteed interest.</p>
+                        </div>
+                        <button onclick="createFixedDeposit('${cd.ticker}')" class="w-full py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition">
+                            Deposit $10,000 Cash
+                        </button>
+                    </div>
+                `).join('');
+                return;
+            }
+
+            grid.innerHTML = items.map(ast => {
+                const isLocked = ast.unlockYear && gameState.currentYear < ast.unlockYear;
+                
+                if (isLocked) {
+                    return `
+                        <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800/60 flex flex-col justify-between space-y-3 opacity-60">
+                            <div class="flex justify-between items-start">
+                                <span class="font-mono text-xs font-bold text-slate-500 bg-slate-800 px-2 py-0.5 rounded">${ast.ticker}</span>
+                                <span class="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">🔒 Year ${ast.unlockYear}</span>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-400">${ast.name}</h4>
+                                <p class="text-xs text-slate-500 mt-1">${ast.category || 'Asset Class'}</p>
+                            </div>
+                            <div class="text-xs text-slate-500 italic text-center py-2 border-t border-slate-800">
+                                Unlocks in Year ${ast.unlockYear}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                const owned = gameState.portfolio[ast.id] || 0;
+                const history = assetPriceHistory[ast.id] || [ast.price];
+                const prevPrice = history[history.length - 2] || ast.price;
+                const pctChange = (((ast.price - prevPrice) / prevPrice) * 100).toFixed(1);
+                const isPos = pctChange >= 0;
+
+                return `
+                    <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800 flex flex-col justify-between space-y-3 hover:border-slate-700 transition">
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <span class="font-mono text-xs font-bold text-brand-400 bg-brand-500/10 px-2 py-0.5 rounded border border-brand-500/20">${ast.ticker}</span>
+                                <span class="text-xs font-bold font-mono px-2 py-0.5 rounded ${isPos ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}">
+                                    ${isPos ? '+' : ''}${pctChange}%
+                                </span>
+                            </div>
+                            <h4 class="text-sm font-bold text-white mt-2">${ast.name}</h4>
+                            <div class="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
+                                <span>${ast.category || 'Asset'}</span>
+                                ${ast.pe ? `<span>• P/E: ${ast.pe}x</span>` : ''}
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-baseline border-t border-slate-800/80 pt-2">
+                            <div>
+                                <span class="text-[10px] text-slate-400 uppercase font-bold">Price</span>
+                                <div class="font-mono text-base font-bold text-white">$${ast.price.toLocaleString()}</div>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-[10px] text-slate-400 uppercase font-bold">You Own</span>
+                                <div class="font-mono text-sm font-bold text-brand-400">${owned} units</div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-1.5 pt-1 border-t border-slate-800/60">
+                            <div class="flex items-center gap-1 flex-wrap">
+                                <span class="text-[10px] text-slate-400 font-bold uppercase">Qty:</span>
+                                <input type="number" id="qty-${ast.id}" value="1" min="1" class="w-14 bg-slate-950 border border-slate-700 rounded px-1 py-0.5 text-center text-xs font-mono text-white focus:outline-none focus:border-brand-500">
+                                <button onclick="setQty('${ast.id}', 10)" class="px-1.5 py-0.5 text-[10px] bg-slate-800 hover:bg-slate-700 rounded text-slate-300 font-mono border border-slate-700">+10</button>
+                                <button onclick="setMaxQty('${ast.id}', ${ast.price})" class="px-1.5 py-0.5 text-[10px] bg-brand-500/20 hover:bg-brand-500/30 text-brand-300 rounded font-mono border border-brand-500/30">Max Buy</button>
+                                <button onclick="setMaxSellQty('${ast.id}')" class="px-1.5 py-0.5 text-[10px] bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 rounded font-mono border border-rose-500/30">Max Sell</button>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2">
+                                <button onclick="buyAssetFromInput('${ast.id}', '${cat}')" class="py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow transition">
+                                    Buy Qty
+                                </button>
+                                <button onclick="sellAssetFromInput('${ast.id}', '${cat}')" class="py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs border border-slate-700 transition">
+                                    Sell Qty
+                                </button>
+                            </div>
+                        </div>
+
+                        ${cat === 'stocks' ? `
+                            <button onclick="openDeepDiveModal('${ast.id}')" class="text-[11px] font-semibold text-accent hover:underline text-center w-full pt-1">
+                                🔍 Deep-Dive Ratios & Graph ➔
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderPortfolioChart(nw) {
+            const ctx = document.getElementById('portfolioChart')?.getContext('2d');
+            if (!ctx) return;
+
+            if (portfolioChartInstance) portfolioChartInstance.destroy();
+
+            portfolioChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Cash Balance', 'Invested Assets'],
+                    datasets: [{
+                        data: [nw.cash, nw.invested],
+                        backgroundColor: ['#10b981', '#3b82f6'],
+                        borderWidth: 0,
+                    }]
+                },
+                options: {
+                    cutout: '75%',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function renderLeaderboard(playerNW) {
+            const container = document.getElementById('leaderboardList');
+            let list = [
+                { name: `${gameState.playerName} (You)`, netWorth: playerNW, isUser: true },
+                ...aiRivals.map(r => ({ name: r.name, netWorth: r.netWorth, isUser: false }))
+            ];
+
+            list.sort((a, b) => b.netWorth - a.netWorth);
+
+            container.innerHTML = list.map((item, idx) => `
+                <div class="p-2.5 rounded-xl border flex items-center justify-between text-xs ${item.isUser ? 'bg-brand-500/20 border-brand-500/60 text-white font-bold' : 'bg-slate-900/80 border-slate-800 text-slate-300'}">
+                    <div class="flex items-center gap-2 truncate">
+                        <span class="font-mono text-[10px] text-slate-400 w-4">#${idx+1}</span>
+                        <span class="truncate max-w-[120px] sm:max-w-[150px]">${item.name}</span>
+                    </div>
+                    <span class="font-mono text-brand-400 font-bold">$${item.netWorth.toLocaleString()}</span>
+                </div>
+            `).join('');
+        }
+
+        function openDeepDiveModal(assetId) {
+            const ast = findAssetById(assetId);
+            if (!ast) return;
+
+            document.getElementById('modalTickerIcon').innerText = ast.ticker;
+            document.getElementById('modalAssetName').innerText = ast.name;
+            document.getElementById('modalAssetCategory').innerText = `${ast.category} • Financial Valuation`;
+            document.getElementById('modalPriceText').innerText = `$${ast.price.toLocaleString()}`;
+            document.getElementById('modalPeText').innerText = `${ast.pe || '18.5'}x`;
+            document.getElementById('modalDivText').innerText = ast.baseYield ? `${(ast.baseYield*100).toFixed(1)}%` : '0.0%';
+            document.getElementById('modalBetaText').innerText = ast.beta || '1.1';
+            document.getElementById('modalPbText').innerText = `${ast.pb || '2.1'}x`;
+            document.getElementById('modalDebtText').innerText = `${ast.debt || '0.35'}`;
+            document.getElementById('modalRevText').innerText = `+${((ast.growth || 0.08)*100).toFixed(1)}%`;
+            document.getElementById('modalRatingText').innerText = ast.rating || 'Moderate Buy';
+
+            document.getElementById('modalDeepDive').classList.remove('hidden');
+
+            const ctx = document.getElementById('modalPriceChart')?.getContext('2d');
+            if (!ctx) return;
+
+            if (modalChartInstance) modalChartInstance.destroy();
+
+            const history = assetPriceHistory[assetId] || [ast.price];
+            const labels = history.map((_, i) => `Yr ${i+1}`);
+
+            modalChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Price History ($)',
+                        data: history,
+                        borderColor: '#22c55e',
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' } }
+                    }
+                }
+            });
+        }
+
+        function closeDeepDiveModal() {
+            document.getElementById('modalDeepDive').classList.add('hidden');
+        }
+
+        function endSimulationGame() {
+            const nw = calculateNetWorth();
+            const returnPct = (((nw.total - 100000) / 100000) * 100).toFixed(1);
+
+            document.getElementById('summaryFinalNetWorth').innerText = `$${nw.total.toLocaleString()}`;
+            document.getElementById('summaryTotalReturn').innerText = `${returnPct >= 0 ? '+' : ''}${returnPct}%`;
+
+            let archetype = "Macro Allocator";
+            if ((gameState.portfolio['stk_gen_0'] || 0) > 5) archetype = "Growth Tech Titan";
+            else if ((gameState.portfolio['com_gold'] || 0) > 5) archetype = "Gold Inflation Hedger";
+            document.getElementById('summaryArchetype').innerText = archetype;
+
+            let allPlayers = [
+                { name: `${gameState.playerName} (You)`, netWorth: nw.total, isPlayer: true },
+                ...aiRivals.map(r => ({ name: r.name, netWorth: r.netWorth, isPlayer: false }))
+            ];
+            allPlayers.sort((a, b) => b.netWorth - a.netWorth);
+
+            const podium = document.getElementById('podiumContainer');
+            podium.innerHTML = allPlayers.slice(0, 3).map((p, i) => `
+                <div class="glass-card p-4 rounded-2xl border border-slate-700 text-center space-y-2">
+                    <div class="text-2xl">${i===0?'🥇':i===1?'🥈':'🥉'}</div>
+                    <div class="text-xs font-bold text-slate-400">Rank #${i+1}</div>
+                    <div class="font-extrabold text-white text-sm truncate">${p.name}</div>
+                    <div class="font-mono font-bold text-brand-400 text-base">$${p.netWorth.toLocaleString()}</div>
+                </div>
+            `).join('');
+
+            const fullList = document.getElementById('summaryLeaderboard');
+            fullList.innerHTML = allPlayers.map((item, idx) => `
+                <div class="p-3 rounded-xl border flex items-center justify-between text-xs ${item.isPlayer ? 'bg-brand-500/20 border-brand-500/60 text-white font-bold' : 'bg-slate-900/90 border-slate-800 text-slate-300'}">
+                    <span class="font-mono text-slate-400">#${idx + 1} ${item.name}</span>
+                    <span class="font-mono font-bold text-brand-400">$${item.netWorth.toLocaleString()}</span>
+                </div>
+            `).join('');
+
+            switchView('viewSummary');
+            if (window.confetti) confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+        }
+
+        // Window Initialization Loop
+        window.onload = function() {
+            liveAssets = generateProceduralMarket();
+            initAssetHistories();
+            initAIRivals();
+            showMainMenu();
+        };
+    </script>
+</body>
+</html>
