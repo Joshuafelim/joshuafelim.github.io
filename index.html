@@ -119,7 +119,7 @@
                     Stock Market Simulation
                 </h2>
                 <p class="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed">
-                    A competitive turn-based stock & asset simulator designed for finance club. Take your time analyzing stock ratios, PESTLE news, bonds, gold, and commodities. Advance years when you're ready.
+                    A competitive turn-based stock & asset simulator designed for finance club. Analyze stock ratios, PESTLE news, bonds, gold, and commodities. Advance years when you're ready!
                 </p>
             </div>
 
@@ -164,7 +164,7 @@
                             <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">Any Device / PC</span>
                         </div>
                         <p class="text-xs sm:text-sm text-slate-400 leading-relaxed">
-                            Create or join a classroom room. Everyone analyzes option ratios on their screen. Market years advance together when all students click Ready!
+                            Create or join a classroom room. Everyone analyzes options on their screen. Market years advance together when all students click Ready!
                         </p>
 
                         <div class="space-y-3 pt-2">
@@ -253,7 +253,7 @@
                     <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">CURRENT YEAR</span>
                     <div class="flex items-baseline justify-between mt-1">
                         <span id="gameYearDisplay" class="text-2xl sm:text-3xl font-black text-white">Year 1</span>
-                        <span id="gameTotalYearsDisplay" class="text-xs text-slate-500 font-medium">/ 15 Years</span>
+                        <span id="gameTotalYearsDisplay" class="text-xs text-slate-500 font-medium">/ 10 Years</span>
                     </div>
                 </div>
 
@@ -276,7 +276,7 @@
                 </div>
             </div>
 
-            <!-- Macro PESTLE World News Banner (No Spoilers) -->
+            <!-- Macro PESTLE World News Banner -->
             <div class="bg-gradient-to-r from-slate-900 via-slate-900 to-indigo-950/40 border border-indigo-500/30 rounded-2xl p-4 sm:p-5 shadow-md">
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div class="space-y-1.5 flex-1">
@@ -452,7 +452,7 @@
                     </div>
                 </div>
 
-                <!-- Asset Description & Analyst Opinion -->
+                <!-- Asset Description -->
                 <div class="space-y-1 bg-slate-950 p-3 rounded-xl border border-slate-800">
                     <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ANALYSIS & OVERVIEW</span>
                     <p id="modalAssetDesc" class="text-xs text-slate-300 leading-relaxed"></p>
@@ -537,8 +537,9 @@
             year: 1,
             maxYears: 10,
             cash: INITIAL_CASH,
-            portfolio: {}, // ticker -> shares
+            portfolio: {}, // ticker -> share count
             isReady: false,
+            gameStarted: false,
             categoryFilter: 'all',
             selectedAssetDetail: null,
             lastYearNetWorth: INITIAL_CASH,
@@ -549,7 +550,6 @@
         let marketAssets = [];
         let priceHistories = {}; // ticker -> array of yearly prices
         let currentPestle = null;
-        let readyPlayersMap = {}; // playerId -> boolean
 
         // MQTT Network Connectivity State
         let mqttClient = null;
@@ -593,7 +593,7 @@
                     osc.stop(now + 0.2);
                 }
             } catch (e) {
-                console.log("Audio not allowed yet");
+                console.log("Audio play blocked");
             }
         }
 
@@ -610,7 +610,7 @@
                             type === 'error' ? 'bg-rose-900 border-rose-500 text-rose-200' : 'bg-slate-800 border-slate-600 text-slate-200';
             
             toast.className = `pointer-events-auto px-4 py-2.5 rounded-xl border text-xs font-bold shadow-lg transition-all transform translate-y-2 opacity-0 flex items-center gap-2 ${bgClass}`;
-            toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-circle-check' : type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-info'}"></i> <span>${message}</span>`;
+            toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-circle-check' : type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-info'}"></i> <span>${escapeHtml(message)}</span>`;
             
             container.appendChild(toast);
             setTimeout(() => {
@@ -623,37 +623,38 @@
             }, 3000);
         }
 
-        // Comprehensive PESTLE Macro News Deck with Amplified Market Impact
+        function escapeHtml(str) {
+            if (typeof str !== 'string') return str;
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        // Comprehensive PESTLE Macro News Deck
         const PESTLE_DYNAMIC_DECK = [
             {
                 category: 'Technological Shock',
-                headline: '🚀 Generative AI Breakthrough & Hyper-Scale Cloud Boom',
+                headline: '🚀 Generative AI Breakthrough & Cloud Infrastructure Boom',
                 description: 'A revolutionary leap in enterprise AI models slashes tech infrastructure operating costs by 50%. Cloud giants announce blowout corporate earnings!',
-                prompt: 'Tech equities and high-growth ETFs are primed for massive upward momentum!',
                 impacts: { 'Tech': 0.58, 'ETF_TECH': 0.45, 'Energy': -0.15, 'Crypto': 0.65, 'Gold': -0.12, 'Retail': 0.18, 'Mining': 0.25 },
                 revealText: '⚡ TECH & CRYPTO MANIA! Apex Semiconductors exploded +58% and Digital Assets skyrocketed +65%! Investors dumped safe-haven gold (-12%).'
             },
             {
                 category: 'Environmental Disruption',
-                headline: '⚡ Category 5 Super Storm Hits Refineries & Semiconductor Foundries',
+                headline: '⚡ Category 5 Super Storm Hits Refineries & Foundries',
                 description: 'Catastrophic typhoons force emergency shutdowns across offshore oil platforms and silicon fabrication plants for months.',
-                prompt: 'Severe energy supply bottlenecks spike crude oil while chipmakers face production halts.',
                 impacts: { 'Tech': -0.35, 'Oil': 0.75, 'Gold': 0.38, 'Healthcare': 0.22, 'Retail': -0.25, 'Agriculture': 0.30 },
-                revealText: '🔥 COMMODITY SPIKE! Crude Oil surged +75% and Physical Gold jumped +38%. Semiconductor stocks plunged -35% under supply chain strain.'
+                revealText: '🔥 COMMODITY SPIKE! Crude Oil surged +75% and Physical Gold jumped +38%. Semiconductor stocks plunged -35% under supply strain.'
             },
             {
                 category: 'Economic Policy',
-                headline: '🏦 Central Banks Raise Rates by 150 BPS to Crush Sticky Inflation',
+                headline: '🏦 Central Banks Raise Rates by 150 BPS to Crush Inflation',
                 description: 'Central bankers take aggressive anti-inflation measures. Credit tightens, boosting bank margins and bond yields while burning speculative debt-heavy stocks.',
-                prompt: 'High-yield bonds and bank equities benefit, while speculative assets get hit hard.',
                 impacts: { 'Bonds': 0.25, 'CD': 0.12, 'CorpBonds': 0.30, 'Tech': -0.32, 'Crypto': -0.55, 'Banks': 0.42, 'Gold': 0.15 },
-                revealText: '📉 SPECULATIVE REPRICING! Crypto crashed -55% and Tech growth fell -32%. High-Yield Corporate Bonds (+30%) and Treasuries provided strong defensive returns.'
+                revealText: '📉 SPECULATIVE REPRICING! Crypto crashed -55% and Tech growth fell -32%. High-Yield Corporate Bonds (+30%) provided defensive returns.'
             },
             {
                 category: 'Political & Geopolitical',
                 headline: '🌐 Mega Free-Trade Pact Signed Across Global Ports',
                 description: 'World leaders abolish tariffs on agricultural exports, consumer retail, and industrial hardware. Global freight volume reaches record highs.',
-                prompt: 'Cross-border commerce, agriculture, and index funds enjoy a historic growth wave.',
                 impacts: { 'Retail': 0.48, 'Agriculture': 0.52, 'ETF_SP': 0.35, 'Mining': 0.38, 'Gold': -0.18 },
                 revealText: '🌾 TRADE EXPANSION! Agriculture commodities rallied +52%, Nova Retail surged +48%, and broad S&P 500 ETFs gained +35%!'
             },
@@ -661,15 +662,13 @@
                 category: 'Social & Demographic',
                 headline: '🧬 Massive Longevity Breakthrough Sparks Medical Spending Surge',
                 description: 'National healthcare subsidies flood into biopharma and med-tech devices to serve aging populations.',
-                prompt: 'Healthcare cash flows soar as defensive dividend assets see heavy institutional inflows.',
                 impacts: { 'Healthcare': 0.62, 'ETF_DIV': 0.28, 'Retail': -0.10, 'Tech': 0.15, 'CD': 0.08 },
                 revealText: '💊 HEALTHCARE BOOM! Aegis Healthcare leaped +62% following institutional buying sprees!'
             },
             {
                 category: 'Legal & Regulatory',
-                headline: '🌿 Eco-Compliance Regulations Crack Down on Heavy Carbon Producers',
+                headline: '🌿 Eco-Compliance Regulations Crack Down on Carbon Producers',
                 description: 'New green mandates slap carbon taxes on fossil fuel producers while subsidizing clean tech energy systems and rare-earth green miners.',
-                prompt: 'Capital shifts rapidly away from dirty commodities into green tech and rare minerals.',
                 impacts: { 'Mining': 0.45, 'Oil': -0.38, 'CleanTech': 0.70, 'ETF_ESG': 0.42, 'Gold': 0.20 },
                 revealText: '🌱 GREEN RALLY! Clean Energy & Industrial Mining surged up to +70%, while Crude Oil dropped -38%.'
             }
@@ -699,13 +698,67 @@
                 { ticker: 'BTC', name: 'Digital Asset Index (Crypto)', category: 'crypto', sector: 'Crypto', unlockYear: 4, price: 500, pe: 'N/A', pb: 'N/A', divYield: 0.0, debtEquity: 0.0, beta: 3.8, desc: 'Highly volatile decentralized digital store of value with rapid cycle shifts.' }
             ];
 
-            // Initialize price history array for each asset
+            priceHistories = {};
             marketAssets.forEach(asset => {
                 priceHistories[asset.ticker] = [asset.price];
             });
         }
 
-        // MQTT Zero-Config Cross-Device Networking Controller
+        function hideAllViews() {
+            document.getElementById('viewMenu').classList.add('hidden');
+            document.getElementById('viewLobby').classList.add('hidden');
+            document.getElementById('viewGame').classList.add('hidden');
+            document.getElementById('viewEndGame').classList.add('hidden');
+        }
+
+        function showLobbyView() {
+            hideAllViews();
+            document.getElementById('viewLobby').classList.remove('hidden');
+            document.getElementById('lobbyRoomCodeDisplay').textContent = gameState.roomId;
+
+            document.getElementById('roomBadge').classList.remove('hidden');
+            document.getElementById('roomBadge').classList.add('flex');
+            document.getElementById('roomBadgeCode').textContent = gameState.roomId;
+
+            if (gameState.isHost) {
+                document.getElementById('lobbyHostControls').classList.remove('hidden');
+                document.getElementById('lobbyClientNotice').classList.add('hidden');
+            } else {
+                document.getElementById('lobbyHostControls').classList.add('hidden');
+                document.getElementById('lobbyClientNotice').classList.remove('hidden');
+            }
+            renderLobbyPlayers();
+        }
+
+        function showGameView() {
+            hideAllViews();
+            document.getElementById('viewGame').classList.remove('hidden');
+
+            if (gameState.mode === 'multi') {
+                document.getElementById('multiplayerReadyBar').classList.remove('hidden');
+                document.getElementById('leaderboardModeBadge').textContent = `Room: ${gameState.roomId}`;
+            } else {
+                document.getElementById('multiplayerReadyBar').classList.add('hidden');
+                document.getElementById('leaderboardModeBadge').textContent = 'Solo Campaign vs AI';
+            }
+
+            updateDashboardHeader();
+            renderPestleBanner();
+            renderAssetsGrid();
+            initPortfolioChart();
+            updatePortfolioChart();
+            renderLiveLeaderboard();
+        }
+
+        function generateRoomCode() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let code = '';
+            for (let i = 0; i < 6; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+
         const MQTT_BROKERS = [
             'wss://broker.hivemq.com:8884/mqtt',
             'wss://broker.emqx.io:8084/mqtt',
@@ -713,12 +766,11 @@
         ];
 
         function initMqttNetwork(onConnectedCallback) {
-            updateConnectionStatus('connecting', 'Connecting to Global Network...');
+            updateConnectionStatus('connecting', 'Connecting...');
             let brokerIndex = 0;
 
             function tryConnect() {
                 const url = MQTT_BROKERS[brokerIndex];
-                console.log("Attempting MQTT connection to:", url);
 
                 try {
                     mqttClient = mqtt.connect(url, {
@@ -739,19 +791,18 @@
                             const data = JSON.parse(payload.toString());
                             handleMqttMessage(topic, data);
                         } catch (err) {
-                            console.error("MQTT message parse error:", err);
+                            console.error("MQTT parse error:", err);
                         }
                     });
 
                     mqttClient.on('error', (err) => {
-                        console.warn("MQTT connection error on broker:", url, err);
                         mqttClient.end();
                         brokerIndex++;
                         if (brokerIndex < MQTT_BROKERS.length) {
                             setTimeout(tryConnect, 1000);
                         } else {
                             updateConnectionStatus('offline', 'Network Offline');
-                            showToast('Cloud connection failed. Verify internet.', 'error');
+                            showToast('Cloud connection failed.', 'error');
                         }
                     });
                 } catch (e) {
@@ -780,52 +831,100 @@
             }
         }
 
-        function hostMultiplayerRoom() {
-            const nameInput = document.getElementById('multiPlayerName').value.trim();
-            if (!nameInput) {
-                showToast('Please enter your name first!', 'error');
-                return;
-            }
-
-            gameState.playerName = nameInput;
-            gameState.mode = 'multi';
-            gameState.isHost = true;
-            gameState.roomId = generateRoomCode();
-            gameState.maxYears = parseInt(document.getElementById('multiGameLength').value) || 10;
-            gameState.lastYearNetWorth = INITIAL_CASH;
-            gameState.lastYearPnl = 0;
-
-            initMqttNetwork(() => {
-                const roomTopic = `stockbot_v2/room/${gameState.roomId}/#`;
-                mqttClient.subscribe(roomTopic, (err) => {
-                    if (!err) {
-                        // Host initializes room player list
-                        lobbyPlayers = [{ id: gameState.playerId, name: gameState.playerName, isHost: true, isReady: false, netWorth: INITIAL_CASH }];
-                        broadcastRoomState();
-                        showLobbyView();
-                        showToast(`Room ${gameState.roomId} Created Successfully!`, 'success');
-                    }
-                });
-            });
+        function broadcastRoomState() {
+            if (!mqttClient || !isMqttConnected || !gameState.roomId) return;
+            const statePayload = {
+                type: 'ROOM_STATE',
+                hostId: gameState.playerId,
+                maxYears: gameState.maxYears,
+                year: gameState.year,
+                gameStarted: gameState.gameStarted,
+                marketAssets: marketAssets,
+                currentPestle: currentPestle,
+                players: lobbyPlayers
+            };
+            mqttClient.publish(`stockbot_v2/room/${gameState.roomId}/state`, JSON.stringify(statePayload));
         }
-<!-- ... existing code ... baseline game start methods -->
+
+        function handleMqttMessage(topic, data) {
+            if (data.type === 'JOIN_REQUEST' && gameState.isHost) {
+                const existing = lobbyPlayers.find(p => p.id === data.player.id);
+                if (!existing) {
+                    lobbyPlayers.push(data.player);
+                    showToast(`${data.player.name} joined the room!`, 'info');
+                }
+                broadcastRoomState();
+            } else if (data.type === 'ROOM_STATE') {
+                gameState.maxYears = data.maxYears;
+                gameState.year = data.year;
+                marketAssets = data.marketAssets || marketAssets;
+                currentPestle = data.currentPestle || currentPestle;
+                lobbyPlayers = data.players || lobbyPlayers;
+
+                if (!gameState.isHost) {
+                    if (data.gameStarted && !gameState.gameStarted) {
+                        gameState.gameStarted = true;
+                        showGameView();
+                    } else if (!data.gameStarted) {
+                        renderLobbyPlayers();
+                    } else {
+                        updateDashboardHeader();
+                        renderPestleBanner();
+                        renderAssetsGrid();
+                        renderLiveLeaderboard();
+                    }
+                } else {
+                    renderLobbyPlayers();
+                }
+
+                updateReadyProgressUI();
+            } else if (data.type === 'PLAYER_UPDATE') {
+                const p = lobbyPlayers.find(item => item.id === data.player.id);
+                if (p) {
+                    p.netWorth = data.player.netWorth;
+                    p.isReady = data.player.isReady;
+                    renderLiveLeaderboard();
+                    updateReadyProgressUI();
+
+                    if (gameState.isHost && gameState.gameStarted) {
+                        checkAllPlayersReady();
+                    }
+                }
+            }
+        }
+
+        function sendPlayerUpdate() {
+            if (!mqttClient || !isMqttConnected || !gameState.roomId) return;
+            const myNetWorth = gameState.cash + calculatePortfolioValue();
+            mqttClient.publish(`stockbot_v2/room/${gameState.roomId}/update`, JSON.stringify({
+                type: 'PLAYER_UPDATE',
+                player: {
+                    id: gameState.playerId,
+                    name: gameState.playerName,
+                    netWorth: myNetWorth,
+                    isReady: gameState.isReady
+                }
+            }));
+        }
+
         function startSoloGame() {
             const nameInput = document.getElementById('soloPlayerName').value.trim();
             if (nameInput) gameState.playerName = nameInput;
 
             gameState.mode = 'solo';
             gameState.isHost = true;
+            gameState.roomId = null;
             gameState.maxYears = parseInt(document.getElementById('soloGameLength').value) || 10;
             gameState.year = 1;
             gameState.cash = INITIAL_CASH;
             gameState.portfolio = {};
             gameState.lastYearNetWorth = INITIAL_CASH;
             gameState.lastYearPnl = 0;
+            gameState.gameStarted = true;
 
             generateProceduralMarket();
             currentPestle = PESTLE_DYNAMIC_DECK[Math.floor(Math.random() * PESTLE_DYNAMIC_DECK.length)];
 
-            // Initialize AI Rivals for solo mode
             lobbyPlayers = [
                 { id: gameState.playerId, name: gameState.playerName, isHost: true, isReady: false, netWorth: INITIAL_CASH },
                 { id: 'ai_value', name: 'Warren (Value Hunter)', isHost: false, isReady: true, netWorth: INITIAL_CASH },
@@ -836,6 +935,75 @@
 
             showGameView();
             showToast('Solo Game Started! Good luck!', 'success');
+        }
+
+        function hostMultiplayerRoom() {
+            const nameInput = document.getElementById('multiPlayerName').value.trim();
+            if (!nameInput) {
+                showToast('Please enter your display name first!', 'error');
+                return;
+            }
+
+            gameState.playerName = nameInput;
+            gameState.mode = 'multi';
+            gameState.isHost = true;
+            gameState.roomId = generateRoomCode();
+            gameState.maxYears = parseInt(document.getElementById('multiGameLength').value) || 10;
+            gameState.cash = INITIAL_CASH;
+            gameState.portfolio = {};
+            gameState.lastYearNetWorth = INITIAL_CASH;
+            gameState.lastYearPnl = 0;
+            gameState.gameStarted = false;
+
+            initMqttNetwork(() => {
+                const roomTopic = `stockbot_v2/room/${gameState.roomId}/#`;
+                mqttClient.subscribe(roomTopic, (err) => {
+                    if (!err) {
+                        lobbyPlayers = [{ id: gameState.playerId, name: gameState.playerName, isHost: true, isReady: false, netWorth: INITIAL_CASH }];
+                        broadcastRoomState();
+                        showLobbyView();
+                        showToast(`Room ${gameState.roomId} Created Successfully!`, 'success');
+                    }
+                });
+            });
+        }
+
+        function joinMultiplayerRoom() {
+            const nameInput = document.getElementById('multiPlayerName').value.trim();
+            const codeInput = document.getElementById('joinRoomCodeInput').value.trim().toUpperCase();
+
+            if (!nameInput) {
+                showToast('Please enter your display name!', 'error');
+                return;
+            }
+            if (codeInput.length !== 6) {
+                showToast('Please enter a valid 6-letter room code!', 'error');
+                return;
+            }
+
+            gameState.playerName = nameInput;
+            gameState.mode = 'multi';
+            gameState.isHost = false;
+            gameState.roomId = codeInput;
+            gameState.cash = INITIAL_CASH;
+            gameState.portfolio = {};
+            gameState.lastYearNetWorth = INITIAL_CASH;
+            gameState.lastYearPnl = 0;
+            gameState.gameStarted = false;
+
+            initMqttNetwork(() => {
+                const roomTopic = `stockbot_v2/room/${gameState.roomId}/#`;
+                mqttClient.subscribe(roomTopic, (err) => {
+                    if (!err) {
+                        mqttClient.publish(`stockbot_v2/room/${gameState.roomId}/join`, JSON.stringify({
+                            type: 'JOIN_REQUEST',
+                            player: { id: gameState.playerId, name: gameState.playerName, isHost: false, isReady: false, netWorth: INITIAL_CASH }
+                        }));
+                        showLobbyView();
+                        showToast(`Joined Room ${gameState.roomId}!`, 'success');
+                    }
+                });
+            });
         }
 
         function startMultiplayerGame() {
@@ -851,51 +1019,162 @@
             broadcastRoomState();
             showGameView();
         }
-<!-- ... existing code ... advance year calculations ... -->
+
+        function renderLobbyPlayers() {
+            const list = document.getElementById('lobbyPlayerList');
+            const count = document.getElementById('lobbyPlayerCount');
+            list.innerHTML = '';
+            count.textContent = `${lobbyPlayers.length} PLAYER${lobbyPlayers.length > 1 ? 'S' : ''}`;
+
+            lobbyPlayers.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-bold';
+                div.innerHTML = `
+                    <div class="flex items-center space-x-2">
+                        <span class="w-2 h-2 rounded-full ${p.isHost ? 'bg-amber-400' : 'bg-emerald-400'}"></span>
+                        <span class="text-white">${escapeHtml(p.name)} ${p.id === gameState.playerId ? '(You)' : ''}</span>
+                    </div>
+                    ${p.isHost ? '<span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded border border-amber-500/30">HOST</span>' : '<span class="text-[10px] text-slate-400">STUDENT</span>'}
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function buyAsset(ticker) {
+            const asset = marketAssets.find(a => a.ticker === ticker);
+            if (!asset) return;
+
+            if (asset.unlockYear > gameState.year) {
+                showToast(`Unlocks in Year ${asset.unlockYear}!`, 'error');
+                return;
+            }
+
+            if (gameState.cash < asset.price) {
+                showToast('Insufficient cash available!', 'error');
+                return;
+            }
+
+            gameState.cash -= asset.price;
+            gameState.portfolio[ticker] = (gameState.portfolio[ticker] || 0) + 1;
+            playSound('buy');
+
+            updateDashboardHeader();
+            renderAssetsGrid();
+            updatePortfolioChart();
+            renderLiveLeaderboard();
+            if (gameState.mode === 'multi') sendPlayerUpdate();
+        }
+
+        function sellAsset(ticker) {
+            const owned = gameState.portfolio[ticker] || 0;
+            if (owned <= 0) {
+                showToast('You do not own any shares of this asset!', 'error');
+                return;
+            }
+
+            const asset = marketAssets.find(a => a.ticker === ticker);
+            if (!asset) return;
+
+            gameState.cash += asset.price;
+            gameState.portfolio[ticker] = owned - 1;
+            if (gameState.portfolio[ticker] === 0) {
+                delete gameState.portfolio[ticker];
+            }
+            playSound('sell');
+
+            updateDashboardHeader();
+            renderAssetsGrid();
+            updatePortfolioChart();
+            renderLiveLeaderboard();
+            if (gameState.mode === 'multi') sendPlayerUpdate();
+        }
+
+        function calculatePortfolioValue() {
+            let total = 0;
+            for (let ticker in gameState.portfolio) {
+                const asset = marketAssets.find(a => a.ticker === ticker);
+                if (asset) {
+                    total += asset.price * gameState.portfolio[ticker];
+                }
+            }
+            return total;
+        }
+
+        function toggleReadyAdvance() {
+            if (gameState.mode === 'solo') {
+                advanceToNextYearMaster();
+            } else {
+                gameState.isReady = !gameState.isReady;
+                const btn = document.getElementById('advanceYearBtn');
+                const btnText = document.getElementById('advanceBtnText');
+
+                if (gameState.isReady) {
+                    btn.className = 'py-3 px-5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-sm tracking-wide transition shadow-lg flex items-center justify-center gap-2';
+                    btnText.textContent = 'Waiting for Class...';
+                } else {
+                    btn.className = 'py-3 px-5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-sm tracking-wide transition shadow-lg flex items-center justify-center gap-2';
+                    btnText.textContent = 'Advance to Next Year';
+                }
+
+                sendPlayerUpdate();
+                if (gameState.isHost) checkAllPlayersReady();
+            }
+        }
+
+        function checkAllPlayersReady() {
+            if (!gameState.isHost || !gameState.gameStarted) return;
+            const allReady = lobbyPlayers.every(p => p.isReady || p.id === gameState.playerId ? gameState.isReady : false);
+            if (allReady) {
+                advanceToNextYearMaster();
+            }
+        }
+
+        function updateReadyProgressUI() {
+            if (gameState.mode !== 'multi') return;
+            const total = lobbyPlayers.length;
+            const readyCount = lobbyPlayers.filter(p => p.isReady).length;
+            const pct = total > 0 ? Math.round((readyCount / total) * 100) : 0;
+
+            document.getElementById('readyProgressFill').style.width = `${pct}%`;
+            document.getElementById('readyStatusText').textContent = `${readyCount} / ${total} Students Ready`;
+        }
+
         function advanceToNextYearMaster() {
-            // Capture net worth before price update
+            playSound('advance');
             const currentNetWorthBefore = gameState.cash + calculatePortfolioValue();
             gameState.lastYearNetWorth = currentNetWorthBefore;
 
-            // Apply PESTLE news market price shifts with high dopamine volatility engine
             marketAssets.forEach(asset => {
                 let multiplier = 1.0;
 
-                // Sector specific news impact
                 if (currentPestle && currentPestle.impacts[asset.sector]) {
                     multiplier += currentPestle.impacts[asset.sector];
                 }
 
-                // Baseline macro wave so no asset stays static (+-12% market vibe)
                 const baseMacroWave = (Math.random() - 0.48) * 0.24;
                 multiplier += baseMacroWave;
 
-                // High-beta volatility swings for maximum engagement (Crypto, Tech, Commodities)
                 const betaFactor = asset.beta || 1.0;
                 const dynamicVolatility = (Math.random() - 0.45) * 0.22 * betaFactor;
                 multiplier += dynamicVolatility;
 
-                // Add yield dividend payout directly to cash if owned
                 const ownedUnits = gameState.portfolio[asset.ticker] || 0;
                 if (ownedUnits > 0 && typeof asset.divYield === 'number' && asset.divYield > 0) {
                     const dividendPayout = Math.round(ownedUnits * asset.price * (asset.divYield / 100));
                     gameState.cash += dividendPayout;
                 }
 
-                // Ensure price stays positive with realistic integer rounding
                 asset.price = Math.max(5, Math.round(asset.price * multiplier));
                 priceHistories[asset.ticker].push(asset.price);
             });
 
-            // Calculate Net Worth After Market Shift and store exact Year PnL
             const netWorthAfter = gameState.cash + calculatePortfolioValue();
             gameState.lastYearPnl = netWorthAfter - gameState.lastYearNetWorth;
 
-            // Advance year counter
             gameState.year += 1;
             gameState.isReady = false;
+            lobbyPlayers.forEach(p => p.isReady = false);
 
-            // Simulate AI Rival portfolios in Solo mode with realistic high-variance strategies
             if (gameState.mode === 'solo') {
                 lobbyPlayers.forEach(p => {
                     if (p.id !== gameState.playerId) {
@@ -905,10 +1184,8 @@
                 });
             }
 
-            // Pick next news event
             currentPestle = PESTLE_DYNAMIC_DECK[Math.floor(Math.random() * PESTLE_DYNAMIC_DECK.length)];
 
-            // Check if game completed
             if (gameState.year > gameState.maxYears) {
                 finishGameAndShowPodium();
                 return;
@@ -918,7 +1195,6 @@
                 broadcastRoomState();
             }
 
-            // Reset client button UI
             document.getElementById('advanceYearBtn').className = 'py-3 px-5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-sm tracking-wide transition shadow-lg flex items-center justify-center gap-2';
             document.getElementById('advanceBtnText').textContent = 'Advance to Next Year';
 
@@ -927,6 +1203,109 @@
             renderAssetsGrid();
             renderLiveLeaderboard();
             showImpactReportModal();
+        }
+
+        function updateDashboardHeader() {
+            document.getElementById('gameYearDisplay').textContent = `Year ${gameState.year}`;
+            document.getElementById('gameTotalYearsDisplay').textContent = `/ ${gameState.maxYears} Years`;
+            document.getElementById('gameCashDisplay').textContent = `$${gameState.cash.toLocaleString()}`;
+
+            const portVal = calculatePortfolioValue();
+            document.getElementById('gamePortfolioValueDisplay').textContent = `$${portVal.toLocaleString()}`;
+
+            const totalNetWorth = gameState.cash + portVal;
+            document.getElementById('gameNetWorthDisplay').textContent = `$${totalNetWorth.toLocaleString()}`;
+
+            const totalReturn = (((totalNetWorth - INITIAL_CASH) / INITIAL_CASH) * 100).toFixed(1);
+            const returnBadge = document.getElementById('gameReturnDisplay');
+            if (totalReturn >= 0) {
+                returnBadge.className = 'text-xs font-bold px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800';
+                returnBadge.textContent = `+${totalReturn}%`;
+            } else {
+                returnBadge.className = 'text-xs font-bold px-1.5 py-0.5 rounded bg-rose-950 text-rose-400 border border-rose-800';
+                returnBadge.textContent = `${totalReturn}%`;
+            }
+
+            // Lock indicators on tabs
+            document.getElementById('lockEtfIcon').className = gameState.year >= 2 ? 'hidden' : 'fa-solid fa-lock text-[10px] ml-1 text-amber-400';
+            document.getElementById('lockCommIcon').className = gameState.year >= 3 ? 'hidden' : 'fa-solid fa-lock text-[10px] ml-1 text-amber-400';
+            document.getElementById('lockCryptoIcon').className = gameState.year >= 4 ? 'hidden' : 'fa-solid fa-lock text-[10px] ml-1 text-amber-400';
+        }
+
+        function renderPestleBanner() {
+            if (!currentPestle) return;
+            document.getElementById('pestleCategoryTag').textContent = currentPestle.category;
+            document.getElementById('pestleHeadline').textContent = currentPestle.headline;
+            document.getElementById('pestleDescription').textContent = currentPestle.description;
+        }
+
+        function filterAssetCategory(cat) {
+            gameState.categoryFilter = cat;
+            document.querySelectorAll('.asset-tab').forEach(btn => {
+                if (btn.getAttribute('data-cat') === cat) {
+                    btn.className = 'asset-tab px-3 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-500 text-slate-950';
+                } else {
+                    btn.className = 'asset-tab px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:bg-slate-700';
+                }
+            });
+            renderAssetsGrid();
+        }
+
+        function renderAssetsGrid() {
+            const grid = document.getElementById('assetsGrid');
+            grid.innerHTML = '';
+
+            const filtered = marketAssets.filter(a => {
+                if (gameState.categoryFilter === 'all') return true;
+                return a.category === gameState.categoryFilter;
+            });
+
+            filtered.forEach(asset => {
+                const isLocked = asset.unlockYear > gameState.year;
+                const owned = gameState.portfolio[asset.ticker] || 0;
+                const history = priceHistories[asset.ticker] || [asset.price];
+                const prevPrice = history.length > 1 ? history[history.length - 2] : asset.price;
+                const priceChangePct = (((asset.price - prevPrice) / prevPrice) * 100).toFixed(1);
+
+                const card = document.createElement('div');
+                card.className = `bg-slate-900 border ${isLocked ? 'border-slate-800/60 opacity-60' : 'border-slate-800 hover:border-slate-700'} rounded-2xl p-4 flex flex-col justify-between space-y-3 relative transition glow-card`;
+
+                card.innerHTML = `
+                    <div class="space-y-2 cursor-pointer" onclick="openAssetModal('${asset.ticker}')">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="flex items-center space-x-2">
+                                    <h4 class="font-extrabold text-white text-base">${escapeHtml(asset.name)}</h4>
+                                    ${isLocked ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">Yr ${asset.unlockYear} Lock</span>` : ''}
+                                </div>
+                                <span class="text-xs font-mono font-bold text-slate-400">${asset.ticker}</span>
+                            </div>
+                            <span class="text-xs font-bold px-2 py-0.5 rounded ${priceChangePct >= 0 ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-rose-950 text-rose-400 border border-rose-800'}">
+                                ${priceChangePct >= 0 ? '+' : ''}${priceChangePct}%
+                            </span>
+                        </div>
+
+                        <div class="flex justify-between items-baseline pt-1">
+                            <span class="text-2xl font-black text-white">$${asset.price.toLocaleString()}</span>
+                            <span class="text-xs text-slate-400">Yield: <strong class="text-emerald-400">${asset.divYield}%</strong></span>
+                        </div>
+                    </div>
+
+                    <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between">
+                        <span class="text-xs text-slate-400 font-medium">Owned: <strong class="text-white font-mono">${owned}</strong></span>
+
+                        <div class="flex items-center space-x-2">
+                            <button onclick="sellAsset('${asset.ticker}')" ${isLocked || owned <= 0 ? 'disabled' : ''} class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold text-rose-400 border border-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition">
+                                Sell
+                            </button>
+                            <button onclick="buyAsset('${asset.ticker}')" ${isLocked ? 'disabled' : ''} class="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-xs font-black text-slate-950 shadow disabled:opacity-30 disabled:cursor-not-allowed transition">
+                                Buy
+                            </button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
         }
 
         function showImpactReportModal() {
@@ -955,7 +1334,6 @@
 
             document.getElementById('modalImpactNewNetWorth').textContent = `$${totalWorth.toLocaleString()}`;
 
-            // Show year unlocks notice if applicable
             const unlockNotice = document.getElementById('modalUnlockNotice');
             if (gameState.year === 2) {
                 unlockNotice.classList.remove('hidden');
@@ -984,7 +1362,6 @@
             document.getElementById('modalAssetCategory').textContent = asset.category.toUpperCase();
             document.getElementById('modalAssetDesc').textContent = asset.desc;
 
-            // Render Ratios Grid
             const ratiosGrid = document.getElementById('modalRatiosGrid');
             ratiosGrid.innerHTML = `
                 <div class="bg-slate-800 p-2.5 rounded-xl"><span class="text-slate-400 block text-[10px]">P/E Ratio</span><strong class="text-white">${asset.pe}</strong></div>
@@ -1023,9 +1400,7 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
+                    plugins: { legend: { display: false } },
                     cutout: '70%'
                 }
             });
@@ -1049,7 +1424,6 @@
             portfolioChartObj.data.datasets[0].data = data;
             portfolioChartObj.update();
 
-            // Render text summary
             const summaryEl = document.getElementById('portfolioSummaryList');
             summaryEl.innerHTML = '';
             labels.forEach((label, idx) => {
@@ -1100,13 +1474,11 @@
             const list = document.getElementById('liveLeaderboardList');
             list.innerHTML = '';
 
-            // Update current user's net worth in player list
             const me = lobbyPlayers.find(p => p.id === gameState.playerId);
             if (me) {
                 me.netWorth = gameState.cash + calculatePortfolioValue();
             }
 
-            // Sort players by net worth descending
             const sorted = [...lobbyPlayers].sort((a, b) => (b.netWorth || 0) - (a.netWorth || 0));
 
             sorted.forEach((player, rank) => {
@@ -1129,7 +1501,6 @@
             hideAllViews();
             document.getElementById('viewEndGame').classList.remove('hidden');
 
-            // Trigger celebration confetti
             try {
                 confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
             } catch (e) {}
@@ -1149,7 +1520,6 @@
                 document.getElementById('podiumWorth3').textContent = `$${sorted[2].netWorth.toLocaleString()}`;
             }
 
-            // Full standings list
             const fullList = document.getElementById('endGameFullList');
             fullList.innerHTML = '';
             sorted.forEach((p, idx) => {
@@ -1162,16 +1532,9 @@
             });
         }
 
-        function hideAllViews() {
-            document.getElementById('viewMenu').classList.add('hidden');
-            document.getElementById('viewLobby').classList.add('hidden');
-            document.getElementById('viewGame').classList.add('hidden');
-            document.getElementById('viewEndGame').classList.add('hidden');
-        }
-
         function confirmExitToMenu() {
             if (!document.getElementById('viewGame').classList.contains('hidden')) {
-                if (!confirm('Are you sure you want to leave the active simulation match?')) return;
+                if (!confirm('Are you sure you want to exit the active simulation match?')) return;
             }
             hideAllViews();
             document.getElementById('viewMenu').classList.remove('hidden');
@@ -1185,7 +1548,7 @@
 
         // Initialize App on Window Load
         window.onload = function() {
-            console.log("Stockbot Market Master Loaded.");
+            console.log("Stockbot Market Master Initialized.");
         };
     </script>
 </body>
