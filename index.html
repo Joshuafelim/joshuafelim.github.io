@@ -138,9 +138,9 @@
                         <div class="pt-2">
                             <label class="block text-xs font-semibold text-slate-400 mb-1">Match Duration</label>
                             <select id="soloGameLength" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
-                                <option value="10">10 Market Years (Quick ~15 mins)</option>
-                                <option value="15" selected>15 Market Years (Standard ~25 mins)</option>
-                                <option value="20">20 Market Years (Full Empire ~35 mins)</option>
+                                <option value="5">5 Market Years (Sprint ~8 mins)</option>
+                                <option value="10" selected>10 Market Years (Standard ~15 mins)</option>
+                                <option value="15">15 Market Years (Full Campaign ~25 mins)</option>
                             </select>
                         </div>
                     </div>
@@ -173,6 +173,15 @@
                                 <input type="text" id="multiPlayerName" placeholder="e.g. Alex_Finance" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
                             </div>
                             
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 mb-1">Match Duration (Host setting)</label>
+                                <select id="multiGameLength" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
+                                    <option value="5">5 Market Years (Express Session)</option>
+                                    <option value="10" selected>10 Market Years (Standard Class Session)</option>
+                                    <option value="15">15 Market Years (Deep Strategy Session)</option>
+                                </select>
+                            </div>
+
                             <div>
                                 <label class="block text-xs font-semibold text-slate-400 mb-1">6-Letter Room Code (To Join)</label>
                                 <input type="text" id="joinRoomCodeInput" placeholder="e.g. X7K2P9" uppercase maxlength="6" class="w-full bg-slate-800 border border-slate-700 text-white font-mono uppercase tracking-widest rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
@@ -526,12 +535,14 @@
             playerId: 'player_' + Math.random().toString(36).substring(2, 9),
             playerName: 'Trader_Student',
             year: 1,
-            maxYears: 15,
+            maxYears: 10,
             cash: INITIAL_CASH,
             portfolio: {}, // ticker -> shares
             isReady: false,
             categoryFilter: 'all',
-            selectedAssetDetail: null
+            selectedAssetDetail: null,
+            lastYearNetWorth: INITIAL_CASH,
+            lastYearPnl: 0
         };
 
         // Procedural Market Data & Asset Histories
@@ -612,80 +623,80 @@
             }, 3000);
         }
 
-        // Comprehensive PESTLE Macro News Deck
+        // Comprehensive PESTLE Macro News Deck with Amplified Market Impact
         const PESTLE_DYNAMIC_DECK = [
             {
                 category: 'Technological Shock',
-                headline: 'Generative AI Breakthrough Revolutionizes Enterprise Productivity',
-                description: 'A major technological leap reduces software development and cloud operations costs by 40%. Cloud tech giants announce massive profit forecasts.',
-                prompt: 'Will tech equities and growth ETFs outpace traditional commodities and utilities this year?',
-                impacts: { 'Tech': 0.32, 'ETF_TECH': 0.25, 'Energy': -0.08, 'Crypto': 0.18, 'Gold': -0.05 },
-                revealText: 'Tech equities surged (+32%) and Growth ETFs rallied (+25%). Gold softened (-5%) as investors rotated into high-growth equities.'
+                headline: '🚀 Generative AI Breakthrough & Hyper-Scale Cloud Boom',
+                description: 'A revolutionary leap in enterprise AI models slashes tech infrastructure operating costs by 50%. Cloud giants announce blowout corporate earnings!',
+                prompt: 'Tech equities and high-growth ETFs are primed for massive upward momentum!',
+                impacts: { 'Tech': 0.58, 'ETF_TECH': 0.45, 'Energy': -0.15, 'Crypto': 0.65, 'Gold': -0.12, 'Retail': 0.18, 'Mining': 0.25 },
+                revealText: '⚡ TECH & CRYPTO MANIA! Apex Semiconductors exploded +58% and Digital Assets skyrocketed +65%! Investors dumped safe-haven gold (-12%).'
             },
             {
                 category: 'Environmental Disruption',
-                headline: 'Category 5 Super Typhoon Disrupts Global Chip & Energy Refineries',
-                description: 'Extreme weather causes severe coastal flooding, idling major semiconductor fabrication hubs and offshore oil platforms for weeks.',
-                prompt: 'How will physical supply constraints affect semiconductor stock prices and crude oil commodities?',
-                impacts: { 'Tech': -0.22, 'Oil': 0.35, 'Gold': 0.15, 'Healthcare': 0.12, 'Retail': -0.10 },
-                revealText: 'Crude Oil commodities spiked (+35%) on supply shortages. Chip stocks fell (-22%) while Healthcare stocks gained (+12%).'
+                headline: '⚡ Category 5 Super Storm Hits Refineries & Semiconductor Foundries',
+                description: 'Catastrophic typhoons force emergency shutdowns across offshore oil platforms and silicon fabrication plants for months.',
+                prompt: 'Severe energy supply bottlenecks spike crude oil while chipmakers face production halts.',
+                impacts: { 'Tech': -0.35, 'Oil': 0.75, 'Gold': 0.38, 'Healthcare': 0.22, 'Retail': -0.25, 'Agriculture': 0.30 },
+                revealText: '🔥 COMMODITY SPIKE! Crude Oil surged +75% and Physical Gold jumped +38%. Semiconductor stocks plunged -35% under supply chain strain.'
             },
             {
                 category: 'Economic Policy',
-                headline: 'Central Bank Hikes Benchmark Rates to Fight Sticky Inflation',
-                description: 'To control consumer price increases, central bankers raise interest rates by 75 basis points, squeezing high-debt firms and boosting yield products.',
-                prompt: 'What happens to corporate bond yields vs high-P/E speculative growth stocks during rate hikes?',
-                impacts: { 'Bonds': 0.12, 'CD': 0.05, 'Tech': -0.18, 'Crypto': -0.28, 'Banks': 0.20, 'Gold': 0.08 },
-                revealText: 'Bank stocks (+20%) and Bonds (+12%) performed well. Speculative tech (-18%) and Crypto (-28%) faced valuation compressions.'
+                headline: '🏦 Central Banks Raise Rates by 150 BPS to Crush Sticky Inflation',
+                description: 'Central bankers take aggressive anti-inflation measures. Credit tightens, boosting bank margins and bond yields while burning speculative debt-heavy stocks.',
+                prompt: 'High-yield bonds and bank equities benefit, while speculative assets get hit hard.',
+                impacts: { 'Bonds': 0.25, 'CD': 0.12, 'CorpBonds': 0.30, 'Tech': -0.32, 'Crypto': -0.55, 'Banks': 0.42, 'Gold': 0.15 },
+                revealText: '📉 SPECULATIVE REPRICING! Crypto crashed -55% and Tech growth fell -32%. High-Yield Corporate Bonds (+30%) and Treasuries provided strong defensive returns.'
             },
             {
                 category: 'Political & Geopolitical',
-                headline: 'Global Trade Accord Signed to Lower Tariff Barriers',
-                description: 'International leaders ratify a sweeping free-trade treaty, slashing tariffs on agricultural exports, industrial goods, and shipping lines.',
-                prompt: 'Which sectors gain the most from seamless international trade flow?',
-                impacts: { 'Retail': 0.24, 'Agriculture': 0.28, 'ETF_SP': 0.16, 'Gold': -0.10 },
-                revealText: 'Agriculture commodities (+28%) and Retail exports (+24%) posted record gains. Safe-haven Gold dropped (-10%).'
+                headline: '🌐 Mega Free-Trade Pact Signed Across Global Ports',
+                description: 'World leaders abolish tariffs on agricultural exports, consumer retail, and industrial hardware. Global freight volume reaches record highs.',
+                prompt: 'Cross-border commerce, agriculture, and index funds enjoy a historic growth wave.',
+                impacts: { 'Retail': 0.48, 'Agriculture': 0.52, 'ETF_SP': 0.35, 'Mining': 0.38, 'Gold': -0.18 },
+                revealText: '🌾 TRADE EXPANSION! Agriculture commodities rallied +52%, Nova Retail surged +48%, and broad S&P 500 ETFs gained +35%!'
             },
             {
                 category: 'Social & Demographic',
-                headline: 'Global Longevity Initiative Drives Massive Healthcare Infrastructure Spending',
-                description: 'Government grants flood into biotechnology, medical devices, and pharmaceutical manufacturing to support aging demographics.',
-                prompt: 'Will health sector cash flows remain resilient despite broader macroeconomic stagnation?',
-                impacts: { 'Healthcare': 0.38, 'ETF_DIV': 0.14, 'Retail': -0.05, 'Tech': 0.08 },
-                revealText: 'Healthcare equities jumped (+38%). Dividend aristocrat ETFs gained (+14%) on strong defensive inflows.'
+                headline: '🧬 Massive Longevity Breakthrough Sparks Medical Spending Surge',
+                description: 'National healthcare subsidies flood into biopharma and med-tech devices to serve aging populations.',
+                prompt: 'Healthcare cash flows soar as defensive dividend assets see heavy institutional inflows.',
+                impacts: { 'Healthcare': 0.62, 'ETF_DIV': 0.28, 'Retail': -0.10, 'Tech': 0.15, 'CD': 0.08 },
+                revealText: '💊 HEALTHCARE BOOM! Aegis Healthcare leaped +62% following institutional buying sprees!'
             },
             {
                 category: 'Legal & Regulatory',
-                headline: 'Strict Environmental Compliance Mandates Enacted for Heavy Industry',
-                description: 'New carbon regulations impose fines on high-emission miners and fossil fuel producers while incentivizing clean energy tech.',
-                prompt: 'Analyze the shift in capital from traditional mining/oil toward clean energy tech stocks.',
-                impacts: { 'Mining': -0.20, 'Oil': -0.15, 'CleanTech': 0.35, 'ETF_ESG': 0.22 },
-                revealText: 'Clean Tech stocks soared (+35%) and ESG ETFs gained (+22%). Heavy industrial mining slumped (-20%).'
+                headline: '🌿 Eco-Compliance Regulations Crack Down on Heavy Carbon Producers',
+                description: 'New green mandates slap carbon taxes on fossil fuel producers while subsidizing clean tech energy systems and rare-earth green miners.',
+                prompt: 'Capital shifts rapidly away from dirty commodities into green tech and rare minerals.',
+                impacts: { 'Mining': 0.45, 'Oil': -0.38, 'CleanTech': 0.70, 'ETF_ESG': 0.42, 'Gold': 0.20 },
+                revealText: '🌱 GREEN RALLY! Clean Energy & Industrial Mining surged up to +70%, while Crude Oil dropped -38%.'
             }
         ];
 
         function generateProceduralMarket() {
             marketAssets = [
                 // YEAR 1: Core Stocks & Cash/CDs/Govt Bonds
-                { ticker: 'APEX', name: 'Apex Semiconductors', category: 'stocks', sector: 'Tech', unlockYear: 1, price: 120, pe: 28.5, pb: 4.2, divYield: 0.8, debtEquity: 0.3, beta: 1.4, desc: 'Leading manufacturer of AI processors and high-speed memory modules.' },
-                { ticker: 'AEGIS', name: 'Aegis Healthcare', category: 'stocks', sector: 'Healthcare', unlockYear: 1, price: 85, pe: 16.2, pb: 2.1, divYield: 3.2, debtEquity: 0.4, beta: 0.65, desc: 'Global pharmaceutical firm with steady dividend cash flows and patent reserves.' },
-                { ticker: 'NOVA', name: 'Nova Retail Group', category: 'stocks', sector: 'Retail', unlockYear: 1, price: 45, pe: 14.0, pb: 1.8, divYield: 2.5, debtEquity: 0.6, beta: 0.9, desc: 'Omnichannel consumer retail network expanding in high-growth metro markets.' },
-                { ticker: 'SOV', name: 'Sovereign Mining', category: 'stocks', sector: 'Mining', unlockYear: 1, price: 65, pe: 11.5, pb: 1.2, divYield: 4.1, debtEquity: 0.8, beta: 1.2, desc: 'Diversified industrial metals miner producing copper, lithium, and rare earths.' },
-                { ticker: 'US10Y', name: '10-Yr Govt Treasury Bond', category: 'bonds', sector: 'GovtBonds', unlockYear: 1, price: 100, pe: 'N/A', pb: 'N/A', divYield: 4.5, debtEquity: 0.0, beta: 0.1, desc: 'Risk-free government debt offering fixed 4.5% annual coupon yield.' },
-                { ticker: 'CD3Y', name: '3-Year Fixed Certificate Deposit', category: 'bonds', sector: 'CD', unlockYear: 1, price: 100, pe: 'N/A', pb: 'N/A', divYield: 3.8, debtEquity: 0.0, beta: 0.0, desc: 'Guaranteed principal deposit locked with AAA commercial bank.' },
+                { ticker: 'APEX', name: 'Apex Semiconductors', category: 'stocks', sector: 'Tech', unlockYear: 1, price: 120, pe: 28.5, pb: 4.2, divYield: 0.8, debtEquity: 0.3, beta: 2.2, desc: 'Leading manufacturer of AI processors and high-speed memory modules.' },
+                { ticker: 'AEGIS', name: 'Aegis Healthcare', category: 'stocks', sector: 'Healthcare', unlockYear: 1, price: 85, pe: 16.2, pb: 2.1, divYield: 3.2, debtEquity: 0.4, beta: 0.8, desc: 'Global pharmaceutical firm with steady dividend cash flows and patent reserves.' },
+                { ticker: 'NOVA', name: 'Nova Retail Group', category: 'stocks', sector: 'Retail', unlockYear: 1, price: 45, pe: 14.0, pb: 1.8, divYield: 2.5, debtEquity: 0.6, beta: 1.4, desc: 'Omnichannel consumer retail network expanding in high-growth metro markets.' },
+                { ticker: 'SOV', name: 'Sovereign Mining', category: 'stocks', sector: 'Mining', unlockYear: 1, price: 65, pe: 11.5, pb: 1.2, divYield: 4.1, debtEquity: 0.8, beta: 1.7, desc: 'Diversified industrial metals miner producing copper, lithium, and rare earths.' },
+                { ticker: 'US10Y', name: '10-Yr Govt Treasury Bond', category: 'bonds', sector: 'GovtBonds', unlockYear: 1, price: 100, pe: 'N/A', pb: 'N/A', divYield: 5.5, debtEquity: 0.0, beta: 0.2, desc: 'Risk-free government debt offering fixed annual coupon yield.' },
+                { ticker: 'CD3Y', name: '3-Year Fixed Certificate Deposit', category: 'bonds', sector: 'CD', unlockYear: 1, price: 100, pe: 'N/A', pb: 'N/A', divYield: 4.8, debtEquity: 0.0, beta: 0.0, desc: 'Guaranteed principal deposit locked with AAA commercial bank.' },
 
                 // YEAR 2: Index ETFs & High Yield Corporate Bonds
-                { ticker: 'SPX', name: 'S&P 500 Index ETF', category: 'etfs', sector: 'ETF_SP', unlockYear: 2, price: 400, pe: 21.0, pb: 3.0, divYield: 1.8, debtEquity: 0.4, beta: 1.0, desc: 'Broad market benchmark basket tracking top 500 largest US corporations.' },
-                { ticker: 'TECH', name: 'Tech Growth Innovators ETF', category: 'etfs', sector: 'ETF_TECH', unlockYear: 2, price: 250, pe: 32.0, pb: 5.5, divYield: 0.4, debtEquity: 0.2, beta: 1.35, desc: 'Concentrated growth fund holding cloud computing, software, and robotics leaders.' },
-                { ticker: 'CORP', name: 'High-Yield Corporate Bond Fund', category: 'bonds', sector: 'CorpBonds', unlockYear: 2, price: 90, pe: 'N/A', pb: 'N/A', divYield: 6.8, debtEquity: 1.2, beta: 0.4, desc: 'Portfolio of investment-grade corporate bonds paying attractive quarterly yields.' },
+                { ticker: 'SPX', name: 'S&P 500 Index ETF', category: 'etfs', sector: 'ETF_SP', unlockYear: 2, price: 400, pe: 21.0, pb: 3.0, divYield: 1.8, debtEquity: 0.4, beta: 1.2, desc: 'Broad market benchmark basket tracking top 500 largest US corporations.' },
+                { ticker: 'TECH', name: 'Tech Growth Innovators ETF', category: 'etfs', sector: 'ETF_TECH', unlockYear: 2, price: 250, pe: 32.0, pb: 5.5, divYield: 0.4, debtEquity: 0.2, beta: 2.0, desc: 'Concentrated growth fund holding cloud computing, software, and robotics leaders.' },
+                { ticker: 'CORP', name: 'High-Yield Corporate Bond Fund', category: 'bonds', sector: 'CorpBonds', unlockYear: 2, price: 90, pe: 'N/A', pb: 'N/A', divYield: 8.5, debtEquity: 1.2, beta: 0.5, desc: 'Portfolio of investment-grade corporate bonds paying attractive quarterly yields.' },
 
                 // YEAR 3: Gold & Commodities
-                { ticker: 'GOLD', name: 'Physical Gold Bullion', category: 'commodities', sector: 'Gold', unlockYear: 3, price: 180, pe: 'N/A', pb: 'N/A', divYield: 0.0, debtEquity: 0.0, beta: 0.2, desc: 'Hedge asset against currency devaluation, inflation, and market volatility.' },
-                { ticker: 'OIL', name: 'Crude Oil Futures Contract', category: 'commodities', sector: 'Oil', unlockYear: 3, price: 75, pe: 'N/A', pb: 'N/A', divYield: 0.0, debtEquity: 0.0, beta: 1.3, desc: 'Global energy commodity benchmark sensitive to supply shocks and geopolitical events.' },
-                { ticker: 'AGRI', name: 'Wheat & Grain Agricultural Basket', category: 'commodities', sector: 'Agriculture', unlockYear: 3, price: 50, pe: 'N/A', pb: 'N/A', divYield: 0.0, debtEquity: 0.0, beta: 0.7, desc: 'Essential agricultural commodity contracts tied to global weather and crop yields.' },
+                { ticker: 'GOLD', name: 'Physical Gold Bullion', category: 'commodities', sector: 'Gold', unlockYear: 3, price: 180, pe: 'N/A', pb: 'N/A', divYield: 0.0, debtEquity: 0.0, beta: 1.3, desc: 'Hedge asset against currency devaluation, inflation, and market volatility.' },
+                { ticker: 'OIL', name: 'Crude Oil Futures Contract', category: 'commodities', sector: 'Oil', unlockYear: 3, price: 75, pe: 'N/A', pb: 'N/A', divYield: 0.0, debtEquity: 0.0, beta: 2.5, desc: 'Global energy commodity benchmark sensitive to supply shocks and geopolitical events.' },
+                { ticker: 'AGRI', name: 'Wheat & Grain Agricultural Basket', category: 'commodities', sector: 'Agriculture', unlockYear: 3, price: 50, pe: 'N/A', pb: 'N/A', divYield: 0.0, debtEquity: 0.0, beta: 1.5, desc: 'Essential agricultural commodity contracts tied to global weather and crop yields.' },
 
                 // YEAR 4: Speculative Tech & Digital Assets
-                { ticker: 'BTC', name: 'Digital Asset Index (Crypto)', category: 'crypto', sector: 'Crypto', unlockYear: 4, price: 500, pe: 'N/A', pb: 'N/A', divYield: 0.0, debtEquity: 0.0, beta: 2.8, desc: 'Highly volatile decentralized digital store of value with rapid cycle shifts.' }
+                { ticker: 'BTC', name: 'Digital Asset Index (Crypto)', category: 'crypto', sector: 'Crypto', unlockYear: 4, price: 500, pe: 'N/A', pb: 'N/A', divYield: 0.0, debtEquity: 0.0, beta: 3.8, desc: 'Highly volatile decentralized digital store of value with rapid cycle shifts.' }
             ];
 
             // Initialize price history array for each asset
@@ -780,6 +791,9 @@
             gameState.mode = 'multi';
             gameState.isHost = true;
             gameState.roomId = generateRoomCode();
+            gameState.maxYears = parseInt(document.getElementById('multiGameLength').value) || 10;
+            gameState.lastYearNetWorth = INITIAL_CASH;
+            gameState.lastYearPnl = 0;
 
             initMqttNetwork(() => {
                 const roomTopic = `stockbot_v2/room/${gameState.roomId}/#`;
@@ -794,193 +808,19 @@
                 });
             });
         }
-
-        function joinMultiplayerRoom() {
-            const nameInput = document.getElementById('multiPlayerName').value.trim();
-            const roomCodeInput = document.getElementById('joinRoomCodeInput').value.trim().toUpperCase();
-
-            if (!nameInput) {
-                showToast('Please enter your name!', 'error');
-                return;
-            }
-            if (!roomCodeInput || roomCodeInput.length !== 6) {
-                showToast('Please enter a valid 6-letter room code!', 'error');
-                return;
-            }
-
-            gameState.playerName = nameInput;
-            gameState.mode = 'multi';
-            gameState.isHost = false;
-            gameState.roomId = roomCodeInput;
-
-            showToast('Connecting to room...', 'info');
-
-            initMqttNetwork(() => {
-                const roomTopic = `stockbot_v2/room/${gameState.roomId}/#`;
-                mqttClient.subscribe(roomTopic, (err) => {
-                    if (!err) {
-                        // Send join request to host
-                        mqttClient.publish(`stockbot_v2/room/${gameState.roomId}/join`, JSON.stringify({
-                            id: gameState.playerId,
-                            name: gameState.playerName
-                        }));
-                        showLobbyView();
-                    }
-                });
-            });
-        }
-
-        function broadcastRoomState() {
-            if (!gameState.isHost || !mqttClient) return;
-
-            const roomStateData = {
-                roomId: gameState.roomId,
-                gameStarted: gameState.gameStarted || false,
-                year: gameState.year,
-                maxYears: gameState.maxYears,
-                players: lobbyPlayers,
-                currentPestle: currentPestle,
-                assets: marketAssets,
-                histories: priceHistories
-            };
-
-            mqttClient.publish(`stockbot_v2/room/${gameState.roomId}/state`, JSON.stringify(roomStateData));
-        }
-
-        function handleMqttMessage(topic, data) {
-            const action = topic.split('/').pop();
-
-            if (action === 'state') {
-                // Clients receive room state from Host
-                if (!gameState.isHost) {
-                    lobbyPlayers = data.players || [];
-                    if (data.currentPestle) currentPestle = data.currentPestle;
-                    if (data.assets && data.assets.length > 0) marketAssets = data.assets;
-                    if (data.histories) priceHistories = data.histories;
-
-                    renderLobbyPlayerList();
-
-                    // Check if host started game
-                    if (data.gameStarted && document.getElementById('viewGame').classList.contains('hidden')) {
-                        showGameView();
-                    }
-
-                    // Check if year advanced
-                    if (data.gameStarted && data.year > gameState.year) {
-                        gameState.year = data.year;
-                        gameState.isReady = false;
-                        updateDashboardHeader();
-                        renderAssetsGrid();
-                        showImpactReportModal();
-                    }
-
-                    // Update live ready progress in multiplayer mode
-                    if (data.gameStarted) {
-                        updateMultiplayerReadyBar();
-                        renderLiveLeaderboard();
-                    }
-                }
-            } else if (action === 'join' && gameState.isHost) {
-                // Host receives student join request
-                const existing = lobbyPlayers.find(p => p.id === data.id);
-                if (!existing) {
-                    lobbyPlayers.push({
-                        id: data.id,
-                        name: data.name,
-                        isHost: false,
-                        isReady: false,
-                        netWorth: INITIAL_CASH
-                    });
-                    showToast(`${data.name} joined the room!`, 'success');
-                    broadcastRoomState();
-                    renderLobbyPlayerList();
-                }
-            } else if (action === 'ready') {
-                // Player toggles ready status
-                const player = lobbyPlayers.find(p => p.id === data.id);
-                if (player) {
-                    player.isReady = data.isReady;
-                    player.netWorth = data.netWorth || player.netWorth;
-                }
-
-                if (gameState.isHost) {
-                    broadcastRoomState();
-                    renderLiveLeaderboard();
-
-                    // Check if ALL players are ready in multiplayer
-                    const allReady = lobbyPlayers.length > 0 && lobbyPlayers.every(p => p.isReady);
-                    if (allReady && gameState.gameStarted) {
-                        advanceToNextYearMaster();
-                    }
-                }
-            }
-        }
-
-        function generateRoomCode() {
-            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-            let code = '';
-            for (let i = 0; i < 6; i++) {
-                code += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            return code;
-        }
-
-        function showLobbyView() {
-            hideAllViews();
-            document.getElementById('viewLobby').classList.remove('hidden');
-            document.getElementById('lobbyRoomCodeDisplay').textContent = gameState.roomId;
-            document.getElementById('roomBadge').classList.remove('hidden');
-            document.getElementById('roomBadge').classList.add('flex');
-            document.getElementById('roomBadgeCode').textContent = gameState.roomId;
-
-            if (gameState.isHost) {
-                document.getElementById('lobbyHostControls').classList.remove('hidden');
-                document.getElementById('lobbyClientNotice').classList.add('hidden');
-            } else {
-                document.getElementById('lobbyHostControls').classList.add('hidden');
-                document.getElementById('lobbyClientNotice').classList.remove('hidden');
-            }
-
-            renderLobbyPlayerList();
-        }
-
-        function renderLobbyPlayerList() {
-            const listEl = document.getElementById('lobbyPlayerList');
-            const countEl = document.getElementById('lobbyPlayerCount');
-            
-            countEl.textContent = `${lobbyPlayers.length} ${lobbyPlayers.length === 1 ? 'PLAYER' : 'PLAYERS'}`;
-            listEl.innerHTML = '';
-
-            lobbyPlayers.forEach(player => {
-                const item = document.createElement('div');
-                item.className = 'flex items-center justify-between p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-xs';
-                item.innerHTML = `
-                    <div class="flex items-center space-x-2">
-                        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                        <span class="font-bold text-white">${escapeHtml(player.name)} ${player.id === gameState.playerId ? '(You)' : ''}</span>
-                    </div>
-                    ${player.isHost ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">HOST</span>' : '<span class="text-xs text-slate-400">Ready</span>'}
-                `;
-                listEl.appendChild(item);
-            });
-        }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
+<!-- ... existing code ... baseline game start methods -->
         function startSoloGame() {
             const nameInput = document.getElementById('soloPlayerName').value.trim();
             if (nameInput) gameState.playerName = nameInput;
 
             gameState.mode = 'solo';
             gameState.isHost = true;
-            gameState.maxYears = parseInt(document.getElementById('soloGameLength').value);
+            gameState.maxYears = parseInt(document.getElementById('soloGameLength').value) || 10;
             gameState.year = 1;
             gameState.cash = INITIAL_CASH;
             gameState.portfolio = {};
+            gameState.lastYearNetWorth = INITIAL_CASH;
+            gameState.lastYearPnl = 0;
 
             generateProceduralMarket();
             currentPestle = PESTLE_DYNAMIC_DECK[Math.floor(Math.random() * PESTLE_DYNAMIC_DECK.length)];
@@ -1003,307 +843,64 @@
 
             gameState.gameStarted = true;
             gameState.year = 1;
+            gameState.lastYearNetWorth = INITIAL_CASH;
+            gameState.lastYearPnl = 0;
             generateProceduralMarket();
             currentPestle = PESTLE_DYNAMIC_DECK[Math.floor(Math.random() * PESTLE_DYNAMIC_DECK.length)];
 
             broadcastRoomState();
             showGameView();
         }
-
-        function showGameView() {
-            hideAllViews();
-            document.getElementById('viewGame').classList.remove('hidden');
-
-            if (gameState.mode === 'multi') {
-                document.getElementById('multiplayerReadyBar').classList.remove('hidden');
-                document.getElementById('leaderboardModeBadge').textContent = `Room ${gameState.roomId}`;
-            } else {
-                document.getElementById('multiplayerReadyBar').classList.add('hidden');
-                document.getElementById('leaderboardModeBadge').textContent = 'Solo Campaign';
-            }
-
-            updateDashboardHeader();
-            renderPestleBanner();
-            renderAssetsGrid();
-            renderLiveLeaderboard();
-            initPortfolioChart();
-        }
-
-        function updateDashboardHeader() {
-            document.getElementById('gameYearDisplay').textContent = `Year ${gameState.year}`;
-            document.getElementById('gameTotalYearsDisplay').textContent = `/ ${gameState.maxYears} Years`;
-            document.getElementById('gameCashDisplay').textContent = `$${gameState.cash.toLocaleString()}`;
-
-            const portfolioVal = calculatePortfolioValue();
-            const totalWorth = gameState.cash + portfolioVal;
-            const returnPct = (((totalWorth - INITIAL_CASH) / INITIAL_CASH) * 100).toFixed(1);
-
-            document.getElementById('gamePortfolioValueDisplay').textContent = `$${portfolioVal.toLocaleString()}`;
-            document.getElementById('gameNetWorthDisplay').textContent = `$${totalWorth.toLocaleString()}`;
-
-            const retEl = document.getElementById('gameReturnDisplay');
-            retEl.textContent = `${returnPct >= 0 ? '+' : ''}${returnPct}%`;
-            retEl.className = `text-xs font-bold px-1.5 py-0.5 rounded ${returnPct >= 0 ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-rose-950 text-rose-400 border border-rose-800'}`;
-
-            // Check unlock tab icons
-            document.getElementById('lockEtfIcon').style.display = gameState.year >= 2 ? 'none' : 'inline';
-            document.getElementById('lockCommIcon').style.display = gameState.year >= 3 ? 'none' : 'inline';
-            document.getElementById('lockCryptoIcon').style.display = gameState.year >= 4 ? 'none' : 'inline';
-
-            updatePortfolioChart();
-        }
-
-        function calculatePortfolioValue() {
-            let total = 0;
-            for (let ticker in gameState.portfolio) {
-                const asset = marketAssets.find(a => a.ticker === ticker);
-                if (asset) {
-                    total += (gameState.portfolio[ticker] || 0) * asset.price;
-                }
-            }
-            return total;
-        }
-
-        function renderPestleBanner() {
-            if (!currentPestle) return;
-            document.getElementById('pestleCategoryTag').textContent = currentPestle.category;
-            document.getElementById('pestleHeadline').textContent = currentPestle.headline;
-            document.getElementById('pestleDescription').textContent = currentPestle.description;
-        }
-
-        function filterAssetCategory(cat) {
-            gameState.categoryFilter = cat;
-            document.querySelectorAll('.asset-tab').forEach(tab => {
-                if (tab.dataset.cat === cat) {
-                    tab.className = 'asset-tab px-3 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-500 text-slate-950';
-                } else {
-                    tab.className = 'asset-tab px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:bg-slate-700';
-                }
-            });
-            renderAssetsGrid();
-        }
-
-        function renderAssetsGrid() {
-            const grid = document.getElementById('assetsGrid');
-            grid.innerHTML = '';
-
-            const filtered = marketAssets.filter(asset => {
-                if (gameState.categoryFilter === 'all') return true;
-                return asset.category === gameState.categoryFilter;
-            });
-
-            filtered.forEach(asset => {
-                const isUnlocked = gameState.year >= asset.unlockYear;
-                const ownedQty = gameState.portfolio[asset.ticker] || 0;
-                const history = priceHistories[asset.ticker] || [asset.price];
-                const prevPrice = history.length > 1 ? history[history.length - 2] : asset.price;
-                const priceChangePct = (((asset.price - prevPrice) / prevPrice) * 100).toFixed(1);
-
-                const card = document.createElement('div');
-                card.className = `bg-slate-900 border ${isUnlocked ? 'border-slate-800 hover:border-slate-700' : 'border-slate-800/50 opacity-60'} rounded-2xl p-4 flex flex-col justify-between space-y-3 transition glow-card relative overflow-hidden`;
-
-                if (!isUnlocked) {
-                    card.innerHTML = `
-                        <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-xs flex flex-col items-center justify-center space-y-1 z-10 text-center p-4">
-                            <i class="fa-solid fa-lock text-2xl text-amber-400"></i>
-                            <span class="text-xs font-extrabold text-white">UNLOCKS IN YEAR ${asset.unlockYear}</span>
-                            <span class="text-[10px] text-slate-400">Advance years to unlock ${asset.name}</span>
-                        </div>
-                    `;
-                } else {
-                    card.innerHTML = `
-                        <div>
-                            <!-- Card Header -->
-                            <div class="flex justify-between items-start cursor-pointer" onclick="openAssetModal('${asset.ticker}')">
-                                <div>
-                                    <div class="flex items-center space-x-2">
-                                        <span class="font-mono font-bold text-xs text-emerald-400">${asset.ticker}</span>
-                                        <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-semibold uppercase">${asset.sector}</span>
-                                    </div>
-                                    <h4 class="font-extrabold text-sm text-white mt-0.5 hover:text-emerald-300 transition">${asset.name}</h4>
-                                </div>
-                                <i class="fa-solid fa-chart-line text-slate-500 hover:text-emerald-400 text-sm transition"></i>
-                            </div>
-
-                            <!-- Price & Change -->
-                            <div class="flex items-baseline justify-between mt-3">
-                                <div>
-                                    <span class="text-xs text-slate-400 block">Unit Price</span>
-                                    <span class="text-lg font-black text-white">$${asset.price.toLocaleString()}</span>
-                                </div>
-                                <span class="text-xs font-bold px-1.5 py-0.5 rounded ${priceChangePct >= 0 ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-rose-950 text-rose-400 border border-rose-800'}">
-                                    ${priceChangePct >= 0 ? '+' : ''}${priceChangePct}%
-                                </span>
-                            </div>
-
-                            <!-- Position Info -->
-                            <div class="bg-slate-950 p-2 rounded-xl border border-slate-800/80 flex justify-between text-xs mt-3">
-                                <span class="text-slate-400">Owned: <strong class="text-white font-mono">${ownedQty} units</strong></span>
-                                <span class="text-slate-400">Val: <strong class="text-emerald-400 font-mono">$${(ownedQty * asset.price).toLocaleString()}</strong></span>
-                            </div>
-                        </div>
-
-                        <!-- Trading Controls & Bulk Quantity Input -->
-                        <div class="space-y-2 pt-2 border-t border-slate-800/80">
-                            <!-- Preset Quantity Selector -->
-                            <div class="flex items-center gap-1 text-[10px]">
-                                <span class="text-slate-400 font-bold mr-1">Qty:</span>
-                                <input type="number" id="qty_${asset.ticker}" value="1" min="1" class="w-14 bg-slate-800 border border-slate-700 text-white font-mono rounded px-1.5 py-0.5 text-center focus:outline-none focus:border-emerald-500">
-                                <button onclick="adjustQty('${asset.ticker}', 10)" class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold">+10</button>
-                                <button onclick="adjustQty('${asset.ticker}', 100)" class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold">+100</button>
-                                <button onclick="setMaxBuyQty('${asset.ticker}')" class="px-1.5 py-0.5 rounded bg-emerald-950 hover:bg-emerald-900 text-emerald-400 font-bold border border-emerald-800">Max Buy</button>
-                            </div>
-
-                            <!-- Action Buttons -->
-                            <div class="grid grid-cols-2 gap-2">
-                                <button onclick="executeBuy('${asset.ticker}')" class="py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs transition flex items-center justify-center gap-1 shadow">
-                                    <i class="fa-solid fa-plus"></i> Buy
-                                </button>
-                                <button onclick="executeSell('${asset.ticker}')" class="py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs border border-slate-700 transition flex items-center justify-center gap-1">
-                                    <i class="fa-solid fa-minus"></i> Sell
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                }
-
-                grid.appendChild(card);
-            });
-        }
-
-        function adjustQty(ticker, delta) {
-            const input = document.getElementById(`qty_${ticker}`);
-            if (input) {
-                let current = parseInt(input.value) || 1;
-                input.value = Math.max(1, current + delta);
-            }
-        }
-
-        function setMaxBuyQty(ticker) {
-            const asset = marketAssets.find(a => a.ticker === ticker);
-            const input = document.getElementById(`qty_${ticker}`);
-            if (asset && input) {
-                const maxShares = Math.floor(gameState.cash / asset.price);
-                input.value = Math.max(1, maxShares);
-            }
-        }
-
-        function executeBuy(ticker) {
-            const asset = marketAssets.find(a => a.ticker === ticker);
-            const qtyInput = document.getElementById(`qty_${ticker}`);
-            const qty = parseInt(qtyInput ? qtyInput.value : 1) || 1;
-
-            if (!asset) return;
-            const cost = qty * asset.price;
-
-            if (gameState.cash < cost) {
-                showToast(`Insufficient cash! You need $${cost.toLocaleString()}`, 'error');
-                return;
-            }
-
-            gameState.cash -= cost;
-            gameState.portfolio[ticker] = (gameState.portfolio[ticker] || 0) + qty;
-
-            playSound('buy');
-            showToast(`Bought ${qty} ${asset.ticker} for $${cost.toLocaleString()}`, 'success');
-            updateDashboardHeader();
-            renderAssetsGrid();
-        }
-
-        function executeSell(ticker) {
-            const asset = marketAssets.find(a => a.ticker === ticker);
-            const qtyInput = document.getElementById(`qty_${ticker}`);
-            const qty = parseInt(qtyInput ? qtyInput.value : 1) || 1;
-
-            const owned = gameState.portfolio[ticker] || 0;
-
-            if (!asset || owned < qty) {
-                showToast(`You only own ${owned} units of ${ticker}`, 'error');
-                return;
-            }
-
-            const revenue = qty * asset.price;
-            gameState.cash += revenue;
-            gameState.portfolio[ticker] -= qty;
-
-            if (gameState.portfolio[ticker] === 0) {
-                delete gameState.portfolio[ticker];
-            }
-
-            playSound('sell');
-            showToast(`Sold ${qty} ${asset.ticker} for $${revenue.toLocaleString()}`, 'success');
-            updateDashboardHeader();
-            renderAssetsGrid();
-        }
-
-        function toggleReadyAdvance() {
-            gameState.isReady = !gameState.isReady;
-            playSound('advance');
-
-            const btnText = document.getElementById('advanceBtnText');
-            const btn = document.getElementById('advanceYearBtn');
-
-            if (gameState.isReady) {
-                btn.className = 'py-3 px-5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-sm tracking-wide transition shadow-lg flex items-center justify-center gap-2';
-                btnText.textContent = 'Locked Ready! (Waiting...)';
-            } else {
-                btn.className = 'py-3 px-5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-sm tracking-wide transition shadow-lg flex items-center justify-center gap-2';
-                btnText.textContent = 'Advance to Next Year';
-            }
-
-            const currentWorth = gameState.cash + calculatePortfolioValue();
-
-            if (gameState.mode === 'multi' && mqttClient) {
-                // Publish ready status to MQTT broker
-                mqttClient.publish(`stockbot_v2/room/${gameState.roomId}/ready`, JSON.stringify({
-                    id: gameState.playerId,
-                    isReady: gameState.isReady,
-                    netWorth: currentWorth
-                }));
-            } else if (gameState.mode === 'solo') {
-                // In Solo mode, advance immediately
-                advanceToNextYearMaster();
-            }
-        }
-
-        function updateMultiplayerReadyBar() {
-            const readyCount = lobbyPlayers.filter(p => p.isReady).length;
-            const total = lobbyPlayers.length;
-            const pct = total > 0 ? (readyCount / total) * 100 : 0;
-
-            document.getElementById('readyProgressFill').style.width = `${pct}%`;
-            document.getElementById('readyStatusText').textContent = `${readyCount} / ${total} Students Ready`;
-        }
-
+<!-- ... existing code ... advance year calculations ... -->
         function advanceToNextYearMaster() {
-            // Apply PESTLE news market price shifts
+            // Capture net worth before price update
+            const currentNetWorthBefore = gameState.cash + calculatePortfolioValue();
+            gameState.lastYearNetWorth = currentNetWorthBefore;
+
+            // Apply PESTLE news market price shifts with high dopamine volatility engine
             marketAssets.forEach(asset => {
                 let multiplier = 1.0;
 
-                // Sector news impact
+                // Sector specific news impact
                 if (currentPestle && currentPestle.impacts[asset.sector]) {
                     multiplier += currentPestle.impacts[asset.sector];
                 }
 
-                // Random market volatility factor based on asset Beta
-                const randomShift = (Math.random() - 0.48) * 0.15 * (asset.beta || 1.0);
-                multiplier += randomShift;
+                // Baseline macro wave so no asset stays static (+-12% market vibe)
+                const baseMacroWave = (Math.random() - 0.48) * 0.24;
+                multiplier += baseMacroWave;
 
-                // Ensure price stays positive
-                asset.price = Math.max(10, Math.round(asset.price * multiplier));
+                // High-beta volatility swings for maximum engagement (Crypto, Tech, Commodities)
+                const betaFactor = asset.beta || 1.0;
+                const dynamicVolatility = (Math.random() - 0.45) * 0.22 * betaFactor;
+                multiplier += dynamicVolatility;
+
+                // Add yield dividend payout directly to cash if owned
+                const ownedUnits = gameState.portfolio[asset.ticker] || 0;
+                if (ownedUnits > 0 && typeof asset.divYield === 'number' && asset.divYield > 0) {
+                    const dividendPayout = Math.round(ownedUnits * asset.price * (asset.divYield / 100));
+                    gameState.cash += dividendPayout;
+                }
+
+                // Ensure price stays positive with realistic integer rounding
+                asset.price = Math.max(5, Math.round(asset.price * multiplier));
                 priceHistories[asset.ticker].push(asset.price);
             });
+
+            // Calculate Net Worth After Market Shift and store exact Year PnL
+            const netWorthAfter = gameState.cash + calculatePortfolioValue();
+            gameState.lastYearPnl = netWorthAfter - gameState.lastYearNetWorth;
 
             // Advance year counter
             gameState.year += 1;
             gameState.isReady = false;
 
-            // Simulate AI Rival portfolios in Solo mode
+            // Simulate AI Rival portfolios in Solo mode with realistic high-variance strategies
             if (gameState.mode === 'solo') {
                 lobbyPlayers.forEach(p => {
                     if (p.id !== gameState.playerId) {
-                        const marketGain = (Math.random() - 0.45) * 0.20;
-                        p.netWorth = Math.round(p.netWorth * (1 + marketGain));
+                        const aiShift = (Math.random() - 0.42) * 0.35;
+                        p.netWorth = Math.max(10000, Math.round(p.netWorth * (1 + aiShift)));
                     }
                 });
             }
@@ -1344,6 +941,18 @@
             }
 
             const totalWorth = gameState.cash + calculatePortfolioValue();
+            const pnl = gameState.lastYearPnl;
+            const pnlPct = gameState.lastYearNetWorth > 0 ? ((pnl / gameState.lastYearNetWorth) * 100).toFixed(1) : '0.0';
+
+            const pnlElement = document.getElementById('modalImpactYearPnl');
+            if (pnl >= 0) {
+                pnlElement.className = 'text-lg font-black text-emerald-400 mt-0.5';
+                pnlElement.textContent = `+$${pnl.toLocaleString()} (+${pnlPct}%)`;
+            } else {
+                pnlElement.className = 'text-lg font-black text-rose-400 mt-0.5';
+                pnlElement.textContent = `-$${Math.abs(pnl).toLocaleString()} (${pnlPct}%)`;
+            }
+
             document.getElementById('modalImpactNewNetWorth').textContent = `$${totalWorth.toLocaleString()}`;
 
             // Show year unlocks notice if applicable
