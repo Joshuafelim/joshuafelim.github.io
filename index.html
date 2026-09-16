@@ -1,529 +1,499 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stockbot - Mr. Felim's Finance Club</title>
+    <title>Stockbot Market Master - Mr. Felim's Finance Club</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome Icons -->
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js -->
+    <!-- Chart.js for charts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Canvas Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <!-- MQTT.js for Zero-Config Universal Multi-Device Sync -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
-    
+    <!-- MQTT.js for zero-config global multiplayer WebSockets -->
+    <script src="https://unpkg.com/mqtt@4.3.7/dist/mqtt.min.js"></script>
+
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        stax: {
-                            bg: '#0f172a',
-                            card: '#1e293b',
-                            border: '#334155',
-                            accent: '#10b981',
-                            accentHover: '#059669',
-                            danger: '#ef4444',
-                            warning: '#f59e0b',
-                            blue: '#3b82f6'
+                        slate: {
+                            950: '#090d16',
+                            900: '#0f172a',
+                            800: '#1e293b',
+                            700: '#334155'
+                        },
+                        emerald: {
+                            400: '#34d399',
+                            500: '#10b981',
+                            600: '#059669',
+                            950: '#022c22'
+                        },
+                        amber: {
+                            400: '#fbbf24',
+                            500: '#f59e0b'
+                        },
+                        rose: {
+                            500: '#f43f5e',
+                            600: '#e11d48',
+                            950: '#4c0519'
                         }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif']
                     }
                 }
             }
         }
     </script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
         body {
-            background-color: #0b0f19;
+            font-family: 'Inter', sans-serif;
+            background-color: #090d16;
             color: #f8fafc;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            user-select: none;
         }
-        .custom-scrollbar::-webkit-scrollbar {
+        .glow-emerald {
+            box-shadow: 0 0 20px -5px rgba(16, 185, 129, 0.4);
+        }
+        .glow-card:hover {
+            box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.15);
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
         }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #1e293b;
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
             border-radius: 4px;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
+        ::-webkit-scrollbar-thumb:hover {
             background: #475569;
-            border-radius: 4px;
-        }
-        .glow-accent {
-            box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
-        }
-        .glow-card {
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-        }
-        .modal-backdrop {
-            background-color: rgba(11, 15, 25, 0.85);
-            backdrop-filter: blur(8px);
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between custom-scrollbar antialiased">
+<body class="min-h-screen flex flex-col justify-between selection:bg-emerald-500 selection:text-slate-950">
 
-    <!-- Top Header Navigation -->
-    <header class="bg-slate-900 border-b border-slate-800 px-4 md:px-8 py-3 sticky top-0 z-40 shadow-lg">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
+    
+    <!-- Top Header Bar -->
+    <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-40 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
             <div class="flex items-center space-x-3 cursor-pointer" onclick="confirmExitToMenu()">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-slate-950 font-black text-xl shadow-md">
-                    <i class="fa-solid font-bold fa-chart-line"></i>
+                <div class="bg-gradient-to-tr from-emerald-500 to-teal-400 p-2 rounded-xl text-slate-950 font-black text-xl flex items-center justify-center shadow-lg">
+                    <i class="fa-solid fa-chart-line"></i>
                 </div>
                 <div>
-                    <h1 class="font-extrabold text-lg md:text-xl tracking-tight text-white flex items-center gap-2">
-                        Stockbot <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800">Finance Club</span>
+                    <h1 class="text-lg font-black tracking-tight text-white flex items-center gap-2">
+                        STOCKBOT <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Club Edition</span>
                     </h1>
-                    <p class="text-xs text-slate-400 hidden sm:block">Mr. Felim's Interactive Asset Simulator</p>
+                    <p class="text-[11px] text-slate-400">Mr. Felim's Finance Club Market Simulator</p>
                 </div>
             </div>
 
-            <!-- Global Status Badge & Controls -->
-            <div class="flex items-center space-x-3">
-                <div id="connectionStatusBadge" class="hidden items-center space-x-2 text-xs px-3 py-1.5 rounded-full bg-slate-800 border border-slate-700">
-                    <span id="connectionDot" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
-                    <span id="connectionText" class="text-slate-300 font-medium">Offline</span>
+            <!-- In-Game Stats Header (Visible during game) -->
+            <div id="gameHeaderStats" class="hidden flex items-center space-x-4 sm:space-x-6 text-xs sm:text-sm">
+                <div class="bg-slate-950 border border-slate-800 px-3 py-1.5 rounded-xl">
+                    <span class="text-slate-400 block text-[10px] font-bold uppercase tracking-wider">Market Year</span>
+                    <span id="statYear" class="font-extrabold text-amber-400 text-sm sm:text-base">Year 1 / 10</span>
                 </div>
-
-                <div id="roomBadge" class="hidden items-center space-x-2 text-xs px-3 py-1.5 rounded-full bg-emerald-950/80 border border-emerald-800/80 text-emerald-300">
-                    <i class="fa-solid fa-users"></i>
-                    <span>Room: <strong id="roomBadgeCode" class="font-mono font-bold uppercase">------</strong></span>
+                <div class="bg-slate-950 border border-slate-800 px-3 py-1.5 rounded-xl">
+                    <span class="text-slate-400 block text-[10px] font-bold uppercase tracking-wider">Available Cash</span>
+                    <span id="statCash" class="font-extrabold text-emerald-400 text-sm sm:text-base">$100,000</span>
                 </div>
-
-                <button onclick="toggleAudio()" id="audioBtn" class="w-9 h-9 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center justify-center text-slate-300 transition">
-                    <i class="fa-solid fa-volume-high" id="audioIcon"></i>
+                <div class="bg-slate-950 border border-slate-800 px-3 py-1.5 rounded-xl hidden sm:block">
+                    <span class="text-slate-400 block text-[10px] font-bold uppercase tracking-wider">Portfolio Value</span>
+                    <span id="statNetWorth" class="font-extrabold text-white text-sm sm:text-base">$100,000</span>
+                </div>
+                <button onclick="toggleAudio()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+                    <i id="audioIcon" class="fa-solid fa-volume-high"></i>
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- Main Content Area -->
-    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 md:px-8 py-6">
+    <!-- Main Container Views -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6">
 
-        <!-- VIEW 1: MAIN MENU (Solo or Multiplayer Host/Join) -->
-        <section id="viewMenu" class="space-y-8 py-4">
-            <div class="text-center max-w-3xl mx-auto space-y-3">
-                <span class="px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                    Interactive Club Simulator
-                </span>
-                <h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">
+        <!-- VIEW 1: MAIN MENU LANDING -->
+        <div id="viewMainMenu" class="space-y-8 max-w-4xl mx-auto py-6">
+            <div class="text-center space-y-3">
+                <h2 class="text-3xl sm:text-5xl font-black text-white tracking-tight">
                     Stock Market Simulation
                 </h2>
-                <p class="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed">
-                    A competitive turn-based stock & asset simulator designed for finance club. Analyze stock ratios, PESTLE news, bonds, gold, and commodities. Advance years when you're ready!
+                <p class="text-emerald-400 font-bold text-lg">Mr. Felim's Finance Club</p>
+                <p class="text-slate-400 max-w-2xl mx-auto text-sm leading-relaxed">
+                    A competitive turn-based stock & asset simulator designed for finance club. Take your time analyzing stock ratios, PESTLE news, bonds, gold, and commodities. Advance years when you're ready.
                 </p>
             </div>
 
-            <div class="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto pt-4">
-                <!-- Solo Mode Card -->
-                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 md:p-8 flex flex-col justify-between hover:border-emerald-500/50 transition glow-card">
+            <!-- Mode Selection Cards -->
+            <div class="grid md:grid-cols-2 gap-6 pt-4">
+
+                <!-- SOLO MODE CARD -->
+                <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 hover:border-emerald-500/50 transition flex flex-col justify-between space-y-6">
                     <div class="space-y-4">
-                        <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-xl">
+                        <div class="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-400 text-2xl border border-emerald-500/20">
                             <i class="fa-solid fa-user-astronaut"></i>
                         </div>
-                        <h3 class="text-xl font-bold text-white">Solo Campaign Mode</h3>
-                        <p class="text-xs sm:text-sm text-slate-400 leading-relaxed">
-                            Compete against 4 AI Investor Personalities (Value Hunter, Growth Tech, High-Yield Allocator, Speculative Trader). Learn asset dynamics at your own pace.
-                        </p>
-                        
-                        <div class="pt-2">
-                            <label class="block text-xs font-semibold text-slate-400 mb-1">Match Duration</label>
-                            <select id="soloGameLength" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
-                                <option value="5">5 Market Years (Sprint ~8 mins)</option>
-                                <option value="10" selected>10 Market Years (Standard ~15 mins)</option>
-                                <option value="15">15 Market Years (Full Campaign ~25 mins)</option>
+                        <div>
+                            <h3 class="text-xl font-bold text-white">Solo Campaign vs AI Rivals</h3>
+                            <p class="text-slate-400 text-xs mt-1 leading-relaxed">
+                                Practice strategy against 4 AI investor personalities (Value, Growth, High-Yield, Speculative). Take your time analyzing stock ratios each year.
+                            </p>
+                        </div>
+
+                        <!-- Match Duration Selector -->
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-bold text-slate-300 uppercase tracking-wider">Game Duration</label>
+                            <select id="soloDurationSelect" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none focus:border-emerald-500">
+                                <option value="5">5 Years (Express Match - ~8 mins)</option>
+                                <option value="10" selected>10 Years (Standard Match - ~15 mins)</option>
+                                <option value="15">15 Years (Full Campaign - ~22 mins)</option>
                             </select>
                         </div>
                     </div>
 
-                    <div class="pt-6">
-                        <input type="text" id="soloPlayerName" placeholder="Enter Your Student Name" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm mb-3 focus:outline-none focus:border-emerald-500" value="Trader_Student">
-                        <button onclick="startSoloGame()" class="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-sm tracking-wide transition shadow-lg flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-play"></i> Play Solo vs AI Rivals
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Multiplayer Mode Card -->
-                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 md:p-8 flex flex-col justify-between hover:border-blue-500/50 transition glow-card">
-                    <div class="space-y-4">
-                        <div class="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 text-xl">
-                            <i class="fa-solid fa-network-wired"></i>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <h3 class="text-xl font-bold text-white">Classroom Multiplayer</h3>
-                            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">Any Device / PC</span>
-                        </div>
-                        <p class="text-xs sm:text-sm text-slate-400 leading-relaxed">
-                            Create or join a classroom room. Everyone analyzes options on their screen. Market years advance together when all students click Ready!
-                        </p>
-
-                        <div class="space-y-3 pt-2">
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-400 mb-1">Your Display Name</label>
-                                <input type="text" id="multiPlayerName" placeholder="e.g. Alex_Finance" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
-                            </div>
-                            
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-400 mb-1">Match Duration (Host setting)</label>
-                                <select id="multiGameLength" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
-                                    <option value="5">5 Market Years (Express Session)</option>
-                                    <option value="10" selected>10 Market Years (Standard Class Session)</option>
-                                    <option value="15">15 Market Years (Deep Strategy Session)</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-400 mb-1">6-Letter Room Code (To Join)</label>
-                                <input type="text" id="joinRoomCodeInput" placeholder="e.g. X7K2P9" uppercase maxlength="6" class="w-full bg-slate-800 border border-slate-700 text-white font-mono uppercase tracking-widest rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="pt-6 grid grid-cols-2 gap-3">
-                        <button onclick="hostMultiplayerRoom()" class="py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm tracking-wide transition shadow-lg flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-house"></i> Host Room
-                        </button>
-                        <button onclick="joinMultiplayerRoom()" class="py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm border border-slate-700 tracking-wide transition flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-right-to-bracket"></i> Join Code
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- VIEW 2: MULTIPLAYER LOBBY SCREEN -->
-        <section id="viewLobby" class="hidden space-y-6 max-w-2xl mx-auto py-6">
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 text-center space-y-6 glow-card">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-blue-500/10 text-blue-400 border border-blue-500/30">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                    LIVE CLOUD ROOM
-                </div>
-
-                <div>
-                    <p class="text-xs font-bold uppercase tracking-widest text-slate-400">ROOM CODE</p>
-                    <div id="lobbyRoomCodeDisplay" class="text-4xl sm:text-5xl font-black font-mono tracking-widest text-emerald-400 my-2">------</div>
-                    <p class="text-xs text-slate-400">Share this 6-letter code with your classmates to join</p>
-                </div>
-
-                <!-- Joined Students List -->
-                <div class="bg-slate-950/60 rounded-xl p-4 border border-slate-800 text-left space-y-3">
-                    <div class="flex justify-between items-center text-xs font-semibold text-slate-400 pb-2 border-b border-slate-800">
-                        <span>STUDENTS JOINED</span>
-                        <span id="lobbyPlayerCount" class="px-2 py-0.5 rounded bg-slate-800 text-slate-200">1 PLAYER</span>
-                    </div>
-
-                    <div id="lobbyPlayerList" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-1">
-                        <!-- Player items will render here dynamically -->
-                    </div>
-                </div>
-
-                <!-- Host Controls / Waiting Notice -->
-                <div id="lobbyHostControls" class="pt-2">
-                    <button onclick="startMultiplayerGame()" class="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-base transition shadow-lg flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-play"></i> Start Simulation Game
+                    <button onclick="startSoloGame()" class="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black rounded-2xl shadow-lg transition flex items-center justify-center space-x-2">
+                        <span>Play Solo Campaign</span>
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
                     </button>
                 </div>
 
-                <div id="lobbyClientNotice" class="hidden pt-2 text-sm text-slate-400 italic animate-pulse">
-                    <i class="fa-solid fa-hourglass-half text-amber-400 mr-1"></i> Waiting for room host to start the game...
-                </div>
-
-                <button onclick="leaveLobby()" class="text-xs text-slate-500 hover:text-slate-300 transition">
-                    <i class="fa-solid fa-arrow-left"></i> Leave Room Lobby
-                </button>
-            </div>
-        </section>
-
-        <!-- VIEW 3: GAME TRADING DASHBOARD -->
-        <section id="viewGame" class="hidden space-y-6">
-
-            <!-- Top Dashboard Stats Header -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-                <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
-                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">CURRENT YEAR</span>
-                    <div class="flex items-baseline justify-between mt-1">
-                        <span id="gameYearDisplay" class="text-2xl sm:text-3xl font-black text-white">Year 1</span>
-                        <span id="gameTotalYearsDisplay" class="text-xs text-slate-500 font-medium">/ 10 Years</span>
-                    </div>
-                </div>
-
-                <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
-                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">LIQUID CASH</span>
-                    <span id="gameCashDisplay" class="text-xl sm:text-2xl font-black text-emerald-400 mt-1">$100,000</span>
-                </div>
-
-                <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
-                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">PORTFOLIO VALUE</span>
-                    <span id="gamePortfolioValueDisplay" class="text-xl sm:text-2xl font-black text-blue-400 mt-1">$0</span>
-                </div>
-
-                <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
-                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">TOTAL NET WORTH</span>
-                    <div class="flex items-center justify-between mt-1">
-                        <span id="gameNetWorthDisplay" class="text-xl sm:text-2xl font-black text-white">$100,000</span>
-                        <span id="gameReturnDisplay" class="text-xs font-bold px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">+0.0%</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Macro PESTLE World News Banner -->
-            <div class="bg-gradient-to-r from-slate-900 via-slate-900 to-indigo-950/40 border border-indigo-500/30 rounded-2xl p-4 sm:p-5 shadow-md">
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div class="space-y-1.5 flex-1">
-                        <div class="flex items-center space-x-2">
-                            <span id="pestleTag" class="text-[10px] font-black px-2 py-0.5 rounded uppercase bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                                PESTLE WORLD NEWS
-                            </span>
-                            <span id="pestleCategoryTag" class="text-[10px] font-bold text-slate-400">Economic Macro Shift</span>
-                        </div>
-                        <h3 id="pestleHeadline" class="text-base sm:text-lg font-extrabold text-white">Loading Headline...</h3>
-                        <p id="pestleDescription" class="text-xs sm:text-sm text-slate-300 leading-relaxed">News details loading...</p>
-                        
-                        <div class="pt-1 flex items-center text-xs text-amber-300/90 font-medium gap-1.5">
-                            <i class="fa-solid fa-lightbulb text-amber-400"></i>
-                            <span>Analyze how this event might affect equities, gold, interest rates, and commodities before advancing!</span>
-                        </div>
-                    </div>
-
-                    <!-- Advance Year Button -->
-                    <div class="flex flex-col sm:flex-row md:flex-col items-stretch justify-center gap-2 min-w-[200px]">
-                        <button id="advanceYearBtn" onclick="toggleReadyAdvance()" class="py-3 px-5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-sm tracking-wide transition shadow-lg flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-circle-check"></i> <span id="advanceBtnText">Advance to Next Year</span>
-                        </button>
-
-                        <div id="multiplayerReadyBar" class="hidden text-center">
-                            <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden border border-slate-700 mb-1">
-                                <div id="readyProgressFill" class="bg-emerald-400 h-full transition-all duration-300" style="width: 0%"></div>
-                            </div>
-                            <span id="readyStatusText" class="text-[11px] font-bold text-slate-400">0 / 0 Students Ready</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Market Asset Tabs & Search Filter -->
-            <div class="space-y-4">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-800 pb-3">
-                    <div class="flex flex-wrap gap-2" id="assetCategoryTabs">
-                        <button onclick="filterAssetCategory('all')" class="asset-tab px-3 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-500 text-slate-950" data-cat="all">All Assets</button>
-                        <button onclick="filterAssetCategory('stocks')" class="asset-tab px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:bg-slate-700" data-cat="stocks">Stocks & Equities</button>
-                        <button onclick="filterAssetCategory('etfs')" class="asset-tab px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:bg-slate-700" data-cat="etfs">ETFs <i class="fa-solid fa-lock text-[10px] ml-1 text-amber-400" id="lockEtfIcon"></i></button>
-                        <button onclick="filterAssetCategory('bonds')" class="asset-tab px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:bg-slate-700" data-cat="bonds">Bonds & CDs</button>
-                        <button onclick="filterAssetCategory('commodities')" class="asset-tab px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:bg-slate-700" data-cat="commodities">Gold & Commodities <i class="fa-solid fa-lock text-[10px] ml-1 text-amber-400" id="lockCommIcon"></i></button>
-                        <button onclick="filterAssetCategory('crypto')" class="asset-tab px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:bg-slate-700" data-cat="crypto">Crypto <i class="fa-solid fa-lock text-[10px] ml-1 text-amber-400" id="lockCryptoIcon"></i></button>
-                    </div>
-
-                    <div class="text-xs text-slate-400 flex items-center gap-1.5">
-                        <i class="fa-solid fa-circle-info text-blue-400"></i>
-                        <span>Click any asset to inspect financial ratios & historical charts</span>
-                    </div>
-                </div>
-
-                <!-- Asset Grid List -->
-                <div id="assetsGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <!-- Dynamic Asset Cards will be rendered here -->
-                </div>
-            </div>
-
-            <!-- Bottom Section: Portfolio Summary & Live Class Standings -->
-            <div class="grid lg:grid-cols-3 gap-6 pt-4">
-                <!-- Portfolio Breakdown Chart -->
-                <div class="lg:col-span-1 bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4 glow-card">
-                    <h3 class="text-sm font-extrabold text-white uppercase tracking-wider flex items-center justify-between">
-                        <span>Portfolio Allocation</span>
-                        <i class="fa-solid fa-pie-chart text-emerald-400"></i>
-                    </h3>
-                    <div class="h-48 relative flex items-center justify-center">
-                        <canvas id="portfolioChart"></canvas>
-                    </div>
-                    <div id="portfolioSummaryList" class="space-y-2 text-xs max-h-40 overflow-y-auto custom-scrollbar">
-                        <!-- Portfolio holdings summary -->
-                    </div>
-                </div>
-
-                <!-- Live Class Leaderboard -->
-                <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4 glow-card">
-                    <div class="flex justify-between items-center">
-                        <h3 class="text-sm font-extrabold text-white uppercase tracking-wider flex items-center gap-2">
-                            <i class="fa-solid fa-trophy text-amber-400"></i>
-                            <span>Live Player Leaderboard</span>
-                        </h3>
-                        <span id="leaderboardModeBadge" class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
-                            Solo Game
-                        </span>
-                    </div>
-
-                    <div id="liveLeaderboardList" class="space-y-2 max-h-64 overflow-y-auto custom-scrollbar pr-1">
-                        <!-- Live ranking items -->
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- MODAL 1: YEAR-END MARKET IMPACT RECAP MODAL -->
-        <div id="modalImpactReport" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 modal-backdrop">
-            <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-xl w-full p-6 space-y-5 glow-card max-h-[90vh] overflow-y-auto custom-scrollbar">
-                <div class="flex justify-between items-start border-b border-slate-800 pb-4">
-                    <div>
-                        <span class="text-[10px] font-bold uppercase tracking-widest text-emerald-400">YEAR COMPLETED</span>
-                        <h3 id="modalImpactYearTitle" class="text-2xl font-black text-white">Year 1 Market Recap</h3>
-                    </div>
-                    <div class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-emerald-400 text-lg">
-                        <i class="fa-solid fa-bullhorn"></i>
-                    </div>
-                </div>
-
-                <!-- News Outcome Reveal -->
-                <div class="space-y-2 bg-slate-950/70 p-4 rounded-xl border border-slate-800">
-                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">EVENT REVEAL & MARKET IMPACT</h4>
-                    <p id="modalImpactNewsHeadline" class="text-sm font-bold text-white"></p>
-                    <p id="modalImpactNewsReveal" class="text-xs text-slate-300 leading-relaxed"></p>
-                </div>
-
-                <!-- Personal Portfolio Results -->
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase">YEARLY PROFIT / LOSS</span>
-                        <div id="modalImpactYearPnl" class="text-lg font-black text-emerald-400 mt-0.5">+$0</div>
-                    </div>
-
-                    <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase">NEW NET WORTH</span>
-                        <div id="modalImpactNewNetWorth" class="text-lg font-black text-white mt-0.5">$100,000</div>
-                    </div>
-                </div>
-
-                <!-- Next Unlocks Notice -->
-                <div id="modalUnlockNotice" class="hidden bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 text-xs text-amber-300 flex items-center gap-2">
-                    <i class="fa-solid fa-unlock text-amber-400 text-base"></i>
-                    <span id="modalUnlockText">New Asset Classes Unlocked for Next Year!</span>
-                </div>
-
-                <button onclick="closeImpactModal()" class="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold text-sm transition shadow-lg">
-                    Proceed to Next Trading Year <i class="fa-solid fa-arrow-right ml-1"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- MODAL 2: ASSET DEEP-DIVE RATIOS & HISTORICAL CHART MODAL -->
-        <div id="modalAssetDetail" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 modal-backdrop">
-            <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-2xl w-full p-6 space-y-5 glow-card max-h-[90vh] overflow-y-auto custom-scrollbar">
-                <div class="flex justify-between items-start border-b border-slate-800 pb-3">
-                    <div class="flex items-center space-x-3">
-                        <div id="modalAssetIcon" class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-xl font-bold">
-                            $
+                <!-- MULTIPLAYER MODE CARD -->
+                <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 hover:border-teal-500/50 transition flex flex-col justify-between space-y-6">
+                    <div class="space-y-4">
+                        <div class="w-12 h-12 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-400 text-2xl border border-teal-500/20">
+                            <i class="fa-solid fa-users"></i>
                         </div>
                         <div>
-                            <h3 id="modalAssetName" class="text-xl font-extrabold text-white">Asset Name</h3>
-                            <div class="flex items-center space-x-2 text-xs text-slate-400">
-                                <span id="modalAssetCategory" class="px-2 py-0.5 rounded bg-slate-800">Category</span>
-                                <span id="modalAssetTicker" class="font-mono font-bold text-slate-300">TICK</span>
-                            </div>
+                            <h3 class="text-xl font-bold text-white">Classroom Multiplayer Room</h3>
+                            <p class="text-slate-400 text-xs mt-1 leading-relaxed">
+                                Play live with your club members across any computer or Chromebook. Everyone sees the same PESTLE news and year advances when all players are ready!
+                            </p>
+                        </div>
+
+                        <!-- Player Name Input -->
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-bold text-slate-300 uppercase tracking-wider">Your Student Name</label>
+                            <input type="text" id="playerNameInput" placeholder="Enter your name..." value="Trader_Student" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none focus:border-teal-500">
+                        </div>
+
+                        <!-- Match Duration Selector (For Host) -->
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-bold text-slate-300 uppercase tracking-wider">Room Match Length</label>
+                            <select id="multiDurationSelect" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none focus:border-teal-500">
+                                <option value="5">5 Years (Express Match)</option>
+                                <option value="10" selected>10 Years (Standard Match)</option>
+                                <option value="15">15 Years (Full Match)</option>
+                            </select>
+                        </div>
+
+                        <!-- Room Code Input for Joining -->
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-bold text-slate-300 uppercase tracking-wider">Room Code (If Joining)</label>
+                            <input type="text" id="roomCodeInput" placeholder="6-character code (e.g. X8K2P9)" uppercase class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-bold font-mono uppercase text-emerald-400 focus:outline-none focus:border-teal-500">
                         </div>
                     </div>
-                    <button onclick="closeAssetModal()" class="text-slate-400 hover:text-white p-1">
-                        <i class="fa-solid fa-xmark text-xl"></i>
-                    </button>
-                </div>
 
-                <!-- Price Chart -->
-                <div class="space-y-1">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">HISTORICAL PRICE CHART</span>
-                    <div class="h-44 bg-slate-950 rounded-xl p-2 border border-slate-800">
-                        <canvas id="assetDetailChart"></canvas>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="hostMultiplayerRoom()" class="w-full py-3.5 bg-teal-500 hover:bg-teal-600 text-slate-950 font-black rounded-2xl transition">
+                            Create Room
+                        </button>
+                        <button onclick="joinMultiplayerRoom()" class="w-full py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-2xl border border-slate-700 transition">
+                            Join Code
+                        </button>
                     </div>
                 </div>
 
-                <!-- Financial Ratios Grid -->
+            </div>
+        </div>
+
+        <!-- VIEW 2: MULTIPLAYER LOBBY WAITING ROOM -->
+        <div id="viewLobby" class="hidden max-w-2xl mx-auto py-8 space-y-6 text-center">
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 space-y-6">
+                <span class="px-3 py-1 rounded-full bg-teal-500/10 text-teal-400 text-xs font-bold border border-teal-500/20 uppercase tracking-wider">
+                    Classroom Multiplayer Room
+                </span>
+                
                 <div class="space-y-2">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">FINANCIAL METRICS & RATIOS</span>
-                    <div id="modalRatiosGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
-                        <!-- Dynamic ratios will render here -->
+                    <span class="text-xs text-slate-400 font-bold uppercase tracking-widest block">Room Share Code</span>
+                    <div id="lobbyRoomCode" class="text-4xl sm:text-6xl font-black font-mono tracking-widest text-emerald-400 bg-slate-950 border border-slate-800 py-3 rounded-2xl select-all">
+                        ------
+                    </div>
+                    <p class="text-xs text-slate-400">Share this code with your classmates on their devices!</p>
+                </div>
+
+                <!-- Joined Players List -->
+                <div class="space-y-3 pt-2">
+                    <div class="flex justify-between items-center text-xs text-slate-400 font-bold px-1">
+                        <span>PLAYERS JOINED</span>
+                        <span id="lobbyPlayerCount" class="text-emerald-400">1 Player</span>
+                    </div>
+                    <div id="lobbyPlayerList" class="bg-slate-950 border border-slate-800 rounded-2xl p-4 max-h-48 overflow-y-auto space-y-2 text-left">
+                        <!-- Dynamic Player Items -->
                     </div>
                 </div>
 
-                <!-- Asset Description -->
-                <div class="space-y-1 bg-slate-950 p-3 rounded-xl border border-slate-800">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ANALYSIS & OVERVIEW</span>
-                    <p id="modalAssetDesc" class="text-xs text-slate-300 leading-relaxed"></p>
-                </div>
-
-                <div class="flex justify-end">
-                    <button onclick="closeAssetModal()" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition">
-                        Close Analysis
+                <!-- Host Controls -->
+                <div id="hostOnlyControls" class="pt-4 border-t border-slate-800">
+                    <button onclick="startMultiplayerGameMaster()" class="w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black rounded-2xl shadow-lg transition text-base">
+                        Start Classroom Match
                     </button>
+                </div>
+                <div id="clientOnlyWaiting" class="hidden text-xs text-slate-400 font-bold animate-pulse pt-2">
+                    <i class="fa-solid fa-spinner fa-spin mr-1 text-teal-400"></i> Waiting for host to start the game...
                 </div>
             </div>
         </div>
 
-        <!-- VIEW 4: END OF GAME PODIUM & FULL RANKING LIST -->
-        <section id="viewEndGame" class="hidden space-y-8 max-w-3xl mx-auto py-6">
-            <div class="text-center space-y-3">
-                <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/30">
+        <!-- VIEW 3: TRADING DESK SIMULATION VIEW -->
+        <div id="viewGame" class="hidden space-y-6">
+
+            <!-- PESTLE News & Year Action Header Banner -->
+            <div class="bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 border border-slate-800 rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div class="space-y-1.5 max-w-3xl">
+                    <div class="flex items-center space-x-2">
+                        <span id="newsTag" class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                            PESTLE MACRO EVENT
+                        </span>
+                        <span id="newsCategory" class="text-xs text-slate-400 font-bold">Category: Macroeconomics</span>
+                    </div>
+                    <h3 id="newsTitle" class="text-base sm:text-lg font-bold text-white">
+                        Global Semiconductors Demand Surge
+                    </h3>
+                    <p id="newsDesc" class="text-xs text-slate-300 leading-relaxed">
+                        Rapid adoption of AI and automotive chips drives global supply chain constraints.
+                    </p>
+                    <div class="pt-1 text-[11px] text-amber-400 font-bold flex items-center space-x-1">
+                        <i class="fa-solid fa-brain"></i>
+                        <span>Market Challenge: Analyze how this headline affects stocks, bonds, or commodities before advancing!</span>
+                    </div>
+                </div>
+
+                <!-- Advance Turn Button -->
+                <div class="flex flex-col items-end w-full md:w-auto space-y-2">
+                    <button onclick="advanceTurnRequest()" id="btnAdvanceTurn" class="w-full md:w-auto px-6 py-3.5 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-sm rounded-xl shadow-lg transition flex items-center justify-center space-x-2">
+                        <span>Advance to Next Year</span>
+                        <i class="fa-solid fa-circle-arrow-right"></i>
+                    </button>
+                    <span id="readyStatusText" class="text-[11px] text-slate-400 font-bold">
+                        Click when finished analyzing & trading
+                    </span>
+                </div>
+            </div>
+
+            <!-- Main Workspace: Left Market Assets / Right Live Portfolio & Leaderboard -->
+            <div class="grid lg:grid-cols-3 gap-6">
+
+                <!-- LEFT 2 COLUMNS: Market Assets Grid -->
+                <div class="lg:col-span-2 space-y-4">
+
+                    <!-- Market Asset Tabs & Search Filter -->
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-800 pb-3">
+                        <div class="flex flex-wrap gap-2" id="assetCategoryTabs">
+                            <button onclick="filterAssetCategory('all')" class="asset-tab px-3 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-500 text-slate-950" data-cat="all">All Assets</button>
+                            <button onclick="filterAssetCategory('stocks')" class="asset-tab px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:bg-slate-700" data-cat="stocks">Stocks & Equities</button>
+                            <button onclick="filterAssetCategory('etfs')" class="asset-tab px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:bg-slate-700" data-cat="etfs">ETFs <i class="fa-solid fa-lock text-[10px] ml-1 text-amber-400" id="lockEtfIcon"></i></button>
+                            <button onclick="filterAssetCategory('bonds')" class="asset-tab px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:bg-slate-700" data-cat="bonds">Bonds & CDs</button>
+                            <button onclick="filterAssetCategory('commodities')" class="asset-tab px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:bg-slate-700" data-cat="commodities">Gold & Commodities <i class="fa-solid fa-lock text-[10px] ml-1 text-amber-400" id="lockCommIcon"></i></button>
+                            <button onclick="filterAssetCategory('crypto')" class="asset-tab px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:bg-slate-700" data-cat="crypto">Crypto <i class="fa-solid fa-lock text-[10px] ml-1 text-amber-400" id="lockCryptoIcon"></i></button>
+                        </div>
+
+                        <!-- Bulk Trade Order Quantity Selector -->
+                        <div class="flex items-center space-x-1.5 bg-slate-900 border border-slate-800 rounded-xl p-1.5 text-xs">
+                            <span class="text-xs font-bold text-slate-400 pl-1">Qty:</span>
+                            <input type="number" id="customQtyInput" min="1" value="1" oninput="handleCustomQtyInput(this.value)" class="w-20 bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs font-bold font-mono text-emerald-400 focus:outline-none focus:border-emerald-500 text-center" placeholder="1">
+                            <button onclick="addTradeQty(10)" class="px-2 py-1 rounded-lg font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700 transition">+10</button>
+                            <button onclick="addTradeQty(100)" class="px-2 py-1 rounded-lg font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700 transition">+100</button>
+                            <button onclick="setTradeQty('max')" id="qtyBtnMax" class="px-2.5 py-1 rounded-lg font-bold bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500 hover:text-slate-950 border border-emerald-500/40 transition">Max Buy</button>
+                        </div>
+                    </div>
+
+                    <!-- Asset Grid List -->
+                    <div id="assetsGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Dynamic Asset Cards will be rendered here -->
+                    </div>
+                </div>
+
+                <!-- RIGHT 1 COLUMN: Portfolio Breakdown & Live Leaderboard -->
+                <div class="space-y-6">
+
+                    <!-- Portfolio Asset Allocation Doughnut -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-4">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-extrabold text-white text-sm">Portfolio Breakdown</h4>
+                            <span id="portfolioValueTotal" class="text-xs font-bold font-mono text-emerald-400">$100,000</span>
+                        </div>
+                        <div class="h-44 flex items-center justify-center">
+                            <canvas id="portfolioDoughnutChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Live Leaderboard Standings -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                            <h4 class="font-extrabold text-white text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-trophy text-amber-400"></i> Live Standings
+                            </h4>
+                            <span id="lbModeBadge" class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-300">Solo Match</span>
+                        </div>
+                        <div id="liveLeaderboardList" class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                            <!-- Dynamic Leaderboard Entries -->
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- VIEW 4: END OF GAME PODIUM & CHAMPIONSHIP SUMMARY -->
+        <div id="viewGameOver" class="hidden max-w-3xl mx-auto py-8 space-y-8">
+            <div class="text-center space-y-2">
+                <span class="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold border border-amber-500/30">
                     SIMULATION COMPLETE
                 </span>
-                <h2 class="text-3xl sm:text-4xl font-black text-white">Classroom Market Results</h2>
-                <p class="text-xs sm:text-sm text-slate-400">Final portfolio standings and net worth accumulated across all trading years</p>
+                <h2 class="text-3xl sm:text-5xl font-black text-white">Classroom Leaderboard</h2>
+                <p class="text-slate-400 text-sm">Final Net Worth & Ranking Standings</p>
             </div>
 
-            <!-- Top 3 Podium Cards -->
-            <div id="podiumContainer" class="grid grid-cols-3 gap-3 sm:gap-4 items-end pt-4">
-                <!-- Silver #2 -->
-                <div id="podiumRank2" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-center space-y-2 order-1 transform sm:translate-y-2">
-                    <div class="text-2xl sm:text-3xl">🥈</div>
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">2ND PLACE</span>
-                    <h4 id="podiumName2" class="font-extrabold text-sm sm:text-base text-white truncate">Player 2</h4>
-                    <p id="podiumWorth2" class="text-xs sm:text-sm font-black text-slate-300">$0</p>
+            <!-- Top 3 Winners Podium -->
+            <div class="grid grid-cols-3 gap-3 sm:gap-4 items-end pt-6 max-w-xl mx-auto">
+                <!-- 2nd Place Silver -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 sm:p-4 text-center space-y-2 order-1">
+                    <div class="text-2xl sm:text-4xl">🥈</div>
+                    <span class="text-xs text-slate-400 font-bold block">2nd Place</span>
+                    <strong id="podium2Name" class="text-white text-xs sm:text-sm font-extrabold truncate block">--</strong>
+                    <span id="podium2Value" class="text-xs sm:text-sm font-mono font-extrabold text-slate-300 block">$0</span>
                 </div>
 
-                <!-- Gold #1 -->
-                <div id="podiumRank1" class="bg-gradient-to-b from-amber-950/80 to-slate-900 border border-amber-500/50 rounded-2xl p-5 text-center space-y-2 order-2 glow-accent transform -translate-y-2">
-                    <div class="text-4xl sm:text-5xl">🥇</div>
-                    <span class="text-[10px] font-black uppercase tracking-wider text-amber-400">1ST CHAMPION</span>
-                    <h4 id="podiumName1" class="font-black text-base sm:text-lg text-white truncate">Player 1</h4>
-                    <p id="podiumWorth1" class="text-sm sm:text-base font-black text-amber-300">$0</p>
+                <!-- 1st Place Gold -->
+                <div class="bg-gradient-to-b from-amber-500/20 to-slate-900 border-2 border-amber-500/60 rounded-3xl p-4 sm:p-5 text-center space-y-2 shadow-xl glow-emerald order-2 -translate-y-4">
+                    <div class="text-4xl sm:text-5xl">👑</div>
+                    <span class="text-xs text-amber-400 font-bold block">CHAMPION</span>
+                    <strong id="podium1Name" class="text-white text-sm sm:text-base font-black truncate block">--</strong>
+                    <span id="podium1Value" class="text-sm sm:text-lg font-mono font-black text-emerald-400 block">$0</span>
                 </div>
 
-                <!-- Bronze #3 -->
-                <div id="podiumRank3" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-center space-y-2 order-3 transform sm:translate-y-4">
-                    <div class="text-2xl sm:text-3xl">🥉</div>
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-amber-700">3RD PLACE</span>
-                    <h4 id="podiumName3" class="font-extrabold text-sm sm:text-base text-white truncate">Player 3</h4>
-                    <p id="podiumWorth3" class="text-xs sm:text-sm font-black text-slate-300">$0</p>
+                <!-- 3rd Place Bronze -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 sm:p-4 text-center space-y-2 order-3">
+                    <div class="text-2xl sm:text-4xl">🥉</div>
+                    <span class="text-xs text-slate-400 font-bold block">3rd Place</span>
+                    <strong id="podium3Name" class="text-white text-xs sm:text-sm font-extrabold truncate block">--</strong>
+                    <span id="podium3Value" class="text-xs sm:text-sm font-mono font-extrabold text-slate-300 block">$0</span>
                 </div>
             </div>
 
-            <!-- Full Class Ranking Table -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3 glow-card">
-                <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-800 pb-2">
-                    Full Class Final Standings
-                </h3>
-                <div id="endGameFullList" class="space-y-2 max-h-72 overflow-y-auto custom-scrollbar pr-1">
-                    <!-- Complete rank list -->
+            <!-- Full Participant Ranking Table -->
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-4">
+                <h4 class="font-extrabold text-white text-sm">Full Class Standings</h4>
+                <div id="fullLeaderboardTable" class="space-y-2 max-h-64 overflow-y-auto">
+                    <!-- Dynamic Rows -->
                 </div>
             </div>
 
             <div class="text-center">
-                <button onclick="confirmExitToMenu()" class="px-8 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-sm tracking-wide transition shadow-lg">
-                    <i class="fa-solid fa-rotate-right mr-1"></i> Start New Market Simulation
+                <button onclick="showMainMenu()" class="px-8 py-3.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black rounded-2xl shadow-lg transition">
+                    Return to Main Menu
                 </button>
             </div>
-        </section>
+        </div>
 
     </main>
 
-    <!-- Toast Notification Container -->
-    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+    <!-- MODAL 1: Asset Inspection & Financial Ratios Modal -->
+    <div id="modalAssetDetail" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-6 space-y-6 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-start border-b border-slate-800 pb-4">
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <h3 id="modalAssetName" class="text-xl font-extrabold text-white">Apex Semiconductors</h3>
+                        <span id="modalAssetTicker" class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-slate-800 text-emerald-400">APEX</span>
+                    </div>
+                    <span id="modalAssetCategory" class="text-xs text-slate-400 font-bold uppercase tracking-wider">Stocks & Equities</span>
+                </div>
+                <button onclick="closeAssetModal()" class="text-slate-400 hover:text-white text-xl">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Price History Chart -->
+            <div class="space-y-2">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Historical Price Trend</span>
+                <div class="h-48 bg-slate-950 p-2 rounded-2xl border border-slate-800">
+                    <canvas id="modalPriceChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Financial Ratios & Key Metrics -->
+            <div class="space-y-2">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Key Financial Ratios & Fundamentals</span>
+                <div id="modalRatiosGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+                    <!-- Ratios injected dynamically -->
+                </div>
+            </div>
+
+            <!-- Asset Description -->
+            <div class="space-y-1 bg-slate-950 p-3 rounded-xl border border-slate-800">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ANALYSIS & OVERVIEW</span>
+                <p id="modalAssetDesc" class="text-xs text-slate-300 leading-relaxed"></p>
+            </div>
+
+            <!-- Modal Direct Action Buttons -->
+            <div id="modalTradeActions" class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800">
+                <!-- Dynamic bulk buttons rendered via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Year-End Market Impact & P/L Report Popup -->
+    <div id="modalYearReport" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 space-y-6 text-center">
+            <div class="space-y-2">
+                <span id="reportYearHeader" class="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold border border-emerald-500/30">
+                    YEAR 1 MARKET REPORT
+                </span>
+                <h3 class="text-2xl font-black text-white">Year-End Portfolio Performance</h3>
+            </div>
+
+            <!-- Net Worth P/L Summary -->
+            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-2">
+                <span class="text-xs text-slate-400 font-bold uppercase tracking-wider block">Net Gain / Loss This Year</span>
+                <div id="reportPnlAmount" class="text-3xl font-black text-emerald-400">
+                    +$12,500 (+12.5%)
+                </div>
+                <div class="flex justify-between text-xs text-slate-400 pt-2 border-t border-slate-800/80">
+                    <span>New Net Worth: <strong id="reportNetWorth" class="text-white">$112,500</strong></span>
+                    <span>Cash Reserves: <strong id="reportCash" class="text-emerald-400">$45,000</strong></span>
+                </div>
+            </div>
+
+            <!-- Macro Event Outcome Breakdown -->
+            <div class="space-y-2 text-left bg-slate-950/60 p-4 rounded-2xl border border-slate-800">
+                <span class="text-[10px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
+                    <i class="fa-solid fa-newspaper"></i> PESTLE Event Impact Analysis
+                </span>
+                <p id="reportNewsOutcome" class="text-xs text-slate-300 leading-relaxed font-medium">
+                    Semiconductor chip surge boosted technology equities by +35%. Gold held steady as safe haven asset.
+                </p>
+            </div>
+
+            <button onclick="closeYearReportModal()" class="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black rounded-2xl shadow-lg transition">
+                Proceed to Next Year
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 py-4 px-4 text-center text-xs text-slate-400">
+        Stockbot Market Master &bull; Mr. Felim's Finance Club &bull; Interactive Educational Simulation
+    </footer>
 
     <script>
         // Global Game State
@@ -541,6 +511,7 @@
             isReady: false,
             gameStarted: false,
             categoryFilter: 'all',
+            tradeQty: 1, // Bulk order size: 1, 5, 10, or 'max'
             selectedAssetDetail: null,
             lastYearNetWorth: INITIAL_CASH,
             lastYearPnl: 0
@@ -548,499 +519,609 @@
 
         // Procedural Market Data & Asset Histories
         let marketAssets = [];
-        let priceHistories = {}; // ticker -> array of yearly prices
-        let currentPestle = null;
-
-        // MQTT Network Connectivity State
-        let mqttClient = null;
-        let isMqttConnected = false;
-        let lobbyPlayers = [];
-
-        // Audio Effects Synthesizer (Web Audio API)
-        let audioEnabled = true;
+        let priceHistories = {}; // ticker -> array of numbers
+        let portfolioChartObj = null;
+        let modalChartObj = null;
         let audioCtx = null;
+        let soundEnabled = true;
 
+        // MQTT Real-time Classroom Networking Client
+        let mqttClient = null;
+        let roomPlayers = []; // array of player objects in multiplayer
+
+        // Comprehensive PESTLE Macro News Deck with Impact Formulas
+        const PESTLE_DYNAMIC_DECK = [
+            {
+                year: 1,
+                category: "Political & Technological",
+                title: "Government Launches $50B Semiconductor Infrastructure Subsidy",
+                desc: "A bipartisan bill passes to build advanced domestic microchip fabrication plants and fund AI R&D.",
+                impactText: "Technology & Semiconductor stocks soared (+40%). High-Tech ETFs gained (+22%), while old legacy retail stocks dipped (-8%).",
+                applyImpact: (assets) => {
+                    assets.forEach(a => {
+                        if (a.sector === 'tech') a.price *= 1.40;
+                        if (a.ticker === 'TECH_ETF') a.price *= 1.22;
+                        if (a.sector === 'retail') a.price *= 0.92;
+                    });
+                }
+            },
+            {
+                year: 2,
+                category: "Environmental & Disaster",
+                title: "Category 5 Super Typhoon Disrupts Global Offshore Oil Facilities",
+                desc: "Severe weather damages primary offshore refinery hubs, causing temporary supply bottlenecks.",
+                impactText: "Crude Oil commodities spiked (+50%). Energy producers gained (+30%), while transportation & retail stocks fell (-15%).",
+                applyImpact: (assets) => {
+                    assets.forEach(a => {
+                        if (a.ticker === 'OIL') a.price *= 1.50;
+                        if (a.sector === 'energy') a.price *= 1.30;
+                        if (a.sector === 'retail') a.price *= 0.85;
+                    });
+                }
+            },
+            {
+                year: 3,
+                category: "Economic & Monetary Policy",
+                title: "Central Bank Hikes Interest Rates by 150 Basis Points to Curb Inflation",
+                desc: "Surging consumer prices force aggressive monetary tightening to stabilize fiat currency.",
+                impactText: "10-Yr Treasuries yield spiked (+12% price adjustment for fixed income). High-debt growth stocks tumbled (-35%), while Gold safe-haven rose (+25%).",
+                applyImpact: (assets) => {
+                    assets.forEach(a => {
+                        if (a.ticker === 'GOLD') a.price *= 1.25;
+                        if (a.ticker === 'TREASURY_10Y') a.price *= 1.10;
+                        if (a.pe > 25) a.price *= 0.65;
+                        if (a.sector === 'banking') a.price *= 1.15;
+                    });
+                }
+            },
+            {
+                year: 4,
+                category: "Social & Health Shift",
+                title: "Global Health Breakthrough: Novel Biotech Therapeutic Approved",
+                desc: "Health regulators grant accelerated approval for revolutionary metabolic preventative treatment.",
+                impactText: "Biotech & Healthcare stocks surged (+55%). Health sector ETFs rose (+30%), while junk corporate bonds tightened slightly (+5%).",
+                applyImpact: (assets) => {
+                    assets.forEach(a => {
+                        if (a.sector === 'health') a.price *= 1.55;
+                        if (a.ticker === 'HEALTH_ETF') a.price *= 1.30;
+                    });
+                }
+            },
+            {
+                year: 5,
+                category: "Legal & Regulatory",
+                title: "Strict Data Privacy & Anti-Trust Regulations Imposed on Digital Platforms",
+                desc: "International courts enforce strict algorithmic compliance rules and user data restrictions.",
+                impactText: "Big Tech valuation multiples compressed (-25%). Crypto market surged (+60%) on decentralized privacy demand.",
+                applyImpact: (assets) => {
+                    assets.forEach(a => {
+                        if (a.sector === 'tech') a.price *= 0.75;
+                        if (a.category === 'crypto') a.price *= 1.60;
+                    });
+                }
+            },
+            {
+                year: 6,
+                category: "Economic & Trade",
+                title: "Global Supply Chain Boom & Maritime Shipping Freight Rate Crash",
+                desc: "New logistics routes open up, reducing international shipping costs to multi-year lows.",
+                impactText: "Retailers and Consumer Goods stocks surged (+35%). Agricultural commodities normalized (-20%).",
+                applyImpact: (assets) => {
+                    assets.forEach(a => {
+                        if (a.sector === 'retail') a.price *= 1.35;
+                        if (a.ticker === 'WHEAT') a.price *= 0.80;
+                    });
+                }
+            },
+            {
+                year: 7,
+                category: "Technological",
+                title: "Quantum Computing Leap Threatens Legacy Encryption Protocols",
+                desc: "Breakthrough quantum processor demonstrates 10,000x speedups in cryptographic processing.",
+                impactText: "Cybersecurity and Specialized Tech stocks surged (+65%). Crypto experienced heavy volatility (-30%).",
+                applyImpact: (assets) => {
+                    assets.forEach(a => {
+                        if (a.sector === 'tech') a.price *= 1.65;
+                        if (a.category === 'crypto') a.price *= 0.70;
+                    });
+                }
+            },
+            {
+                year: 8,
+                category: "Environmental",
+                title: "Global Green Transition Accord Mandates Carbon Offset Credits",
+                desc: "Over 100 countries ratify binding clean energy target timelines and carbon tax penalties.",
+                impactText: "ESG Clean Energy ETFs surged (+45%). Mining and crude oil commodities dipped (-15%).",
+                applyImpact: (assets) => {
+                    assets.forEach(a => {
+                        if (a.ticker === 'CLEAN_ETF') a.price *= 1.45;
+                        if (a.ticker === 'OIL') a.price *= 0.85;
+                        if (a.sector === 'mining') a.price *= 0.90;
+                    });
+                }
+            }
+        ];
+
+        // AI Rival Personalities for Solo Mode
+        const aiRivals = [
+            { name: "Satoshi (YOLO Trader)", strategy: 'crypto_tech', cash: INITIAL_CASH, portfolio: {} },
+            { name: "Warren (Value Hunter)", strategy: 'value', cash: INITIAL_CASH, portfolio: {} },
+            { name: "Ray (Macro Allocator)", strategy: 'balanced', cash: INITIAL_CASH, portfolio: {} },
+            { name: "Cathie (Tech Bull)", strategy: 'growth', cash: INITIAL_CASH, portfolio: {} }
+        ];
+
+        // Helper: Escape HTML string to prevent injection
+        function escapeHtml(str) {
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        // Web Audio Synthesizer Engine
         function playSound(type) {
-            if (!audioEnabled) return;
+            if (!soundEnabled) return;
             try {
                 if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
 
                 const now = audioCtx.currentTime;
+
                 if (type === 'buy') {
-                    osc.frequency.setValueAtTime(440, now);
-                    osc.frequency.exponentialRampToValueAtTime(880, now + 0.1);
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.15); // E5
                     gain.gain.setValueAtTime(0.15, now);
-                    gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
                     osc.start(now);
-                    osc.stop(now + 0.1);
+                    osc.stop(now + 0.15);
                 } else if (type === 'sell') {
-                    osc.frequency.setValueAtTime(600, now);
-                    osc.frequency.exponentialRampToValueAtTime(300, now + 0.12);
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(659.25, now); // E5
+                    osc.frequency.exponentialRampToValueAtTime(523.25, now + 0.15); // C5
                     gain.gain.setValueAtTime(0.15, now);
-                    gain.gain.linearRampToValueAtTime(0.01, now + 0.12);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
                     osc.start(now);
-                    osc.stop(now + 0.12);
+                    osc.stop(now + 0.15);
                 } else if (type === 'advance') {
-                    osc.frequency.setValueAtTime(300, now);
-                    osc.frequency.exponentialRampToValueAtTime(600, now + 0.2);
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.frequency.exponentialRampToValueAtTime(880, now + 0.25);
                     gain.gain.setValueAtTime(0.2, now);
-                    gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
                     osc.start(now);
-                    osc.stop(now + 0.2);
+                    osc.stop(now + 0.25);
                 }
             } catch (e) {
-                console.log("Audio play blocked");
+                console.log('Audio init error:', e);
             }
         }
 
         function toggleAudio() {
-            audioEnabled = !audioEnabled;
-            document.getElementById('audioIcon').className = audioEnabled ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-xmark';
-            showToast(audioEnabled ? 'Sound Effects Enabled' : 'Sound Effects Muted', 'info');
+            soundEnabled = !soundEnabled;
+            const icon = document.getElementById('audioIcon');
+            if (icon) icon.className = soundEnabled ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-xmark text-rose-400';
         }
 
+        // Toast Notification System (Replaces alert)
         function showToast(message, type = 'info') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            const bgClass = type === 'success' ? 'bg-emerald-900 border-emerald-500 text-emerald-200' : 
-                            type === 'error' ? 'bg-rose-900 border-rose-500 text-rose-200' : 'bg-slate-800 border-slate-600 text-slate-200';
-            
-            toast.className = `pointer-events-auto px-4 py-2.5 rounded-xl border text-xs font-bold shadow-lg transition-all transform translate-y-2 opacity-0 flex items-center gap-2 ${bgClass}`;
-            toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-circle-check' : type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-info'}"></i> <span>${escapeHtml(message)}</span>`;
-            
-            container.appendChild(toast);
-            setTimeout(() => {
-                toast.classList.remove('translate-y-2', 'opacity-0');
-            }, 10);
+            const container = document.createElement('div');
+            container.className = `fixed bottom-4 right-4 z-50 px-4 py-3 rounded-2xl font-bold text-xs shadow-xl flex items-center space-x-2 transition transform translate-y-2 opacity-0 ${
+                type === 'error' ? 'bg-rose-950 border border-rose-800 text-rose-300' : 
+                type === 'success' ? 'bg-emerald-950 border border-emerald-800 text-emerald-300' : 
+                'bg-slate-800 border border-slate-700 text-slate-200'
+            }`;
+            container.innerHTML = `<i class="${type === 'error' ? 'fa-solid fa-circle-exclamation text-rose-400' : 'fa-solid fa-circle-check text-emerald-400'}"></i> <span>${escapeHtml(message)}</span>`;
+            document.body.appendChild(container);
+
+            requestAnimationFrame(() => {
+                container.classList.remove('translate-y-2', 'opacity-0');
+            });
 
             setTimeout(() => {
-                toast.classList.add('opacity-0', 'translate-y-2');
-                setTimeout(() => toast.remove(), 300);
+                container.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => container.remove(), 300);
             }, 3000);
         }
 
-        function escapeHtml(str) {
-            if (typeof str !== 'string') return str;
-            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-        }
-
-        // Comprehensive PESTLE Macro News Deck
-        const PESTLE_DYNAMIC_DECK = [
-            {
-                category: 'Technological Shock',
-                headline: '🚀 Generative AI Breakthrough & Cloud Infrastructure Boom',
-                description: 'A revolutionary leap in enterprise AI models slashes tech infrastructure operating costs by 50%. Cloud giants announce blowout corporate earnings!',
-                impacts: { 'Tech': 0.58, 'ETF_TECH': 0.45, 'Energy': -0.15, 'Crypto': 0.65, 'Gold': -0.12, 'Retail': 0.18, 'Mining': 0.25 },
-                revealText: '⚡ TECH & CRYPTO MANIA! Apex Semiconductors exploded +58% and Digital Assets skyrocketed +65%! Investors dumped safe-haven gold (-12%).'
-            },
-            {
-                category: 'Environmental Disruption',
-                headline: '⚡ Category 5 Super Storm Hits Refineries & Foundries',
-                description: 'Catastrophic typhoons force emergency shutdowns across offshore oil platforms and silicon fabrication plants for months.',
-                impacts: { 'Tech': -0.35, 'Oil': 0.75, 'Gold': 0.38, 'Healthcare': 0.22, 'Retail': -0.25, 'Agriculture': 0.30 },
-                revealText: '🔥 COMMODITY SPIKE! Crude Oil surged +75% and Physical Gold jumped +38%. Semiconductor stocks plunged -35% under supply strain.'
-            },
-            {
-                category: 'Economic Policy',
-                headline: '🏦 Central Banks Raise Rates by 150 BPS to Crush Inflation',
-                description: 'Central bankers take aggressive anti-inflation measures. Credit tightens, boosting bank margins and bond yields while burning speculative debt-heavy stocks.',
-                impacts: { 'Bonds': 0.25, 'CD': 0.12, 'CorpBonds': 0.30, 'Tech': -0.32, 'Crypto': -0.55, 'Banks': 0.42, 'Gold': 0.15 },
-                revealText: '📉 SPECULATIVE REPRICING! Crypto crashed -55% and Tech growth fell -32%. High-Yield Corporate Bonds (+30%) provided defensive returns.'
-            },
-            {
-                category: 'Political & Geopolitical',
-                headline: '🌐 Mega Free-Trade Pact Signed Across Global Ports',
-                description: 'World leaders abolish tariffs on agricultural exports, consumer retail, and industrial hardware. Global freight volume reaches record highs.',
-                impacts: { 'Retail': 0.48, 'Agriculture': 0.52, 'ETF_SP': 0.35, 'Mining': 0.38, 'Gold': -0.18 },
-                revealText: '🌾 TRADE EXPANSION! Agriculture commodities rallied +52%, Nova Retail surged +48%, and broad S&P 500 ETFs gained +35%!'
-            },
-            {
-                category: 'Social & Demographic',
-                headline: '🧬 Massive Longevity Breakthrough Sparks Medical Spending Surge',
-                description: 'National healthcare subsidies flood into biopharma and med-tech devices to serve aging populations.',
-                impacts: { 'Healthcare': 0.62, 'ETF_DIV': 0.28, 'Retail': -0.10, 'Tech': 0.15, 'CD': 0.08 },
-                revealText: '💊 HEALTHCARE BOOM! Aegis Healthcare leaped +62% following institutional buying sprees!'
-            },
-            {
-                category: 'Legal & Regulatory',
-                headline: '🌿 Eco-Compliance Regulations Crack Down on Carbon Producers',
-                description: 'New green mandates slap carbon taxes on fossil fuel producers while subsidizing clean tech energy systems and rare-earth green miners.',
-                impacts: { 'Mining': 0.45, 'Oil': -0.38, 'CleanTech': 0.70, 'ETF_ESG': 0.42, 'Gold': 0.20 },
-                revealText: '🌱 GREEN RALLY! Clean Energy & Industrial Mining surged up to +70%, while Crude Oil dropped -38%.'
-            }
-        ];
-
+        // Procedural Market Generation Logic
         function generateProceduralMarket() {
             marketAssets = [
-                // YEAR 1: Core Stocks & Cash/CDs/Govt Bonds
-                { ticker: 'APEX', name: 'Apex Semiconductors', category: 'stocks', sector: 'Tech', unlockYear: 1, price: 120, pe: 28.5, pb: 4.2, divYield: 0.8, debtEquity: 0.3, beta: 2.2, desc: 'Leading manufacturer of AI processors and high-speed memory modules.' },
-                { ticker: 'AEGIS', name: 'Aegis Healthcare', category: 'stocks', sector: 'Healthcare', unlockYear: 1, price: 85, pe: 16.2, pb: 2.1, divYield: 3.2, debtEquity: 0.4, beta: 0.8, desc: 'Global pharmaceutical firm with steady dividend cash flows and patent reserves.' },
-                { ticker: 'NOVA', name: 'Nova Retail Group', category: 'stocks', sector: 'Retail', unlockYear: 1, price: 45, pe: 14.0, pb: 1.8, divYield: 2.5, debtEquity: 0.6, beta: 1.4, desc: 'Omnichannel consumer retail network expanding in high-growth metro markets.' },
-                { ticker: 'SOV', name: 'Sovereign Mining', category: 'stocks', sector: 'Mining', unlockYear: 1, price: 65, pe: 11.5, pb: 1.2, divYield: 4.1, debtEquity: 0.8, beta: 1.7, desc: 'Diversified industrial metals miner producing copper, lithium, and rare earths.' },
-                { ticker: 'US10Y', name: '10-Yr Govt Treasury Bond', category: 'bonds', sector: 'GovtBonds', unlockYear: 1, price: 100, pe: 'N/A', pb: 'N/A', divYield: 5.5, debtEquity: 0.0, beta: 0.2, desc: 'Risk-free government debt offering fixed annual coupon yield.' },
-                { ticker: 'CD3Y', name: '3-Year Fixed Certificate Deposit', category: 'bonds', sector: 'CD', unlockYear: 1, price: 100, pe: 'N/A', pb: 'N/A', divYield: 4.8, debtEquity: 0.0, beta: 0.0, desc: 'Guaranteed principal deposit locked with AAA commercial bank.' },
+                // Year 1 Unlocks: Core Stocks, Bonds, CDs
+                { ticker: 'APEX', name: 'Apex Semiconductors', category: 'stocks', sector: 'tech', price: 120, unlockYear: 1, pe: 32, pb: 4.5, divYield: 0.8, debtEquity: 0.4, beta: 1.4, desc: 'Leading designer of high-performance microprocessors and AI accelerator chips.' },
+                { ticker: 'AEGIS', name: 'Aegis Healthcare', category: 'stocks', sector: 'health', price: 85, unlockYear: 1, pe: 16, pb: 2.1, divYield: 3.2, debtEquity: 0.6, beta: 0.7, desc: 'Established biopharmaceutical conglomerate with stable dividend yields.' },
+                { ticker: 'NOVA', name: 'Nova Retail Corp', category: 'stocks', sector: 'retail', price: 45, unlockYear: 1, pe: 14, pb: 1.8, divYield: 2.5, debtEquity: 0.8, beta: 0.9, desc: 'Omnichannel consumer goods retailer with extensive supply chain logistics.' },
+                { ticker: 'SOV_MINE', name: 'Sovereign Mining', category: 'stocks', sector: 'mining', price: 65, unlockYear: 1, pe: 11, pb: 1.3, divYield: 4.1, debtEquity: 0.5, beta: 1.1, desc: 'Global extraction firm producing copper, lithium, and rare earth metals.' },
+                { ticker: 'TREASURY_10Y', name: '10-Yr US Treasury Bond', category: 'bonds', sector: 'govt', price: 1000, unlockYear: 1, pe: 'N/A', pb: 'N/A', divYield: 4.8, debtEquity: '0.0', beta: 0.1, desc: 'Guaranteed government treasury bond offering reliable fixed annual coupon returns.' },
+                { ticker: 'BANK_CD', name: '1-Year Fixed Deposit CD', category: 'bonds', sector: 'govt', price: 500, unlockYear: 1, pe: 'N/A', pb: 'N/A', divYield: 5.2, debtEquity: '0.0', beta: 0.0, desc: 'FDIC insured fixed bank deposit with zero principal volatility.' },
 
-                // YEAR 2: Index ETFs & High Yield Corporate Bonds
-                { ticker: 'SPX', name: 'S&P 500 Index ETF', category: 'etfs', sector: 'ETF_SP', unlockYear: 2, price: 400, pe: 21.0, pb: 3.0, divYield: 1.8, debtEquity: 0.4, beta: 1.2, desc: 'Broad market benchmark basket tracking top 500 largest US corporations.' },
-                { ticker: 'TECH', name: 'Tech Growth Innovators ETF', category: 'etfs', sector: 'ETF_TECH', unlockYear: 2, price: 250, pe: 32.0, pb: 5.5, divYield: 0.4, debtEquity: 0.2, beta: 2.0, desc: 'Concentrated growth fund holding cloud computing, software, and robotics leaders.' },
-                { ticker: 'CORP', name: 'High-Yield Corporate Bond Fund', category: 'bonds', sector: 'CorpBonds', unlockYear: 2, price: 90, pe: 'N/A', pb: 'N/A', divYield: 8.5, debtEquity: 1.2, beta: 0.5, desc: 'Portfolio of investment-grade corporate bonds paying attractive quarterly yields.' },
+                // Year 2 Unlocks: Index ETFs & Corporate Bonds
+                { ticker: 'SP500_ETF', name: 'Broad Market S&P 500 ETF', category: 'etfs', sector: 'index', price: 400, unlockYear: 2, pe: 22, pb: 3.2, divYield: 1.8, debtEquity: 0.5, beta: 1.0, desc: 'Diversified index basket tracking 500 largest publicly traded enterprises.' },
+                { ticker: 'TECH_ETF', name: 'High-Tech Innovation ETF', category: 'etfs', sector: 'tech', price: 250, unlockYear: 2, pe: 38, pb: 5.8, divYield: 0.5, debtEquity: 0.3, beta: 1.5, desc: 'Concentrated growth fund focusing on Cloud, AI, and Autonomous Systems.' },
+                { ticker: 'CORP_BOND', name: 'High-Yield Corporate Bond', category: 'bonds', sector: 'corp', price: 850, unlockYear: 2, pe: 'N/A', pb: 'N/A', divYield: 7.5, debtEquity: 1.2, beta: 0.4, desc: 'BBB-rated corporate bond yielding higher interest with mild credit risk.' },
 
-                // YEAR 3: Gold & Commodities
-                { ticker: 'GOLD', name: 'Physical Gold Bullion', category: 'commodities', sector: 'Gold', unlockYear: 3, price: 180, pe: 'N/A', pb: 'N/A', divYield: 0.0, debtEquity: 0.0, beta: 1.3, desc: 'Hedge asset against currency devaluation, inflation, and market volatility.' },
-                { ticker: 'OIL', name: 'Crude Oil Futures Contract', category: 'commodities', sector: 'Oil', unlockYear: 3, price: 75, pe: 'N/A', pb: 'N/A', divYield: 0.0, debtEquity: 0.0, beta: 2.5, desc: 'Global energy commodity benchmark sensitive to supply shocks and geopolitical events.' },
-                { ticker: 'AGRI', name: 'Wheat & Grain Agricultural Basket', category: 'commodities', sector: 'Agriculture', unlockYear: 3, price: 50, pe: 'N/A', pb: 'N/A', divYield: 0.0, debtEquity: 0.0, beta: 1.5, desc: 'Essential agricultural commodity contracts tied to global weather and crop yields.' },
+                // Year 3 Unlocks: Gold & Physical Commodities
+                { ticker: 'GOLD', name: 'Physical Gold Bullion (oz)', category: 'commodities', sector: 'metal', price: 1850, unlockYear: 3, pe: 'N/A', pb: 'N/A', divYield: 0.0, debtEquity: '0.0', beta: -0.2, desc: 'Hedge asset against currency devaluation and macroeconomic inflation.' },
+                { ticker: 'OIL', name: 'Crude Oil Futures (bbl)', category: 'commodities', sector: 'energy', price: 75, unlockYear: 3, pe: 'N/A', pb: 'N/A', divYield: 0.0, debtEquity: '0.0', beta: 1.3, desc: 'Industrial energy commodity sensitive to geopolitical supply shifts.' },
+                { ticker: 'WHEAT', name: 'Agricultural Wheat Futures', category: 'commodities', sector: 'agri', price: 320, unlockYear: 3, pe: 'N/A', pb: 'N/A', divYield: 0.0, debtEquity: '0.0', beta: 0.5, desc: 'Staple food commodity influenced by global weather conditions and trade tariffs.' },
 
-                // YEAR 4: Speculative Tech & Digital Assets
-                { ticker: 'BTC', name: 'Digital Asset Index (Crypto)', category: 'crypto', sector: 'Crypto', unlockYear: 4, price: 500, pe: 'N/A', pb: 'N/A', divYield: 0.0, debtEquity: 0.0, beta: 3.8, desc: 'Highly volatile decentralized digital store of value with rapid cycle shifts.' }
+                // Year 4 Unlocks: Crypto & Speculative Tech
+                { ticker: 'BITCOIN', name: 'Bitcoin Digital Asset', category: 'crypto', sector: 'speculative', price: 35000, unlockYear: 4, pe: 'N/A', pb: 'N/A', divYield: 0.0, debtEquity: '0.0', beta: 2.8, desc: 'Decentralized digital store of value with high price volatility.' },
+                { ticker: 'ETH', name: 'Ethereum Smart Network', category: 'crypto', sector: 'speculative', price: 2200, unlockYear: 4, pe: 'N/A', pb: 'N/A', divYield: 2.1, debtEquity: '0.0', beta: 3.1, desc: 'Layer-1 smart contract blockchain network supporting decentralized finance.' }
             ];
 
+            // Initialize price history tracker
             priceHistories = {};
-            marketAssets.forEach(asset => {
-                priceHistories[asset.ticker] = [asset.price];
+            marketAssets.forEach(a => {
+                priceHistories[a.ticker] = [a.price];
             });
         }
 
-        function hideAllViews() {
-            document.getElementById('viewMenu').classList.add('hidden');
+
+        function showMainMenu() {
+            document.getElementById('viewMainMenu').classList.remove('hidden');
             document.getElementById('viewLobby').classList.add('hidden');
             document.getElementById('viewGame').classList.add('hidden');
-            document.getElementById('viewEndGame').classList.add('hidden');
+            document.getElementById('viewGameOver').classList.add('hidden');
+            document.getElementById('gameHeaderStats').classList.add('hidden');
         }
 
         function showLobbyView() {
-            hideAllViews();
+            document.getElementById('viewMainMenu').classList.add('hidden');
             document.getElementById('viewLobby').classList.remove('hidden');
-            document.getElementById('lobbyRoomCodeDisplay').textContent = gameState.roomId;
-
-            document.getElementById('roomBadge').classList.remove('hidden');
-            document.getElementById('roomBadge').classList.add('flex');
-            document.getElementById('roomBadgeCode').textContent = gameState.roomId;
-
-            if (gameState.isHost) {
-                document.getElementById('lobbyHostControls').classList.remove('hidden');
-                document.getElementById('lobbyClientNotice').classList.add('hidden');
-            } else {
-                document.getElementById('lobbyHostControls').classList.add('hidden');
-                document.getElementById('lobbyClientNotice').classList.remove('hidden');
-            }
-            renderLobbyPlayers();
+            document.getElementById('viewGame').classList.add('hidden');
+            document.getElementById('viewGameOver').classList.add('hidden');
+            document.getElementById('gameHeaderStats').classList.add('hidden');
         }
 
         function showGameView() {
-            hideAllViews();
+            document.getElementById('viewMainMenu').classList.add('hidden');
+            document.getElementById('viewLobby').classList.add('hidden');
             document.getElementById('viewGame').classList.remove('hidden');
+            document.getElementById('viewGameOver').classList.add('hidden');
+            document.getElementById('gameHeaderStats').classList.remove('hidden');
+        }
 
-            if (gameState.mode === 'multi') {
-                document.getElementById('multiplayerReadyBar').classList.remove('hidden');
-                document.getElementById('leaderboardModeBadge').textContent = `Room: ${gameState.roomId}`;
-            } else {
-                document.getElementById('multiplayerReadyBar').classList.add('hidden');
-                document.getElementById('leaderboardModeBadge').textContent = 'Solo Campaign vs AI';
+        function showGameOverView() {
+            document.getElementById('viewMainMenu').classList.add('hidden');
+            document.getElementById('viewLobby').classList.add('hidden');
+            document.getElementById('viewGame').classList.add('hidden');
+            document.getElementById('viewGameOver').classList.remove('hidden');
+            document.getElementById('gameHeaderStats').classList.add('hidden');
+
+            renderFinalPodiumAndTable();
+            if (typeof confetti === 'function') {
+                confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+            }
+        }
+
+        function confirmExitToMenu() {
+            if (gameState.gameStarted && gameState.year > 1) {
+                if (!confirm("Are you sure you want to quit the current simulation game?")) return;
+            }
+            if (mqttClient) {
+                try { mqttClient.end(); } catch(e){}
+            }
+            showMainMenu();
+        }
+
+
+        function startSoloGame() {
+            gameState.mode = 'solo';
+            gameState.isHost = true;
+            gameState.year = 1;
+            gameState.maxYears = parseInt(document.getElementById('soloDurationSelect').value) || 10;
+            gameState.cash = INITIAL_CASH;
+            gameState.portfolio = {};
+            gameState.isReady = false;
+            gameState.gameStarted = true;
+            gameState.lastYearNetWorth = INITIAL_CASH;
+            gameState.lastYearPnl = 0;
+
+            const nameInput = document.getElementById('playerNameInput');
+            if (nameInput && nameInput.value.trim() !== '') {
+                gameState.playerName = nameInput.value.trim();
             }
 
+            generateProceduralMarket();
+            showGameView();
             updateDashboardHeader();
-            renderPestleBanner();
             renderAssetsGrid();
-            initPortfolioChart();
             updatePortfolioChart();
             renderLiveLeaderboard();
+
+            document.getElementById('lbModeBadge').textContent = 'Solo Campaign';
+            showToast('Solo Campaign Started! Good Luck Trader!', 'success');
         }
 
-        function generateRoomCode() {
-            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-            let code = '';
-            for (let i = 0; i < 6; i++) {
-                code += chars.charAt(Math.floor(Math.random() * chars.length));
+
+        function hostMultiplayerRoom() {
+            const nameInput = document.getElementById('playerNameInput');
+            if (nameInput && nameInput.value.trim() !== '') {
+                gameState.playerName = nameInput.value.trim();
             }
-            return code;
+
+            gameState.mode = 'multi';
+            gameState.isHost = true;
+            gameState.year = 1;
+            gameState.maxYears = parseInt(document.getElementById('multiDurationSelect').value) || 10;
+            gameState.cash = INITIAL_CASH;
+            gameState.portfolio = {};
+            gameState.roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
+
+            generateProceduralMarket();
+            showLobbyView();
+
+            document.getElementById('lobbyRoomCode').textContent = gameState.roomId;
+            document.getElementById('hostOnlyControls').classList.remove('hidden');
+            document.getElementById('clientOnlyWaiting').classList.add('hidden');
+
+            roomPlayers = [{
+                id: gameState.playerId,
+                name: gameState.playerName,
+                cash: gameState.cash,
+                netWorth: INITIAL_CASH,
+                isReady: false,
+                isHost: true
+            }];
+            renderLobbyPlayersList();
+
+            initMQTTNetwork();
         }
 
-        const MQTT_BROKERS = [
-            'wss://broker.hivemq.com:8884/mqtt',
-            'wss://broker.emqx.io:8084/mqtt',
-            'wss://test.mosquitto.org:8081'
-        ];
+        function joinMultiplayerRoom() {
+            const codeInput = document.getElementById('roomCodeInput');
+            const roomCode = codeInput ? codeInput.value.trim().toUpperCase() : '';
 
-        function initMqttNetwork(onConnectedCallback) {
-            updateConnectionStatus('connecting', 'Connecting...');
-            let brokerIndex = 0;
+            if (roomCode.length !== 6) {
+                showToast('Please enter a valid 6-character room code!', 'error');
+                return;
+            }
 
-            function tryConnect() {
-                const url = MQTT_BROKERS[brokerIndex];
+            const nameInput = document.getElementById('playerNameInput');
+            if (nameInput && nameInput.value.trim() !== '') {
+                gameState.playerName = nameInput.value.trim();
+            }
 
+            gameState.mode = 'multi';
+            gameState.isHost = false;
+            gameState.year = 1;
+            gameState.cash = INITIAL_CASH;
+            gameState.portfolio = {};
+            gameState.roomId = roomCode;
+
+            showLobbyView();
+
+            document.getElementById('lobbyRoomCode').textContent = gameState.roomId;
+            document.getElementById('hostOnlyControls').classList.add('hidden');
+            document.getElementById('clientOnlyWaiting').classList.remove('hidden');
+
+            initMQTTNetwork();
+        }
+
+        function initMQTTNetwork() {
+            showToast('Connecting to Classroom Cloud Network...', 'info');
+
+            // Connect to public WebSocket broker for zero-config global messaging
+            mqttClient = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
+
+            const roomTopic = `stockbot/room/${gameState.roomId}`;
+
+            mqttClient.on('connect', () => {
+                showToast('Connected to Multiplayer Room!', 'success');
+                mqttClient.subscribe(roomTopic);
+
+                // Announce presence
+                sendMQTTMessage({
+                    type: 'PLAYER_JOIN',
+                    playerId: gameState.playerId,
+                    playerName: gameState.playerName,
+                    isHost: gameState.isHost
+                });
+            });
+
+            mqttClient.on('message', (topic, message) => {
                 try {
-                    mqttClient = mqtt.connect(url, {
-                        clientId: 'stockbot_' + gameState.playerId,
-                        keepalive: 30,
-                        connectTimeout: 5000,
-                        clean: true
-                    });
-
-                    mqttClient.on('connect', () => {
-                        isMqttConnected = true;
-                        updateConnectionStatus('online', 'Connected to Cloud');
-                        if (onConnectedCallback) onConnectedCallback();
-                    });
-
-                    mqttClient.on('message', (topic, payload) => {
-                        try {
-                            const data = JSON.parse(payload.toString());
-                            handleMqttMessage(topic, data);
-                        } catch (err) {
-                            console.error("MQTT parse error:", err);
-                        }
-                    });
-
-                    mqttClient.on('error', (err) => {
-                        mqttClient.end();
-                        brokerIndex++;
-                        if (brokerIndex < MQTT_BROKERS.length) {
-                            setTimeout(tryConnect, 1000);
-                        } else {
-                            updateConnectionStatus('offline', 'Network Offline');
-                            showToast('Cloud connection failed.', 'error');
-                        }
-                    });
-                } catch (e) {
-                    console.error("MQTT Exception:", e);
+                    const data = JSON.parse(message.toString());
+                    handleMQTTMessage(data);
+                } catch(e) {
+                    console.error('MQTT message error:', e);
                 }
-            }
-
-            tryConnect();
+            });
         }
 
-        function updateConnectionStatus(state, text) {
-            const badge = document.getElementById('connectionStatusBadge');
-            const dot = document.getElementById('connectionDot');
-            const textEl = document.getElementById('connectionText');
-            
-            badge.classList.remove('hidden');
-            badge.classList.add('flex');
-            textEl.textContent = text;
+        function sendMQTTMessage(msg) {
+            if (mqttClient && mqttClient.connected) {
+                const roomTopic = `stockbot/room/${gameState.roomId}`;
+                mqttClient.publish(roomTopic, JSON.stringify(msg));
+            }
+        }
 
-            if (state === 'online') {
-                dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400';
-            } else if (state === 'connecting') {
-                dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse';
-            } else {
-                dot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500';
+        function handleMQTTMessage(data) {
+            if (data.type === 'PLAYER_JOIN') {
+                if (gameState.isHost) {
+                    const existing = roomPlayers.find(p => p.id === data.playerId);
+                    if (!existing) {
+                        roomPlayers.push({
+                            id: data.playerId,
+                            name: data.playerName,
+                            cash: INITIAL_CASH,
+                            netWorth: INITIAL_CASH,
+                            isReady: false,
+                            isHost: false
+                        });
+                    }
+                    broadcastRoomState();
+                }
+            } else if (data.type === 'ROOM_STATE_UPDATE') {
+                roomPlayers = data.players;
+                gameState.maxYears = data.maxYears || gameState.maxYears;
+                if (data.marketAssets) {
+                    marketAssets = data.marketAssets;
+                }
+                renderLobbyPlayersList();
+                renderLiveLeaderboard();
+
+                if (data.gameStarted && !gameState.gameStarted) {
+                    gameState.gameStarted = true;
+                    showGameView();
+                    updateDashboardHeader();
+                    renderAssetsGrid();
+                    updatePortfolioChart();
+                }
+            } else if (data.type === 'PLAYER_READY_STATUS') {
+                if (gameState.isHost) {
+                    const player = roomPlayers.find(p => p.id === data.playerId);
+                    if (player) {
+                        player.isReady = data.isReady;
+                        player.netWorth = data.netWorth;
+                    }
+                    broadcastRoomState();
+                    checkAllPlayersReadyMaster();
+                }
+            } else if (data.type === 'ADVANCE_YEAR_SYNC') {
+                gameState.year = data.newYear;
+                marketAssets = data.marketAssets;
+                priceHistories = data.priceHistories;
+                gameState.isReady = false;
+
+                // Process dividend payouts
+                processYearlyDividends();
+
+                const netWorth = calculatePortfolioValue() + gameState.cash;
+                gameState.lastYearPnl = netWorth - gameState.lastYearNetWorth;
+                gameState.lastYearNetWorth = netWorth;
+
+                updateDashboardHeader();
+                renderAssetsGrid();
+                updatePortfolioChart();
+                renderLiveLeaderboard();
+
+                showYearReportModal(data.eventOutcome);
+
+                if (gameState.year > gameState.maxYears) {
+                    showGameOverView();
+                }
             }
         }
 
         function broadcastRoomState() {
-            if (!mqttClient || !isMqttConnected || !gameState.roomId) return;
-            const statePayload = {
-                type: 'ROOM_STATE',
-                hostId: gameState.playerId,
-                maxYears: gameState.maxYears,
-                year: gameState.year,
-                gameStarted: gameState.gameStarted,
-                marketAssets: marketAssets,
-                currentPestle: currentPestle,
-                players: lobbyPlayers
-            };
-            mqttClient.publish(`stockbot_v2/room/${gameState.roomId}/state`, JSON.stringify(statePayload));
-        }
-
-        function handleMqttMessage(topic, data) {
-            if (data.type === 'JOIN_REQUEST' && gameState.isHost) {
-                const existing = lobbyPlayers.find(p => p.id === data.player.id);
-                if (!existing) {
-                    lobbyPlayers.push(data.player);
-                    showToast(`${data.player.name} joined the room!`, 'info');
-                }
-                broadcastRoomState();
-            } else if (data.type === 'ROOM_STATE') {
-                gameState.maxYears = data.maxYears;
-                gameState.year = data.year;
-                marketAssets = data.marketAssets || marketAssets;
-                currentPestle = data.currentPestle || currentPestle;
-                lobbyPlayers = data.players || lobbyPlayers;
-
-                if (!gameState.isHost) {
-                    if (data.gameStarted && !gameState.gameStarted) {
-                        gameState.gameStarted = true;
-                        showGameView();
-                    } else if (!data.gameStarted) {
-                        renderLobbyPlayers();
-                    } else {
-                        updateDashboardHeader();
-                        renderPestleBanner();
-                        renderAssetsGrid();
-                        renderLiveLeaderboard();
-                    }
-                } else {
-                    renderLobbyPlayers();
-                }
-
-                updateReadyProgressUI();
-            } else if (data.type === 'PLAYER_UPDATE') {
-                const p = lobbyPlayers.find(item => item.id === data.player.id);
-                if (p) {
-                    p.netWorth = data.player.netWorth;
-                    p.isReady = data.player.isReady;
-                    renderLiveLeaderboard();
-                    updateReadyProgressUI();
-
-                    if (gameState.isHost && gameState.gameStarted) {
-                        checkAllPlayersReady();
-                    }
-                }
-            }
-        }
-
-        function sendPlayerUpdate() {
-            if (!mqttClient || !isMqttConnected || !gameState.roomId) return;
-            const myNetWorth = gameState.cash + calculatePortfolioValue();
-            mqttClient.publish(`stockbot_v2/room/${gameState.roomId}/update`, JSON.stringify({
-                type: 'PLAYER_UPDATE',
-                player: {
-                    id: gameState.playerId,
-                    name: gameState.playerName,
-                    netWorth: myNetWorth,
-                    isReady: gameState.isReady
-                }
-            }));
-        }
-
-        function startSoloGame() {
-            const nameInput = document.getElementById('soloPlayerName').value.trim();
-            if (nameInput) gameState.playerName = nameInput;
-
-            gameState.mode = 'solo';
-            gameState.isHost = true;
-            gameState.roomId = null;
-            gameState.maxYears = parseInt(document.getElementById('soloGameLength').value) || 10;
-            gameState.year = 1;
-            gameState.cash = INITIAL_CASH;
-            gameState.portfolio = {};
-            gameState.lastYearNetWorth = INITIAL_CASH;
-            gameState.lastYearPnl = 0;
-            gameState.gameStarted = true;
-
-            generateProceduralMarket();
-            currentPestle = PESTLE_DYNAMIC_DECK[Math.floor(Math.random() * PESTLE_DYNAMIC_DECK.length)];
-
-            lobbyPlayers = [
-                { id: gameState.playerId, name: gameState.playerName, isHost: true, isReady: false, netWorth: INITIAL_CASH },
-                { id: 'ai_value', name: 'Warren (Value Hunter)', isHost: false, isReady: true, netWorth: INITIAL_CASH },
-                { id: 'ai_tech', name: 'Cathie (Tech Bull)', isHost: false, isReady: true, netWorth: INITIAL_CASH },
-                { id: 'ai_macro', name: 'Ray (Macro Allocator)', isHost: false, isReady: true, netWorth: INITIAL_CASH },
-                { id: 'ai_yolo', name: 'Satoshi (YOLO Trader)', isHost: false, isReady: true, netWorth: INITIAL_CASH }
-            ];
-
-            showGameView();
-            showToast('Solo Game Started! Good luck!', 'success');
-        }
-
-        function hostMultiplayerRoom() {
-            const nameInput = document.getElementById('multiPlayerName').value.trim();
-            if (!nameInput) {
-                showToast('Please enter your display name first!', 'error');
-                return;
-            }
-
-            gameState.playerName = nameInput;
-            gameState.mode = 'multi';
-            gameState.isHost = true;
-            gameState.roomId = generateRoomCode();
-            gameState.maxYears = parseInt(document.getElementById('multiGameLength').value) || 10;
-            gameState.cash = INITIAL_CASH;
-            gameState.portfolio = {};
-            gameState.lastYearNetWorth = INITIAL_CASH;
-            gameState.lastYearPnl = 0;
-            gameState.gameStarted = false;
-
-            initMqttNetwork(() => {
-                const roomTopic = `stockbot_v2/room/${gameState.roomId}/#`;
-                mqttClient.subscribe(roomTopic, (err) => {
-                    if (!err) {
-                        lobbyPlayers = [{ id: gameState.playerId, name: gameState.playerName, isHost: true, isReady: false, netWorth: INITIAL_CASH }];
-                        broadcastRoomState();
-                        showLobbyView();
-                        showToast(`Room ${gameState.roomId} Created Successfully!`, 'success');
-                    }
-                });
-            });
-        }
-
-        function joinMultiplayerRoom() {
-            const nameInput = document.getElementById('multiPlayerName').value.trim();
-            const codeInput = document.getElementById('joinRoomCodeInput').value.trim().toUpperCase();
-
-            if (!nameInput) {
-                showToast('Please enter your display name!', 'error');
-                return;
-            }
-            if (codeInput.length !== 6) {
-                showToast('Please enter a valid 6-letter room code!', 'error');
-                return;
-            }
-
-            gameState.playerName = nameInput;
-            gameState.mode = 'multi';
-            gameState.isHost = false;
-            gameState.roomId = codeInput;
-            gameState.cash = INITIAL_CASH;
-            gameState.portfolio = {};
-            gameState.lastYearNetWorth = INITIAL_CASH;
-            gameState.lastYearPnl = 0;
-            gameState.gameStarted = false;
-
-            initMqttNetwork(() => {
-                const roomTopic = `stockbot_v2/room/${gameState.roomId}/#`;
-                mqttClient.subscribe(roomTopic, (err) => {
-                    if (!err) {
-                        mqttClient.publish(`stockbot_v2/room/${gameState.roomId}/join`, JSON.stringify({
-                            type: 'JOIN_REQUEST',
-                            player: { id: gameState.playerId, name: gameState.playerName, isHost: false, isReady: false, netWorth: INITIAL_CASH }
-                        }));
-                        showLobbyView();
-                        showToast(`Joined Room ${gameState.roomId}!`, 'success');
-                    }
-                });
-            });
-        }
-
-        function startMultiplayerGame() {
             if (!gameState.isHost) return;
-
-            gameState.gameStarted = true;
-            gameState.year = 1;
-            gameState.lastYearNetWorth = INITIAL_CASH;
-            gameState.lastYearPnl = 0;
-            generateProceduralMarket();
-            currentPestle = PESTLE_DYNAMIC_DECK[Math.floor(Math.random() * PESTLE_DYNAMIC_DECK.length)];
-
-            broadcastRoomState();
-            showGameView();
+            sendMQTTMessage({
+                type: 'ROOM_STATE_UPDATE',
+                players: roomPlayers,
+                maxYears: gameState.maxYears,
+                gameStarted: gameState.gameStarted,
+                marketAssets: marketAssets
+            });
         }
 
-        function renderLobbyPlayers() {
+        function renderLobbyPlayersList() {
             const list = document.getElementById('lobbyPlayerList');
             const count = document.getElementById('lobbyPlayerCount');
-            list.innerHTML = '';
-            count.textContent = `${lobbyPlayers.length} PLAYER${lobbyPlayers.length > 1 ? 'S' : ''}`;
+            if (!list) return;
 
-            lobbyPlayers.forEach(p => {
-                const div = document.createElement('div');
-                div.className = 'flex items-center justify-between p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-bold';
-                div.innerHTML = `
-                    <div class="flex items-center space-x-2">
-                        <span class="w-2 h-2 rounded-full ${p.isHost ? 'bg-amber-400' : 'bg-emerald-400'}"></span>
-                        <span class="text-white">${escapeHtml(p.name)} ${p.id === gameState.playerId ? '(You)' : ''}</span>
-                    </div>
-                    ${p.isHost ? '<span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded border border-amber-500/30">HOST</span>' : '<span class="text-[10px] text-slate-400">STUDENT</span>'}
+            list.innerHTML = '';
+            count.textContent = `${roomPlayers.length} Player(s)`;
+
+            roomPlayers.forEach(p => {
+                const item = document.createElement('div');
+                item.className = 'flex justify-between items-center bg-slate-900 px-3 py-2 rounded-xl text-xs font-bold';
+                item.innerHTML = `
+                    <span class="text-white flex items-center gap-2">
+                        <i class="fa-solid fa-circle text-[8px] text-emerald-400"></i> ${escapeHtml(p.name)} ${p.isHost ? '<span class="text-[9px] px-1.5 py-0.5 rounded bg-teal-500/20 text-teal-300">HOST</span>' : ''}
+                    </span>
+                    <span class="text-slate-400 font-mono">${p.isReady ? '<strong class="text-emerald-400">READY</strong>' : 'WAITING'}</span>
                 `;
-                list.appendChild(div);
+                list.appendChild(item);
             });
         }
 
-        function buyAsset(ticker) {
+        function startMultiplayerGameMaster() {
+            if (!gameState.isHost) return;
+            gameState.gameStarted = true;
+            generateProceduralMarket();
+            broadcastRoomState();
+            showGameView();
+            updateDashboardHeader();
+            renderAssetsGrid();
+            updatePortfolioChart();
+            renderLiveLeaderboard();
+            document.getElementById('lbModeBadge').textContent = `Room: ${gameState.roomId}`;
+        }
+
+        function handleCustomQtyInput(val) {
+            const parsed = parseInt(val);
+            if (isNaN(parsed) || parsed < 1) {
+                gameState.tradeQty = 1;
+            } else {
+                gameState.tradeQty = parsed;
+            }
+            updateQtyUI();
+            renderAssetsGrid();
+            if (gameState.selectedAssetDetail) {
+                renderModalTradeActions(gameState.selectedAssetDetail);
+            }
+        }
+
+        function addTradeQty(amount) {
+            let current = (gameState.tradeQty === 'max') ? 0 : (parseInt(gameState.tradeQty) || 0);
+            gameState.tradeQty = Math.max(1, current + amount);
+            updateQtyUI();
+            renderAssetsGrid();
+            if (gameState.selectedAssetDetail) {
+                renderModalTradeActions(gameState.selectedAssetDetail);
+            }
+        }
+
+        function setTradeQty(qty) {
+            if (qty === 'max') {
+                gameState.tradeQty = 'max';
+            } else {
+                gameState.tradeQty = Math.max(1, parseInt(qty) || 1);
+            }
+            updateQtyUI();
+            renderAssetsGrid();
+            if (gameState.selectedAssetDetail) {
+                renderModalTradeActions(gameState.selectedAssetDetail);
+            }
+        }
+
+        function updateQtyUI() {
+            const input = document.getElementById('customQtyInput');
+            const maxBtn = document.getElementById('qtyBtnMax');
+            if (input) {
+                if (gameState.tradeQty === 'max') {
+                    input.value = '';
+                    input.placeholder = 'MAX';
+                } else {
+                    input.value = gameState.tradeQty;
+                    input.placeholder = '1';
+                }
+            }
+            if (maxBtn) {
+                if (gameState.tradeQty === 'max') {
+                    maxBtn.className = 'px-2.5 py-1 rounded-lg font-bold bg-emerald-500 text-slate-950 border border-emerald-400 transition';
+                } else {
+                    maxBtn.className = 'px-2.5 py-1 rounded-lg font-bold bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500 hover:text-slate-950 border border-emerald-500/40 transition';
+                }
+            }
+        }
+
+        function filterAssetCategory(cat) {
+            gameState.categoryFilter = cat;
+            document.querySelectorAll('.asset-tab').forEach(tab => {
+                tab.className = 'asset-tab px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:bg-slate-700';
+            });
+            const activeTab = document.querySelector(`.asset-tab[data-cat="${cat}"]`);
+            if (activeTab) activeTab.className = 'asset-tab px-3 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-500 text-slate-950';
+
+            renderAssetsGrid();
+        }
+
+        function buyAsset(ticker, qty = gameState.tradeQty) {
             const asset = marketAssets.find(a => a.ticker === ticker);
             if (!asset) return;
 
@@ -1049,23 +1130,36 @@
                 return;
             }
 
-            if (gameState.cash < asset.price) {
-                showToast('Insufficient cash available!', 'error');
+            let actualQty = qty;
+            if (qty === 'max') {
+                actualQty = Math.floor(gameState.cash / asset.price);
+                if (actualQty <= 0) {
+                    showToast('Insufficient cash available!', 'error');
+                    return;
+                }
+            }
+
+            const totalCost = asset.price * actualQty;
+
+            if (gameState.cash < totalCost) {
+                showToast(`Insufficient cash for ${actualQty} share(s)! Need $${totalCost.toLocaleString()}`, 'error');
                 return;
             }
 
-            gameState.cash -= asset.price;
-            gameState.portfolio[ticker] = (gameState.portfolio[ticker] || 0) + 1;
+            gameState.cash -= totalCost;
+            gameState.portfolio[ticker] = (gameState.portfolio[ticker] || 0) + actualQty;
             playSound('buy');
+            showToast(`Bought ${actualQty} share(s) of ${asset.ticker}!`, 'success');
 
             updateDashboardHeader();
             renderAssetsGrid();
             updatePortfolioChart();
             renderLiveLeaderboard();
+            if (gameState.selectedAssetDetail === ticker) openAssetModal(ticker);
             if (gameState.mode === 'multi') sendPlayerUpdate();
         }
 
-        function sellAsset(ticker) {
+        function sellAsset(ticker, qty = gameState.tradeQty) {
             const owned = gameState.portfolio[ticker] || 0;
             if (owned <= 0) {
                 showToast('You do not own any shares of this asset!', 'error');
@@ -1075,23 +1169,31 @@
             const asset = marketAssets.find(a => a.ticker === ticker);
             if (!asset) return;
 
-            gameState.cash += asset.price;
-            gameState.portfolio[ticker] = owned - 1;
+            let actualQty = qty;
+            if (qty === 'max' || qty > owned) {
+                actualQty = owned;
+            }
+
+            const totalEarned = asset.price * actualQty;
+            gameState.cash += totalEarned;
+            gameState.portfolio[ticker] = owned - actualQty;
             if (gameState.portfolio[ticker] === 0) {
                 delete gameState.portfolio[ticker];
             }
             playSound('sell');
+            showToast(`Sold ${actualQty} share(s) of ${asset.ticker}!`, 'success');
 
             updateDashboardHeader();
             renderAssetsGrid();
             updatePortfolioChart();
             renderLiveLeaderboard();
+            if (gameState.selectedAssetDetail === ticker) openAssetModal(ticker);
             if (gameState.mode === 'multi') sendPlayerUpdate();
         }
 
         function calculatePortfolioValue() {
             let total = 0;
-            for (let ticker in gameState.portfolio) {
+            for (const ticker in gameState.portfolio) {
                 const asset = marketAssets.find(a => a.ticker === ticker);
                 if (asset) {
                     total += asset.price * gameState.portfolio[ticker];
@@ -1100,155 +1202,20 @@
             return total;
         }
 
-        function toggleReadyAdvance() {
-            if (gameState.mode === 'solo') {
-                advanceToNextYearMaster();
-            } else {
-                gameState.isReady = !gameState.isReady;
-                const btn = document.getElementById('advanceYearBtn');
-                const btnText = document.getElementById('advanceBtnText');
-
-                if (gameState.isReady) {
-                    btn.className = 'py-3 px-5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-sm tracking-wide transition shadow-lg flex items-center justify-center gap-2';
-                    btnText.textContent = 'Waiting for Class...';
-                } else {
-                    btn.className = 'py-3 px-5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-sm tracking-wide transition shadow-lg flex items-center justify-center gap-2';
-                    btnText.textContent = 'Advance to Next Year';
-                }
-
-                sendPlayerUpdate();
-                if (gameState.isHost) checkAllPlayersReady();
-            }
-        }
-
-        function checkAllPlayersReady() {
-            if (!gameState.isHost || !gameState.gameStarted) return;
-            const allReady = lobbyPlayers.every(p => p.isReady || p.id === gameState.playerId ? gameState.isReady : false);
-            if (allReady) {
-                advanceToNextYearMaster();
-            }
-        }
-
-        function updateReadyProgressUI() {
-            if (gameState.mode !== 'multi') return;
-            const total = lobbyPlayers.length;
-            const readyCount = lobbyPlayers.filter(p => p.isReady).length;
-            const pct = total > 0 ? Math.round((readyCount / total) * 100) : 0;
-
-            document.getElementById('readyProgressFill').style.width = `${pct}%`;
-            document.getElementById('readyStatusText').textContent = `${readyCount} / ${total} Students Ready`;
-        }
-
-        function advanceToNextYearMaster() {
-            playSound('advance');
-            const currentNetWorthBefore = gameState.cash + calculatePortfolioValue();
-            gameState.lastYearNetWorth = currentNetWorthBefore;
-
-            marketAssets.forEach(asset => {
-                let multiplier = 1.0;
-
-                if (currentPestle && currentPestle.impacts[asset.sector]) {
-                    multiplier += currentPestle.impacts[asset.sector];
-                }
-
-                const baseMacroWave = (Math.random() - 0.48) * 0.24;
-                multiplier += baseMacroWave;
-
-                const betaFactor = asset.beta || 1.0;
-                const dynamicVolatility = (Math.random() - 0.45) * 0.22 * betaFactor;
-                multiplier += dynamicVolatility;
-
-                const ownedUnits = gameState.portfolio[asset.ticker] || 0;
-                if (ownedUnits > 0 && typeof asset.divYield === 'number' && asset.divYield > 0) {
-                    const dividendPayout = Math.round(ownedUnits * asset.price * (asset.divYield / 100));
-                    gameState.cash += dividendPayout;
-                }
-
-                asset.price = Math.max(5, Math.round(asset.price * multiplier));
-                priceHistories[asset.ticker].push(asset.price);
-            });
-
-            const netWorthAfter = gameState.cash + calculatePortfolioValue();
-            gameState.lastYearPnl = netWorthAfter - gameState.lastYearNetWorth;
-
-            gameState.year += 1;
-            gameState.isReady = false;
-            lobbyPlayers.forEach(p => p.isReady = false);
-
-            if (gameState.mode === 'solo') {
-                lobbyPlayers.forEach(p => {
-                    if (p.id !== gameState.playerId) {
-                        const aiShift = (Math.random() - 0.42) * 0.35;
-                        p.netWorth = Math.max(10000, Math.round(p.netWorth * (1 + aiShift)));
-                    }
-                });
-            }
-
-            currentPestle = PESTLE_DYNAMIC_DECK[Math.floor(Math.random() * PESTLE_DYNAMIC_DECK.length)];
-
-            if (gameState.year > gameState.maxYears) {
-                finishGameAndShowPodium();
-                return;
-            }
-
-            if (gameState.isHost && gameState.mode === 'multi') {
-                broadcastRoomState();
-            }
-
-            document.getElementById('advanceYearBtn').className = 'py-3 px-5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-sm tracking-wide transition shadow-lg flex items-center justify-center gap-2';
-            document.getElementById('advanceBtnText').textContent = 'Advance to Next Year';
-
-            updateDashboardHeader();
-            renderPestleBanner();
-            renderAssetsGrid();
-            renderLiveLeaderboard();
-            showImpactReportModal();
-        }
-
         function updateDashboardHeader() {
-            document.getElementById('gameYearDisplay').textContent = `Year ${gameState.year}`;
-            document.getElementById('gameTotalYearsDisplay').textContent = `/ ${gameState.maxYears} Years`;
-            document.getElementById('gameCashDisplay').textContent = `$${gameState.cash.toLocaleString()}`;
+            const portValue = calculatePortfolioValue();
+            const totalNetWorth = gameState.cash + portValue;
 
-            const portVal = calculatePortfolioValue();
-            document.getElementById('gamePortfolioValueDisplay').textContent = `$${portVal.toLocaleString()}`;
+            document.getElementById('statYear').textContent = `Year ${gameState.year} / ${gameState.maxYears}`;
+            document.getElementById('statCash').textContent = `$${Math.round(gameState.cash).toLocaleString()}`;
+            document.getElementById('statNetWorth').textContent = `$${Math.round(totalNetWorth).toLocaleString()}`;
+            document.getElementById('portfolioValueTotal').textContent = `$${Math.round(totalNetWorth).toLocaleString()}`;
 
-            const totalNetWorth = gameState.cash + portVal;
-            document.getElementById('gameNetWorthDisplay').textContent = `$${totalNetWorth.toLocaleString()}`;
-
-            const totalReturn = (((totalNetWorth - INITIAL_CASH) / INITIAL_CASH) * 100).toFixed(1);
-            const returnBadge = document.getElementById('gameReturnDisplay');
-            if (totalReturn >= 0) {
-                returnBadge.className = 'text-xs font-bold px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800';
-                returnBadge.textContent = `+${totalReturn}%`;
-            } else {
-                returnBadge.className = 'text-xs font-bold px-1.5 py-0.5 rounded bg-rose-950 text-rose-400 border border-rose-800';
-                returnBadge.textContent = `${totalReturn}%`;
-            }
-
-            // Lock indicators on tabs
-            document.getElementById('lockEtfIcon').className = gameState.year >= 2 ? 'hidden' : 'fa-solid fa-lock text-[10px] ml-1 text-amber-400';
-            document.getElementById('lockCommIcon').className = gameState.year >= 3 ? 'hidden' : 'fa-solid fa-lock text-[10px] ml-1 text-amber-400';
-            document.getElementById('lockCryptoIcon').className = gameState.year >= 4 ? 'hidden' : 'fa-solid fa-lock text-[10px] ml-1 text-amber-400';
-        }
-
-        function renderPestleBanner() {
-            if (!currentPestle) return;
-            document.getElementById('pestleCategoryTag').textContent = currentPestle.category;
-            document.getElementById('pestleHeadline').textContent = currentPestle.headline;
-            document.getElementById('pestleDescription').textContent = currentPestle.description;
-        }
-
-        function filterAssetCategory(cat) {
-            gameState.categoryFilter = cat;
-            document.querySelectorAll('.asset-tab').forEach(btn => {
-                if (btn.getAttribute('data-cat') === cat) {
-                    btn.className = 'asset-tab px-3 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-500 text-slate-950';
-                } else {
-                    btn.className = 'asset-tab px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:bg-slate-700';
-                }
-            });
-            renderAssetsGrid();
+            // Update PESTLE News Header text
+            const currentNews = PESTLE_DYNAMIC_DECK[(gameState.year - 1) % PESTLE_DYNAMIC_DECK.length];
+            document.getElementById('newsCategory').textContent = `Category: ${currentNews.category}`;
+            document.getElementById('newsTitle').textContent = currentNews.title;
+            document.getElementById('newsDesc').textContent = currentNews.desc;
         }
 
         function renderAssetsGrid() {
@@ -1266,6 +1233,9 @@
                 const history = priceHistories[asset.ticker] || [asset.price];
                 const prevPrice = history.length > 1 ? history[history.length - 2] : asset.price;
                 const priceChangePct = (((asset.price - prevPrice) / prevPrice) * 100).toFixed(1);
+
+                const buyLabel = gameState.tradeQty === 'max' ? 'Buy Max' : `Buy (${gameState.tradeQty})`;
+                const sellLabel = gameState.tradeQty === 'max' ? 'Sell All' : `Sell (${gameState.tradeQty})`;
 
                 const card = document.createElement('div');
                 card.className = `bg-slate-900 border ${isLocked ? 'border-slate-800/60 opacity-60' : 'border-slate-800 hover:border-slate-700'} rounded-2xl p-4 flex flex-col justify-between space-y-3 relative transition glow-card`;
@@ -1286,7 +1256,7 @@
                         </div>
 
                         <div class="flex justify-between items-baseline pt-1">
-                            <span class="text-2xl font-black text-white">$${asset.price.toLocaleString()}</span>
+                            <span class="text-2xl font-black text-white">$${Math.round(asset.price).toLocaleString()}</span>
                             <span class="text-xs text-slate-400">Yield: <strong class="text-emerald-400">${asset.divYield}%</strong></span>
                         </div>
                     </div>
@@ -1296,10 +1266,10 @@
 
                         <div class="flex items-center space-x-2">
                             <button onclick="sellAsset('${asset.ticker}')" ${isLocked || owned <= 0 ? 'disabled' : ''} class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold text-rose-400 border border-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition">
-                                Sell
+                                ${sellLabel}
                             </button>
                             <button onclick="buyAsset('${asset.ticker}')" ${isLocked ? 'disabled' : ''} class="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-xs font-black text-slate-950 shadow disabled:opacity-30 disabled:cursor-not-allowed transition">
-                                Buy
+                                ${buyLabel}
                             </button>
                         </div>
                     </div>
@@ -1308,54 +1278,165 @@
             });
         }
 
-        function showImpactReportModal() {
-            const modal = document.getElementById('modalImpactReport');
-            modal.classList.remove('hidden');
 
-            document.getElementById('modalImpactYearTitle').textContent = `Year ${gameState.year - 1} Market Recap`;
-            
-            if (currentPestle) {
-                document.getElementById('modalImpactNewsHeadline').textContent = currentPestle.headline;
-                document.getElementById('modalImpactNewsReveal').textContent = currentPestle.revealText;
-            }
+        function advanceTurnRequest() {
+            if (gameState.isReady) return;
 
-            const totalWorth = gameState.cash + calculatePortfolioValue();
-            const pnl = gameState.lastYearPnl;
-            const pnlPct = gameState.lastYearNetWorth > 0 ? ((pnl / gameState.lastYearNetWorth) * 100).toFixed(1) : '0.0';
+            gameState.isReady = true;
+            playSound('advance');
 
-            const pnlElement = document.getElementById('modalImpactYearPnl');
-            if (pnl >= 0) {
-                pnlElement.className = 'text-lg font-black text-emerald-400 mt-0.5';
-                pnlElement.textContent = `+$${pnl.toLocaleString()} (+${pnlPct}%)`;
+            const btn = document.getElementById('btnAdvanceTurn');
+            const status = document.getElementById('readyStatusText');
+            if (btn) btn.className = 'w-full md:w-auto px-6 py-3.5 bg-slate-800 text-emerald-400 font-black text-sm rounded-xl border border-emerald-500/40 cursor-not-allowed';
+            if (status) status.textContent = 'Status Locked: Waiting for other players...';
+
+            if (gameState.mode === 'solo') {
+                processSoloAIState();
+                executeMasterYearAdvance();
             } else {
-                pnlElement.className = 'text-lg font-black text-rose-400 mt-0.5';
-                pnlElement.textContent = `-$${Math.abs(pnl).toLocaleString()} (${pnlPct}%)`;
-            }
-
-            document.getElementById('modalImpactNewNetWorth').textContent = `$${totalWorth.toLocaleString()}`;
-
-            const unlockNotice = document.getElementById('modalUnlockNotice');
-            if (gameState.year === 2) {
-                unlockNotice.classList.remove('hidden');
-                document.getElementById('modalUnlockText').textContent = 'Unlocked: S&P 500 Index ETFs & High Yield Bonds!';
-            } else if (gameState.year === 3) {
-                unlockNotice.classList.remove('hidden');
-                document.getElementById('modalUnlockText').textContent = 'Unlocked: Physical Gold & Crude Oil Commodities!';
-            } else if (gameState.year === 4) {
-                unlockNotice.classList.remove('hidden');
-                document.getElementById('modalUnlockText').textContent = 'Unlocked: Speculative Digital Assets (Crypto)!';
-            } else {
-                unlockNotice.classList.add('hidden');
+                sendPlayerUpdate();
             }
         }
 
-        function closeImpactModal() {
-            document.getElementById('modalImpactReport').classList.add('hidden');
+        function sendPlayerUpdate() {
+            const netWorth = calculatePortfolioValue() + gameState.cash;
+            sendMQTTMessage({
+                type: 'PLAYER_READY_STATUS',
+                playerId: gameState.playerId,
+                isReady: gameState.isReady,
+                netWorth: netWorth
+            });
+        }
+
+        function checkAllPlayersReadyMaster() {
+            if (!gameState.isHost) return;
+            const allReady = roomPlayers.every(p => p.isReady);
+            if (allReady && roomPlayers.length > 0) {
+                executeMasterYearAdvance();
+            }
+        }
+
+        function processSoloAIState() {
+            // Simulate AI Rival decisions
+            aiRivals.forEach(ai => {
+                const availableAssets = marketAssets.filter(a => a.unlockYear <= gameState.year);
+                if (availableAssets.length === 0) return;
+
+                const targetAsset = availableAssets[Math.floor(Math.random() * availableAssets.length)];
+                const buyQty = Math.floor((ai.cash * 0.3) / targetAsset.price);
+
+                if (buyQty > 0) {
+                    ai.cash -= buyQty * targetAsset.price;
+                    ai.portfolio[targetAsset.ticker] = (ai.portfolio[targetAsset.ticker] || 0) + buyQty;
+                }
+            });
+        }
+
+        function executeMasterYearAdvance() {
+            const currentNews = PESTLE_DYNAMIC_DECK[(gameState.year - 1) % PESTLE_DYNAMIC_DECK.length];
+
+            // 1. Apply PESTLE macro impacts
+            currentNews.applyImpact(marketAssets);
+
+            // 2. Apply baseline market volatility (High Dopamine swings)
+            marketAssets.forEach(asset => {
+                const randomSwing = 1 + (Math.random() * 0.35 - 0.15) * (asset.beta || 1);
+                asset.price = Math.max(1, Math.round(asset.price * randomSwing));
+
+                // Record history
+                if (!priceHistories[asset.ticker]) priceHistories[asset.ticker] = [];
+                priceHistories[asset.ticker].push(asset.price);
+            });
+
+            const nextYear = gameState.year + 1;
+
+            if (gameState.mode === 'solo') {
+                gameState.year = nextYear;
+                gameState.isReady = false;
+
+                // Process dividend payouts
+                processYearlyDividends();
+
+                const netWorth = calculatePortfolioValue() + gameState.cash;
+                gameState.lastYearPnl = netWorth - gameState.lastYearNetWorth;
+                gameState.lastYearNetWorth = netWorth;
+
+                updateDashboardHeader();
+                renderAssetsGrid();
+                updatePortfolioChart();
+                renderLiveLeaderboard();
+
+                // Reset advance button state
+                const btn = document.getElementById('btnAdvanceTurn');
+                const status = document.getElementById('readyStatusText');
+                if (btn) btn.className = 'w-full md:w-auto px-6 py-3.5 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-sm rounded-xl shadow-lg transition flex items-center justify-center space-x-2';
+                if (status) status.textContent = 'Click when finished analyzing & trading';
+
+                showYearReportModal(currentNews.impactText);
+
+                if (gameState.year > gameState.maxYears) {
+                    showGameOverView();
+                }
+            } else {
+                // Multiplayer broadcast
+                sendMQTTMessage({
+                    type: 'ADVANCE_YEAR_SYNC',
+                    newYear: nextYear,
+                    marketAssets: marketAssets,
+                    priceHistories: priceHistories,
+                    eventOutcome: currentNews.impactText
+                });
+            }
+        }
+
+        function processYearlyDividends() {
+            let totalDiv = 0;
+            for (const ticker in gameState.portfolio) {
+                const qty = gameState.portfolio[ticker];
+                const asset = marketAssets.find(a => a.ticker === ticker);
+                if (asset && asset.divYield > 0 && qty > 0) {
+                    const payout = (asset.price * (asset.divYield / 100)) * qty;
+                    totalDiv += payout;
+                }
+            }
+            if (totalDiv > 0) {
+                gameState.cash += totalDiv;
+                showToast(`Collected $${Math.round(totalDiv).toLocaleString()} in dividend income!`, 'success');
+            }
+        }
+
+
+        function showYearReportModal(impactText) {
+            const reportModal = document.getElementById('modalYearReport');
+            const pnlContainer = document.getElementById('reportPnlAmount');
+            const netWorthElem = document.getElementById('reportNetWorth');
+            const cashElem = document.getElementById('reportCash');
+            const outcomeText = document.getElementById('reportNewsOutcome');
+
+            const pnl = gameState.lastYearPnl;
+            const pnlPct = ((pnl / (gameState.lastYearNetWorth - pnl)) * 100).toFixed(1);
+            const isPositive = pnl >= 0;
+
+            document.getElementById('reportYearHeader').textContent = `YEAR ${gameState.year - 1} MARKET REPORT`;
+            pnlContainer.className = `text-3xl font-black ${isPositive ? 'text-emerald-400' : 'text-rose-400'}`;
+            pnlContainer.textContent = `${isPositive ? '+' : ''}$${Math.round(pnl).toLocaleString()} (${isPositive ? '+' : ''}${pnlPct}%)`;
+
+            netWorthElem.textContent = `$${Math.round(gameState.lastYearNetWorth).toLocaleString()}`;
+            cashElem.textContent = `$${Math.round(gameState.cash).toLocaleString()}`;
+            outcomeText.textContent = impactText;
+
+            reportModal.classList.remove('hidden');
+        }
+
+        function closeYearReportModal() {
+            document.getElementById('modalYearReport').classList.add('hidden');
         }
 
         function openAssetModal(ticker) {
             const asset = marketAssets.find(a => a.ticker === ticker);
             if (!asset) return;
+
+            gameState.selectedAssetDetail = ticker;
 
             document.getElementById('modalAssetName').textContent = asset.name;
             document.getElementById('modalAssetTicker').textContent = asset.ticker;
@@ -1373,84 +1454,108 @@
             `;
 
             renderAssetDetailChart(ticker);
+            renderModalTradeActions(ticker);
             document.getElementById('modalAssetDetail').classList.remove('hidden');
         }
 
+        function renderModalTradeActions(ticker) {
+            const asset = marketAssets.find(a => a.ticker === ticker);
+            if (!asset) return;
+
+            const owned = gameState.portfolio[ticker] || 0;
+            const isLocked = asset.unlockYear > gameState.year;
+
+            const actionsDiv = document.getElementById('modalTradeActions');
+            actionsDiv.innerHTML = `
+                <div class="flex items-center space-x-2 text-xs text-slate-400">
+                    <span>Owned: <strong class="text-white font-mono">${owned}</strong></span>
+                    <span>•</span>
+                    <span>Available Cash: <strong class="text-emerald-400 font-mono">$${Math.round(gameState.cash).toLocaleString()}</strong></span>
+                </div>
+
+                <div class="flex items-center space-x-2">
+                    <button onclick="sellAsset('${ticker}', 'max')" ${isLocked || owned <= 0 ? 'disabled' : ''} class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-rose-400 border border-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition">
+                        Sell All (${owned})
+                    </button>
+                    <button onclick="buyAsset('${ticker}', 'max')" ${isLocked ? 'disabled' : ''} class="px-3 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-xs font-black text-slate-950 shadow disabled:opacity-30 disabled:cursor-not-allowed transition">
+                        Buy Max (${Math.floor(gameState.cash / asset.price)})
+                    </button>
+                    <button onclick="closeAssetModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition">
+                        Close
+                    </button>
+                </div>
+            `;
+        }
+
         function closeAssetModal() {
+            gameState.selectedAssetDetail = null;
             document.getElementById('modalAssetDetail').classList.add('hidden');
         }
 
-        let portfolioChartObj = null;
-        let assetDetailChartObj = null;
 
-        function initPortfolioChart() {
-            const ctx = document.getElementById('portfolioChart').getContext('2d');
+        function updatePortfolioChart() {
+            const ctx = document.getElementById('portfolioDoughnutChart');
+            if (!ctx) return;
+
+            const labels = ['Cash Reserves'];
+            const data = [Math.round(gameState.cash)];
+            const bgColors = ['#10b981'];
+
+            const colorPalette = ['#3b82f6', '#f59e0b', '#ec4899', '#8b5cf6', '#14b8a6', '#f97316'];
+            let colorIdx = 0;
+
+            for (const ticker in gameState.portfolio) {
+                const asset = marketAssets.find(a => a.ticker === ticker);
+                if (asset && gameState.portfolio[ticker] > 0) {
+                    const val = asset.price * gameState.portfolio[ticker];
+                    labels.push(asset.ticker);
+                    data.push(Math.round(val));
+                    bgColors.push(colorPalette[colorIdx % colorPalette.length]);
+                    colorIdx++;
+                }
+            }
+
             if (portfolioChartObj) portfolioChartObj.destroy();
 
             portfolioChartObj = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Cash'],
+                    labels: labels,
                     datasets: [{
-                        data: [gameState.cash],
-                        backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'],
+                        data: data,
+                        backgroundColor: bgColors,
                         borderWidth: 0
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: { color: '#94a3b8', font: { size: 10 } }
+                        }
+                    },
                     cutout: '70%'
                 }
             });
         }
 
-        function updatePortfolioChart() {
-            if (!portfolioChartObj) return;
-
-            const labels = ['Cash'];
-            const data = [gameState.cash];
-
-            for (let ticker in gameState.portfolio) {
-                const asset = marketAssets.find(a => a.ticker === ticker);
-                if (asset) {
-                    labels.push(asset.ticker);
-                    data.push((gameState.portfolio[ticker] || 0) * asset.price);
-                }
-            }
-
-            portfolioChartObj.data.labels = labels;
-            portfolioChartObj.data.datasets[0].data = data;
-            portfolioChartObj.update();
-
-            const summaryEl = document.getElementById('portfolioSummaryList');
-            summaryEl.innerHTML = '';
-            labels.forEach((label, idx) => {
-                const val = data[idx];
-                const pct = (((val) / (gameState.cash + calculatePortfolioValue())) * 100).toFixed(1);
-                summaryEl.innerHTML += `
-                    <div class="flex justify-between items-center text-slate-300">
-                        <span class="font-bold">${label}</span>
-                        <span>$${val.toLocaleString()} (${pct}%)</span>
-                    </div>
-                `;
-            });
-        }
-
         function renderAssetDetailChart(ticker) {
-            const ctx = document.getElementById('assetDetailChart').getContext('2d');
-            if (assetDetailChartObj) assetDetailChartObj.destroy();
+            const ctx = document.getElementById('modalPriceChart');
+            if (!ctx) return;
 
             const history = priceHistories[ticker] || [100];
-            const labels = history.map((_, i) => `Yr ${i + 1}`);
+            const labels = history.map((_, idx) => `Yr ${idx + 1}`);
 
-            assetDetailChartObj = new Chart(ctx, {
+            if (modalChartObj) modalChartObj.destroy();
+
+            modalChartObj = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: ticker,
+                        label: `${ticker} Price ($)`,
                         data: history,
                         borderColor: '#10b981',
                         backgroundColor: 'rgba(16, 185, 129, 0.1)',
@@ -1463,92 +1568,98 @@
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
-                        x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } },
-                        y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } }
+                        x: { ticks: { color: '#64748b' }, grid: { display: false } },
+                        y: { ticks: { color: '#64748b' }, grid: { color: '#1e293b' } }
                     }
                 }
             });
         }
 
-        function renderLiveLeaderboard() {
-            const list = document.getElementById('liveLeaderboardList');
-            list.innerHTML = '';
 
-            const me = lobbyPlayers.find(p => p.id === gameState.playerId);
-            if (me) {
-                me.netWorth = gameState.cash + calculatePortfolioValue();
+        function getUnifiedLeaderboardData() {
+            let list = [];
+            if (gameState.mode === 'solo') {
+                const userNetWorth = calculatePortfolioValue() + gameState.cash;
+                list.push({ name: gameState.playerName + ' (You)', netWorth: userNetWorth, isUser: true });
+
+                aiRivals.forEach(ai => {
+                    let aiPortVal = 0;
+                    for (const ticker in ai.portfolio) {
+                        const asset = marketAssets.find(a => a.ticker === ticker);
+                        if (asset) aiPortVal += asset.price * ai.portfolio[ticker];
+                    }
+                    list.push({ name: ai.name, netWorth: ai.cash + aiPortVal, isUser: false });
+                });
+            } else {
+                roomPlayers.forEach(p => {
+                    const isUser = p.id === gameState.playerId;
+                    const val = isUser ? (calculatePortfolioValue() + gameState.cash) : p.netWorth;
+                    list.push({ name: p.name + (isUser ? ' (You)' : ''), netWorth: val, isUser: isUser });
+                });
             }
 
-            const sorted = [...lobbyPlayers].sort((a, b) => (b.netWorth || 0) - (a.netWorth || 0));
+            return list.sort((a, b) => b.netWorth - a.netWorth);
+        }
 
-            sorted.forEach((player, rank) => {
-                const item = document.createElement('div');
-                const isMe = player.id === gameState.playerId;
-                item.className = `flex justify-between items-center p-3 rounded-xl border text-xs font-bold transition ${isMe ? 'bg-emerald-950/60 border-emerald-500/50 text-white' : 'bg-slate-950/60 border-slate-800 text-slate-300'}`;
+        function renderLiveLeaderboard() {
+            const container = document.getElementById('liveLeaderboardList');
+            if (!container) return;
 
-                item.innerHTML = `
-                    <div class="flex items-center space-x-3">
-                        <span class="w-5 text-center font-mono text-slate-500">#${rank + 1}</span>
-                        <span>${escapeHtml(player.name)} ${isMe ? '(You)' : ''}</span>
+            const sorted = getUnifiedLeaderboardData();
+            container.innerHTML = '';
+
+            sorted.forEach((item, idx) => {
+                const row = document.createElement('div');
+                row.className = `flex justify-between items-center p-2 rounded-xl text-xs ${item.isUser ? 'bg-emerald-500/10 border border-emerald-500/30' : 'bg-slate-950 border border-slate-800'}`;
+                row.innerHTML = `
+                    <div class="flex items-center space-x-2">
+                        <span class="font-mono font-bold text-slate-400">#${idx + 1}</span>
+                        <span class="font-bold ${item.isUser ? 'text-emerald-400' : 'text-white'} truncate max-w-[120px]">${escapeHtml(item.name)}</span>
                     </div>
-                    <span class="font-mono text-emerald-400 font-black">$${(player.netWorth || INITIAL_CASH).toLocaleString()}</span>
+                    <span class="font-mono font-bold text-white">$${Math.round(item.netWorth).toLocaleString()}</span>
                 `;
-                list.appendChild(item);
+                container.appendChild(row);
             });
         }
 
-        function finishGameAndShowPodium() {
-            hideAllViews();
-            document.getElementById('viewEndGame').classList.remove('hidden');
+        function renderFinalPodiumAndTable() {
+            const sorted = getUnifiedLeaderboardData();
 
-            try {
-                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-            } catch (e) {}
-
-            const sorted = [...lobbyPlayers].sort((a, b) => (b.netWorth || 0) - (a.netWorth || 0));
-
+            // Podium Top 3
             if (sorted[0]) {
-                document.getElementById('podiumName1').textContent = sorted[0].name;
-                document.getElementById('podiumWorth1').textContent = `$${sorted[0].netWorth.toLocaleString()}`;
+                document.getElementById('podium1Name').textContent = sorted[0].name;
+                document.getElementById('podium1Value').textContent = `$${Math.round(sorted[0].netWorth).toLocaleString()}`;
             }
             if (sorted[1]) {
-                document.getElementById('podiumName2').textContent = sorted[1].name;
-                document.getElementById('podiumWorth2').textContent = `$${sorted[1].netWorth.toLocaleString()}`;
+                document.getElementById('podium2Name').textContent = sorted[1].name;
+                document.getElementById('podium2Value').textContent = `$${Math.round(sorted[1].netWorth).toLocaleString()}`;
             }
             if (sorted[2]) {
-                document.getElementById('podiumName3').textContent = sorted[2].name;
-                document.getElementById('podiumWorth3').textContent = `$${sorted[2].netWorth.toLocaleString()}`;
+                document.getElementById('podium3Name').textContent = sorted[2].name;
+                document.getElementById('podium3Value').textContent = `$${Math.round(sorted[2].netWorth).toLocaleString()}`;
             }
 
-            const fullList = document.getElementById('endGameFullList');
-            fullList.innerHTML = '';
-            sorted.forEach((p, idx) => {
-                fullList.innerHTML += `
-                    <div class="flex justify-between items-center p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs">
-                        <span class="font-bold text-slate-300">#${idx + 1} ${escapeHtml(p.name)}</span>
-                        <strong class="font-mono text-emerald-400">$${p.netWorth.toLocaleString()}</strong>
+            // Full Standings Table
+            const container = document.getElementById('fullLeaderboardTable');
+            container.innerHTML = '';
+
+            sorted.forEach((item, idx) => {
+                const row = document.createElement('div');
+                row.className = `flex justify-between items-center p-3 rounded-2xl text-xs ${item.isUser ? 'bg-emerald-500/10 border border-emerald-500/40' : 'bg-slate-950 border border-slate-800'}`;
+                row.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <span class="font-mono font-black ${idx === 0 ? 'text-amber-400' : 'text-slate-400'}">#${idx + 1}</span>
+                        <span class="font-bold ${item.isUser ? 'text-emerald-400' : 'text-white'}">${escapeHtml(item.name)}</span>
                     </div>
+                    <span class="font-mono font-black text-emerald-400">$${Math.round(item.netWorth).toLocaleString()}</span>
                 `;
+                container.appendChild(row);
             });
-        }
-
-        function confirmExitToMenu() {
-            if (!document.getElementById('viewGame').classList.contains('hidden')) {
-                if (!confirm('Are you sure you want to exit the active simulation match?')) return;
-            }
-            hideAllViews();
-            document.getElementById('viewMenu').classList.remove('hidden');
-            document.getElementById('roomBadge').classList.add('hidden');
-            gameState.gameStarted = false;
-        }
-
-        function leaveLobby() {
-            confirmExitToMenu();
         }
 
         // Initialize App on Window Load
         window.onload = function() {
-            console.log("Stockbot Market Master Initialized.");
+            showMainMenu();
         };
     </script>
 </body>
