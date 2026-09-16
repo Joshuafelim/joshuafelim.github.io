@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STOCKBOT | Institutional Market Engine</title>
+    <title>Finance Club Trading Desk</title>
     
     <!-- Google Typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -50,13 +50,11 @@
         }
         .font-num { font-family: 'JetBrains Mono', monospace; }
         
-        /* Custom scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #080a0f; }
         ::-webkit-scrollbar-thumb { background: #1e2638; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #2a354d; }
 
-        /* Remove input arrows */
         input[type=number]::-webkit-inner-spin-button, 
         input[type=number]::-webkit-outer-spin-button { 
             -webkit-appearance: none; margin: 0; 
@@ -66,19 +64,19 @@
 </head>
 <body class="min-h-screen antialiased flex flex-col selection:bg-gain selection:text-obsidian">
 
-    <!-- TOP NAVIGATION TERMINAL -->
+    <!-- TOP NAVIGATION -->
     <header class="border-b border-stroke bg-obsidian/90 backdrop-blur sticky top-0 z-40 px-6 py-3.5">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3.5 cursor-pointer" onclick="showMainMenu()">
                 <div class="w-9 h-9 rounded-lg bg-gain/10 border border-gain/30 flex items-center justify-center font-mono font-black text-gain text-base">
-                    //$
+                    $
                 </div>
                 <div>
                     <div class="flex items-center gap-2">
-                        <h1 class="font-extrabold text-base tracking-tight text-white font-mono">STOCKBOT</h1>
-                        <span class="text-[10px] font-mono uppercase bg-stroke text-slate-400 px-1.5 py-0.5 rounded border border-stroke-light">v2.4 Pro</span>
+                        <h1 class="font-extrabold text-base tracking-tight text-white">Stock Market Simulation</h1>
+                        <span class="text-[10px] font-mono uppercase bg-stroke text-slate-300 px-1.5 py-0.5 rounded border border-stroke-light">Classroom Edition</span>
                     </div>
-                    <p class="text-[11px] text-slate-400 font-medium">Mr. Felim's Finance Club Simulation</p>
+                    <p class="text-[11px] text-slate-400 font-medium">Mr. Felim's Finance Club</p>
                 </div>
             </div>
 
@@ -106,15 +104,15 @@
     <!-- MAIN APP CONTAINER -->
     <main class="max-w-7xl mx-auto p-4 md:p-6 flex-grow w-full">
 
-        <!-- VIEW 1: MAIN MENU / LOBBY SELECTION -->
+        <!-- VIEW 1: MAIN MENU -->
         <div id="view-menu" class="max-w-4xl mx-auto py-10">
             <div class="mb-12 text-center md:text-left border-b border-stroke pb-8">
-                <span class="text-xs font-mono text-gain uppercase tracking-widest font-bold block mb-2">// Market Desktop Interface</span>
+                <span class="text-xs font-mono text-gain uppercase tracking-widest font-bold block mb-2">TRADING SIMULATION</span>
                 <h2 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight mb-3">
-                    Turn-Based Asset Trading Floor
+                    Classroom Trading Floor
                 </h2>
                 <p class="text-slate-400 text-sm md:text-base max-w-2xl leading-relaxed">
-                    Analyze corporate valuation metrics, evaluate macro economic shocks, and strategically position capital across equities, debt, commodities, and digital assets.
+                    Build your investment portfolio, react to real-world economic events, and learn how stocks, bonds, ETFs, and commodities respond to market changes.
                 </p>
             </div>
 
@@ -123,23 +121,23 @@
                 <div class="bg-surface border border-stroke rounded-xl p-6 hover:border-stroke-light transition duration-200 flex flex-col justify-between">
                     <div>
                         <div class="flex items-center justify-between mb-4">
-                            <span class="text-xs font-mono uppercase bg-gain/10 text-gain border border-gain/20 px-2.5 py-1 rounded font-bold">Single-Player</span>
-                            <span class="text-xs font-mono text-slate-500">AI Rival Benchmark</span>
+                            <span class="text-xs font-mono uppercase bg-gain/10 text-gain border border-gain/20 px-2.5 py-1 rounded font-bold">Solo Practice</span>
+                            <span class="text-xs font-mono text-slate-400">Play Against AI</span>
                         </div>
-                        <h3 class="text-xl font-bold text-white mb-2">Solo Campaign Mode</h3>
+                        <h3 class="text-xl font-bold text-white mb-2">Solo Practice Mode</h3>
                         <p class="text-slate-400 text-sm mb-6 leading-relaxed">
-                            Benchmark your portfolio performance against 4 algorithmic AI strategies (Value, Growth, Macro, Speculative) over custom year cycles.
+                            Practice trading at your own pace against 4 AI trading personalities over 5, 10, or 15 simulated years.
                         </p>
                     </div>
                     <div>
-                        <label class="block text-[11px] font-mono text-slate-400 uppercase tracking-wider mb-2">Match Duration</label>
+                        <label class="block text-[11px] font-mono text-slate-400 uppercase tracking-wider mb-2">Simulation Duration</label>
                         <select id="solo-years" class="w-full bg-obsidian border border-stroke rounded-lg px-3.5 py-2.5 text-white font-medium text-sm mb-4 focus:outline-none focus:border-gain/50">
-                            <option value="5">5 Years (Express Cycle)</option>
+                            <option value="5">5 Years (Quick Game)</option>
                             <option value="10" selected>10 Years (Standard Cycle)</option>
-                            <option value="15">15 Years (Full Investment Cycle)</option>
+                            <option value="15">15 Years (Full Investment Horizon)</option>
                         </select>
-                        <button onclick="startSoloGame()" class="w-full bg-gain hover:bg-emerald-400 text-obsidian font-bold py-3 px-5 rounded-lg transition duration-200 text-sm font-mono tracking-wide">
-                            ENTER TERMINAL &rarr;
+                        <button onclick="startSoloGame()" class="w-full bg-gain hover:bg-emerald-400 text-obsidian font-bold py-3 px-5 rounded-lg transition duration-200 text-sm tracking-wide">
+                            Start Solo Game &rarr;
                         </button>
                     </div>
                 </div>
@@ -148,25 +146,25 @@
                 <div class="bg-surface border border-stroke rounded-xl p-6 hover:border-stroke-light transition duration-200 flex flex-col justify-between">
                     <div>
                         <div class="flex items-center justify-between mb-4">
-                            <span class="text-xs font-mono uppercase bg-sky-500/10 text-sky-400 border border-sky-500/20 px-2.5 py-1 rounded font-bold">Classroom Multiplayer</span>
-                            <span class="text-xs font-mono text-slate-500">Live MQTT Synchronized</span>
+                            <span class="text-xs font-mono uppercase bg-sky-500/10 text-sky-400 border border-sky-500/20 px-2.5 py-1 rounded font-bold">Classroom Mode</span>
+                            <span class="text-xs font-mono text-slate-400">Live Group Match</span>
                         </div>
-                        <h3 class="text-xl font-bold text-white mb-2">Synchronized Room</h3>
+                        <h3 class="text-xl font-bold text-white mb-2">Join or Host a Room</h3>
                         <p class="text-slate-400 text-sm mb-6 leading-relaxed">
-                            Create or join a shared classroom match. Analyze market options independently; turns advance simultaneously when all traders confirm ready.
+                            Play live with your classmates in real time. Everyone trades independently during each turn, and the year advances together when all players are ready.
                         </p>
                     </div>
                     <div class="space-y-3.5">
                         <div>
-                            <label class="block text-[11px] font-mono text-slate-400 uppercase tracking-wider mb-1.5">Trader Handle</label>
-                            <input type="text" id="player-nickname" placeholder="e.g. Alex_Trader" class="w-full bg-obsidian border border-stroke rounded-lg px-3.5 py-2.5 text-white font-medium text-sm focus:outline-none focus:border-sky-500/50">
+                            <label class="block text-[11px] font-mono text-slate-400 uppercase tracking-wider mb-1.5">Your Name</label>
+                            <input type="text" id="player-nickname" placeholder="e.g. Alex" class="w-full bg-obsidian border border-stroke rounded-lg px-3.5 py-2.5 text-white font-medium text-sm focus:outline-none focus:border-sky-500/50">
                         </div>
                         <div class="grid grid-cols-2 gap-3">
-                            <button onclick="hostMultiplayerRoom()" class="bg-surface-light border border-stroke-light hover:bg-slate-800 text-white font-bold py-2.5 px-4 rounded-lg transition text-xs font-mono">
-                                Host Room
+                            <button onclick="hostMultiplayerRoom()" class="bg-surface-light border border-stroke-light hover:bg-slate-800 text-white font-bold py-2.5 px-4 rounded-lg transition text-xs">
+                                Host New Room
                             </button>
-                            <button onclick="joinMultiplayerRoom()" class="bg-sky-600 hover:bg-sky-500 text-white font-bold py-2.5 px-4 rounded-lg transition text-xs font-mono">
-                                Join Code
+                            <button onclick="joinMultiplayerRoom()" class="bg-sky-600 hover:bg-sky-500 text-white font-bold py-2.5 px-4 rounded-lg transition text-xs">
+                                Join with Code
                             </button>
                         </div>
                     </div>
@@ -178,11 +176,11 @@
         <div id="view-lobby" class="hidden max-w-lg mx-auto py-12">
             <div class="bg-surface border border-stroke rounded-xl p-8 text-center">
                 <span class="inline-block bg-sky-500/10 text-sky-400 font-mono text-xs px-3 py-1 rounded border border-sky-500/20 uppercase tracking-wider mb-4">
-                    Live Session Waiting Room
+                    Classroom Lobby
                 </span>
-                <span class="block text-xs uppercase font-mono text-slate-400 mb-1">Session Access Key</span>
+                <span class="block text-xs uppercase font-mono text-slate-400 mb-1">Room Code</span>
                 <div id="lobby-code-display" class="text-4xl font-extrabold font-num tracking-widest text-gain mb-2">------</div>
-                <p class="text-slate-400 text-xs mb-6">Distribute code to participating traders</p>
+                <p class="text-slate-400 text-xs mb-6">Share this code with your classmates so they can join</p>
 
                 <div class="bg-obsidian rounded-lg p-4 border border-stroke mb-6 text-left">
                     <div class="flex justify-between items-center mb-3 border-b border-stroke pb-2">
@@ -195,24 +193,24 @@
                 </div>
 
                 <div id="host-controls">
-                    <label class="block text-left text-[11px] font-mono text-slate-400 uppercase tracking-wider mb-2">Session Years</label>
+                    <label class="block text-left text-[11px] font-mono text-slate-400 uppercase tracking-wider mb-2">Game Length</label>
                     <select id="multi-years" class="w-full bg-obsidian border border-stroke rounded-lg px-3 py-2 text-white font-medium text-sm mb-4 focus:outline-none">
-                        <option value="5">5 Years (Express Match)</option>
-                        <option value="10" selected>10 Years (Standard Match)</option>
+                        <option value="5">5 Years (Quick Game)</option>
+                        <option value="10" selected>10 Years (Standard Cycle)</option>
                         <option value="15">15 Years (Full Match)</option>
                     </select>
-                    <button onclick="startMultiplayerGame()" class="w-full bg-gain hover:bg-emerald-400 text-obsidian font-extrabold py-3 rounded-lg transition font-mono text-sm">
-                        LAUNCH SIMULATION &rarr;
+                    <button onclick="startMultiplayerGame()" class="w-full bg-gain hover:bg-emerald-400 text-obsidian font-extrabold py-3 rounded-lg transition text-sm">
+                        Start Match for Everyone &rarr;
                     </button>
                 </div>
-                <p id="guest-waiting-msg" class="hidden text-slate-400 text-xs font-mono animate-pulse">Awaiting host to initialize match sequence...</p>
+                <p id="guest-waiting-msg" class="hidden text-slate-400 text-xs font-mono animate-pulse">Waiting for host to start the game...</p>
             </div>
         </div>
 
         <!-- VIEW 3: TRADING DESK SIMULATION -->
         <div id="view-game" class="hidden space-y-5">
 
-            <!-- Market Intelligence Wire (PESTLE Banner) -->
+            <!-- Market Intelligence Wire -->
             <div id="pestle-banner" class="bg-surface border border-stroke rounded-xl p-5 relative overflow-hidden">
                 <div class="absolute top-0 left-0 bottom-0 w-1 bg-accent"></div>
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pl-2">
@@ -220,7 +218,7 @@
                         <div class="flex items-center gap-2">
                             <span class="inline-block w-2 h-2 rounded-full bg-accent animate-ping"></span>
                             <span id="pestle-category-badge" class="font-mono text-[11px] uppercase tracking-wider text-accent font-bold">
-                                MACRO INTELLIGENCE WIRE
+                                MARKET NEWS BRIEF
                             </span>
                         </div>
                         <h3 id="pestle-headline" class="font-bold text-lg text-white">Headline Loading...</h3>
@@ -229,29 +227,23 @@
 
                     <!-- Turn Advance Action -->
                     <div class="flex-shrink-0">
-                        <button id="btn-advance-year" onclick="toggleReadyState()" class="w-full md:w-auto bg-gain hover:bg-emerald-400 text-obsidian font-extrabold px-5 py-3 rounded-lg transition font-mono text-xs tracking-wider flex items-center justify-center gap-3">
-                            <span>ADVANCE YEAR</span>
+                        <button id="btn-advance-year" onclick="toggleReadyState()" class="w-full md:w-auto bg-gain hover:bg-emerald-400 text-obsidian font-extrabold px-5 py-3 rounded-lg transition text-xs tracking-wider flex items-center justify-center gap-3">
+                            <span id="advance-btn-text">READY TO ADVANCE</span>
                             <span id="ready-badge" class="bg-obsidian/30 text-obsidian px-2 py-0.5 rounded font-num text-[11px]">1/1</span>
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Asset Unlocks Bar -->
-            <div id="unlock-notification" class="hidden bg-surface border border-gain/30 text-gain rounded-lg px-4 py-2.5 text-xs font-mono flex items-center gap-2">
-                <span>[SYSTEM UNLOCK]</span>
-                <span id="unlock-notification-text">New asset classes unlocked for trading!</span>
-            </div>
-
-            <!-- Asset Class Navigation -->
+            <!-- Asset Category Navigation -->
             <div class="flex items-center justify-between border-b border-stroke pb-3">
                 <div id="asset-category-filters" class="flex flex-wrap items-center gap-2">
-                    <button onclick="filterAssetCategory('all')" class="cat-filter-btn active bg-gain text-obsidian font-mono font-bold text-xs px-3 py-1.5 rounded transition">All Assets</button>
-                    <button onclick="filterAssetCategory('stock')" class="cat-filter-btn bg-surface hover:bg-surface-light border border-stroke text-slate-300 font-mono font-bold text-xs px-3 py-1.5 rounded transition">Equities</button>
-                    <button id="filter-etf" onclick="filterAssetCategory('etf')" class="cat-filter-btn bg-surface hover:bg-surface-light border border-stroke text-slate-300 font-mono font-bold text-xs px-3 py-1.5 rounded transition">ETFs 🔒</button>
-                    <button onclick="filterAssetCategory('bond')" class="cat-filter-btn bg-surface hover:bg-surface-light border border-stroke text-slate-300 font-mono font-bold text-xs px-3 py-1.5 rounded transition">Bonds & CDs</button>
-                    <button id="filter-commodity" onclick="filterAssetCategory('commodity')" class="cat-filter-btn bg-surface hover:bg-surface-light border border-stroke text-slate-300 font-mono font-bold text-xs px-3 py-1.5 rounded transition">Commodities 🔒</button>
-                    <button id="filter-crypto" onclick="filterAssetCategory('crypto')" class="cat-filter-btn bg-surface hover:bg-surface-light border border-stroke text-slate-300 font-mono font-bold text-xs px-3 py-1.5 rounded transition">Crypto 🔒</button>
+                    <button onclick="filterAssetCategory('all')" class="cat-filter-btn active bg-gain text-obsidian font-bold text-xs px-3 py-1.5 rounded transition">All Assets</button>
+                    <button onclick="filterAssetCategory('stock')" class="cat-filter-btn bg-surface hover:bg-surface-light border border-stroke text-slate-300 font-bold text-xs px-3 py-1.5 rounded transition">Equities</button>
+                    <button id="filter-etf" onclick="filterAssetCategory('etf')" class="cat-filter-btn bg-surface hover:bg-surface-light border border-stroke text-slate-300 font-bold text-xs px-3 py-1.5 rounded transition">ETFs 🔒</button>
+                    <button onclick="filterAssetCategory('bond')" class="cat-filter-btn bg-surface hover:bg-surface-light border border-stroke text-slate-300 font-bold text-xs px-3 py-1.5 rounded transition">Bonds & CDs</button>
+                    <button id="filter-commodity" onclick="filterAssetCategory('commodity')" class="cat-filter-btn bg-surface hover:bg-surface-light border border-stroke text-slate-300 font-bold text-xs px-3 py-1.5 rounded transition">Commodities 🔒</button>
+                    <button id="filter-crypto" onclick="filterAssetCategory('crypto')" class="cat-filter-btn bg-surface hover:bg-surface-light border border-stroke text-slate-300 font-bold text-xs px-3 py-1.5 rounded transition">Crypto 🔒</button>
                 </div>
             </div>
 
@@ -270,7 +262,7 @@
                     <!-- Portfolio Summary -->
                     <div class="bg-surface border border-stroke rounded-xl p-4">
                         <div class="flex justify-between items-center mb-3 border-b border-stroke pb-2">
-                            <span class="text-xs font-mono uppercase text-slate-400">Portfolio Capital</span>
+                            <span class="text-xs font-mono uppercase text-slate-400">Portfolio Breakdown</span>
                             <span id="portfolio-total-val" class="font-num text-gain font-bold text-base">$100,000</span>
                         </div>
                         
@@ -286,7 +278,7 @@
                     <!-- Live Leaderboard -->
                     <div class="bg-surface border border-stroke rounded-xl p-4">
                         <div class="flex justify-between items-center mb-3 border-b border-stroke pb-2">
-                            <span class="text-xs font-mono uppercase text-slate-400">Trader Standings</span>
+                            <span class="text-xs font-mono uppercase text-slate-400">Classroom Leaderboard</span>
                             <span id="room-badge" class="text-[10px] font-mono bg-obsidian text-slate-400 border border-stroke px-2 py-0.5 rounded">SOLO MATCH</span>
                         </div>
                         <div id="live-leaderboard-list" class="space-y-2">
@@ -312,7 +304,7 @@
 
             <div class="grid grid-cols-2 gap-3 bg-obsidian p-3 rounded-lg border border-stroke">
                 <div>
-                    <span class="text-[10px] font-mono text-slate-400 uppercase block">Mark Price</span>
+                    <span class="text-[10px] font-mono text-slate-400 uppercase block">Current Price</span>
                     <span id="modal-asset-price" class="text-xl font-black font-num text-white">$120</span>
                 </div>
                 <div>
@@ -326,14 +318,14 @@
             </div>
 
             <div>
-                <span class="text-[10px] font-mono text-slate-400 uppercase block mb-2">Historical Price Index</span>
+                <span class="text-[10px] font-mono text-slate-400 uppercase block mb-2">Price History</span>
                 <div class="h-36 bg-obsidian p-2 rounded-lg border border-stroke">
                     <canvas id="chart-asset-history"></canvas>
                 </div>
             </div>
 
             <div class="pt-2 flex justify-end">
-                <button onclick="closeAssetModal()" class="bg-surface-light hover:bg-slate-800 border border-stroke text-white font-mono text-xs font-bold px-5 py-2 rounded-lg transition">Close</button>
+                <button onclick="closeAssetModal()" class="bg-surface-light hover:bg-slate-800 border border-stroke text-white text-xs font-bold px-5 py-2 rounded-lg transition">Close</button>
             </div>
         </div>
     </div>
@@ -348,7 +340,7 @@
 
             <div class="bg-obsidian border border-stroke rounded-lg p-3.5 grid grid-cols-2 gap-3">
                 <div>
-                    <span class="text-[10px] font-mono text-slate-400 uppercase block">Annual P/L Delta</span>
+                    <span class="text-[10px] font-mono text-slate-400 uppercase block">Annual P/L</span>
                     <span id="report-pnl" class="text-base font-bold font-num text-gain">+$12,500 (+12.5%)</span>
                 </div>
                 <div>
@@ -358,12 +350,12 @@
             </div>
 
             <div class="bg-obsidian/60 border border-stroke rounded-lg p-3 text-left space-y-1">
-                <span class="text-[10px] font-mono font-bold uppercase text-slate-400">Macro Drivers</span>
+                <span class="text-[10px] font-mono font-bold uppercase text-slate-400">Market Driver Impact</span>
                 <p id="report-event-impact" class="text-xs text-slate-300 leading-relaxed">Impact explanation...</p>
             </div>
 
-            <button onclick="closeYearReportModal()" class="w-full bg-gain hover:bg-emerald-400 text-obsidian font-mono font-bold py-3 rounded-lg transition text-xs tracking-wide">
-                CONTINUE TO NEXT TRADING YEAR &rarr;
+            <button onclick="closeYearReportModal()" class="w-full bg-gain hover:bg-emerald-400 text-obsidian font-bold py-3 rounded-lg transition text-xs tracking-wide">
+                Continue to Next Year &rarr;
             </button>
         </div>
     </div>
@@ -372,8 +364,8 @@
     <div id="modal-end-game" class="hidden fixed inset-0 z-50 bg-obsidian/90 backdrop-blur-md flex items-center justify-center p-4">
         <div class="bg-surface border border-stroke rounded-xl max-w-xl w-full p-6 text-center space-y-5 max-h-[90vh] overflow-y-auto">
             <div>
-                <span class="text-[10px] font-mono font-bold text-accent uppercase tracking-widest bg-accent/10 px-2.5 py-1 rounded border border-accent/20">Simulation Concluded</span>
-                <h2 class="text-2xl font-extrabold text-white mt-2">Market Podium Standings</h2>
+                <span class="text-[10px] font-mono font-bold text-accent uppercase tracking-widest bg-accent/10 px-2.5 py-1 rounded border border-accent/20">Simulation Complete</span>
+                <h2 class="text-2xl font-extrabold text-white mt-2">Final Classroom Results</h2>
             </div>
 
             <div id="podium-container" class="grid grid-cols-3 gap-3 items-end pt-4 pb-2">
@@ -381,14 +373,14 @@
             </div>
 
             <div class="bg-obsidian border border-stroke rounded-lg p-3.5 text-left space-y-2">
-                <span class="text-[10px] font-mono font-bold uppercase text-slate-400">Complete Leaderboard</span>
+                <span class="text-[10px] font-mono font-bold uppercase text-slate-400">Final Leaderboard</span>
                 <div id="full-ranking-list" class="space-y-1.5 max-h-40 overflow-y-auto font-num text-xs">
                     <!-- Rendered Dynamically -->
                 </div>
             </div>
 
-            <button onclick="showMainMenu()" class="w-full bg-gain hover:bg-emerald-400 text-obsidian font-mono font-bold py-3.5 rounded-lg transition text-xs tracking-wide">
-                RETURN TO MAIN DESK
+            <button onclick="showMainMenu()" class="w-full bg-gain hover:bg-emerald-400 text-obsidian font-bold py-3.5 rounded-lg transition text-xs tracking-wide">
+                Return to Main Screen
             </button>
         </div>
     </div>
@@ -447,9 +439,9 @@
         const PESTLE_DYNAMIC_DECK = [
             {
                 category: "Technological",
-                headline: "Generative AI Infrastructure Supercycle",
-                description: "Global enterprise AI deployment drives unprecedented demand for advanced silicon, microchips, and high-performance server datacenters.",
-                impactText: "Semiconductor equities rallied (+45%), high-tech ETFs surged (+30%), legacy traditional retail dipped (-12%).",
+                headline: "Artificial Intelligence Expansion Boosts Tech Sector",
+                description: "Global companies increase spending on AI microchips, server hardware, and data centers.",
+                impactText: "Semiconductor stocks surged (+45%), Tech ETFs rose (+30%), while traditional brick-and-mortar retail dipped (-12%).",
                 apply: (market) => {
                     Object.values(market).forEach(a => {
                         if (a.category === 'stock' && a.name.includes('Semiconductor')) a.price *= 1.45;
@@ -460,9 +452,9 @@
             },
             {
                 category: "Environmental",
-                headline: "Category 5 Typhoon Severe Supply Shock",
-                description: "Severe meteorological events disrupt global shipping lanes, freeze oil production plants, and damage harvest yields.",
-                impactText: "Crude Oil & Wheat jumped (+35%), Healthcare demand surged (+25%), tech manufacturing pulled back (-15%).",
+                headline: "Severe Weather Disrupts Supply Chains",
+                description: "Major storms disrupt international shipping lanes, freeze oil refineries, and damage harvest yields.",
+                impactText: "Crude Oil and Commodities jumped (+35%), Healthcare demand increased (+25%), and manufacturing slowed (-15%).",
                 apply: (market) => {
                     Object.values(market).forEach(a => {
                         if (a.name.includes('Crude Oil') || a.name.includes('Wheat')) a.price *= 1.35;
@@ -473,9 +465,9 @@
             },
             {
                 category: "Economic",
-                headline: "Central Banks Tighten Rates to Curb Inflation",
-                description: "Hawkish central bank rate hikes elevate borrowing costs across all sectors, penalizing speculative equities while protecting fixed yield.",
-                impactText: "Treasuries paid stable yield, Crypto plunged (-40%), high-leverage retail equities fell (-20%).",
+                headline: "Central Banks Raise Interest Rates to Lower Inflation",
+                description: "Higher borrowing costs slow down aggressive stock growth, while providing safe returns for government bonds.",
+                impactText: "Bonds paid steady yields, Crypto dropped (-40%), and high-debt retail companies declined (-20%).",
                 apply: (market) => {
                     Object.values(market).forEach(a => {
                         if (a.category === 'crypto') a.price *= 0.60;
@@ -486,9 +478,9 @@
             },
             {
                 category: "Political",
-                headline: "Global Trade Accord for Clean Energy Subsidies",
-                description: "Multilateral government agreements enact green energy tax incentives while levying tariffs on carbon-heavy commodity extraction.",
-                impactText: "ESG Green ETFs jumped (+28%), Gold rallied (+20%), Crude Oil fell (-22%).",
+                headline: "Governments Pass Clean Energy Investment Act",
+                description: "International agreements create tax credits for renewable energy projects while taxing fossil fuel extraction.",
+                impactText: "Clean Energy ETFs surged (+28%), Gold rallied (+20%), and Crude Oil declined (-22%).",
                 apply: (market) => {
                     Object.values(market).forEach(a => {
                         if (a.name.includes('ESG') || a.name.includes('Clean')) a.price *= 1.28;
@@ -516,7 +508,8 @@
             currentNews: null,
             activeFilter: 'all',
             readyStatus: false,
-            mqttClient: null
+            mqttClient: null,
+            multiplayerPlayers: [] // Track players in multiplayer
         };
 
         const AI_RIVALS = [
@@ -611,12 +604,259 @@
             aiPortfolios = {};
             AI_RIVALS.forEach(ai => aiPortfolios[ai.id] = { cash: 100000, portfolio: {} });
 
-            document.getElementById('room-badge').innerText = 'SOLO MATCH';
+            document.getElementById('room-badge').innerText = 'SOLO PRACTICE';
             showGameView();
-            showToast("Market terminal online. Analyze ratios & position capital.", "success");
+            showToast("Solo match started. Good luck!", "success");
         }
 
-        // --- QUANTITY CONTROL ENGINE ---
+        // --- MQTT MULTIPLAYER ENGINE ---
+        function getPlayerNameInput() {
+            const val = document.getElementById('player-nickname').value.trim();
+            return val ? val : 'Trader_' + Math.floor(1000 + Math.random() * 9000);
+        }
+
+        function connectMQTT(roomCode, onConnected) {
+            const brokerHost = "broker.hivemq.com";
+            const brokerPort = 8000; // WebSocket Port
+            const clientId = "stockbot_" + gameState.playerId + "_" + Math.floor(Math.random() * 1000);
+
+            try {
+                const client = new Paho.MQTT.Client(brokerHost, brokerPort, clientId);
+
+                client.onConnectionLost = function (responseObject) {
+                    if (responseObject.errorCode !== 0) {
+                        showToast("Disconnected from live room server", "error");
+                    }
+                };
+
+                client.onMessageArrived = function (message) {
+                    try {
+                        const data = JSON.parse(message.payloadString);
+                        handleMQTTMessage(data);
+                    } catch (e) {
+                        console.error("MQTT parsing error", e);
+                    }
+                };
+
+                client.connect({
+                    onSuccess: function () {
+                        gameState.mqttClient = client;
+                        const topic = "stockbot/room/" + roomCode;
+                        client.subscribe(topic);
+                        if (onConnected) onConnected();
+                    },
+                    onFailure: function (err) {
+                        showToast("Could not connect to multiplayer broker", "error");
+                    }
+                });
+            } catch (e) {
+                showToast("MQTT initialization failed", "error");
+            }
+        }
+
+        function sendMQTT(data) {
+            if (!gameState.mqttClient || !gameState.roomCode) return;
+            const message = new Paho.MQTT.Message(JSON.stringify(data));
+            message.destinationName = "stockbot/room/" + gameState.roomCode;
+            gameState.mqttClient.send(message);
+        }
+
+        function hostMultiplayerRoom() {
+            gameState.mode = 'multiplayer';
+            gameState.isHost = true;
+            gameState.playerName = getPlayerNameInput();
+            gameState.roomCode = Math.floor(100000 + Math.random() * 900000).toString();
+            gameState.playerCash = 100000;
+            gameState.portfolio = {};
+
+            gameState.multiplayerPlayers = [{
+                id: gameState.playerId,
+                name: gameState.playerName,
+                ready: false,
+                netWorth: 100000
+            }];
+
+            connectMQTT(gameState.roomCode, () => {
+                document.getElementById('lobby-code-display').innerText = gameState.roomCode;
+                document.getElementById('host-controls').classList.remove('hidden');
+                document.getElementById('guest-waiting-msg').classList.add('hidden');
+                updateLobbyUI();
+                showLobbyView();
+                showToast("Room created! Shared code: " + gameState.roomCode, "success");
+            });
+        }
+
+        function joinMultiplayerRoom() {
+            const inputCode = prompt("Enter 6-Digit Room Code:");
+            if (!inputCode) return;
+
+            gameState.mode = 'multiplayer';
+            gameState.isHost = false;
+            gameState.playerName = getPlayerNameInput();
+            gameState.roomCode = inputCode.trim();
+            gameState.playerCash = 100000;
+            gameState.portfolio = {};
+
+            connectMQTT(gameState.roomCode, () => {
+                document.getElementById('lobby-code-display').innerText = gameState.roomCode;
+                document.getElementById('host-controls').classList.add('hidden');
+                document.getElementById('guest-waiting-msg').classList.remove('hidden');
+                
+                sendMQTT({
+                    type: 'JOIN_LOBBY',
+                    player: { id: gameState.playerId, name: gameState.playerName, ready: false, netWorth: 100000 }
+                });
+
+                showLobbyView();
+                showToast("Connected to room " + gameState.roomCode, "success");
+            });
+        }
+
+        function updateLobbyUI() {
+            const list = document.getElementById('lobby-players-list');
+            list.innerHTML = '';
+            document.getElementById('lobby-count').innerText = `${gameState.multiplayerPlayers.length} Player(s)`;
+
+            gameState.multiplayerPlayers.forEach(p => {
+                const item = document.createElement('div');
+                item.className = 'flex justify-between items-center bg-surface p-2 rounded border border-stroke text-xs font-mono';
+                item.innerHTML = `
+                    <span class="text-white font-bold">${p.name} ${p.id === gameState.playerId ? '(You)' : ''}</span>
+                    <span class="text-gain">${p.ready ? 'READY' : 'WAITING'}</span>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function startMultiplayerGame() {
+            if (!gameState.isHost) return;
+            gameState.maxYears = parseInt(document.getElementById('multi-years').value);
+            generateProceduralMarket();
+
+            sendMQTT({
+                type: 'START_MATCH',
+                market: gameState.market,
+                history: gameState.history,
+                newsDeck: gameState.newsDeck,
+                maxYears: gameState.maxYears
+            });
+        }
+
+        function handleMQTTMessage(data) {
+            if (data.type === 'JOIN_LOBBY' && gameState.isHost) {
+                const exists = gameState.multiplayerPlayers.find(p => p.id === data.player.id);
+                if (!exists) gameState.multiplayerPlayers.push(data.player);
+                sendMQTT({ type: 'SYNC_LOBBY', players: gameState.multiplayerPlayers });
+            } 
+            else if (data.type === 'SYNC_LOBBY') {
+                gameState.multiplayerPlayers = data.players;
+                updateLobbyUI();
+            } 
+            else if (data.type === 'START_MATCH') {
+                gameState.market = data.market;
+                gameState.history = data.history;
+                gameState.newsDeck = data.newsDeck;
+                gameState.currentNews = gameState.newsDeck[0];
+                gameState.maxYears = data.maxYears;
+                gameState.year = 1;
+                gameState.readyStatus = false;
+
+                document.getElementById('room-badge').innerText = `ROOM ${gameState.roomCode}`;
+                showGameView();
+                showToast("Match officially started!", "success");
+            } 
+            else if (data.type === 'SET_READY_STATUS') {
+                const p = gameState.multiplayerPlayers.find(player => player.id === data.id);
+                if (p) p.ready = data.ready;
+                updateReadyCountUI();
+
+                if (gameState.isHost) {
+                    const allReady = gameState.multiplayerPlayers.every(p => p.ready);
+                    if (allReady) advanceMultiplayerTurn();
+                }
+            } 
+            else if (data.type === 'ADVANCE_YEAR_SYNC') {
+                gameState.market = data.market;
+                gameState.history = data.history;
+                gameState.currentNews = data.currentNews;
+                gameState.year = data.year;
+                gameState.readyStatus = false;
+
+                // Process yield income
+                Object.values(gameState.market).forEach(asset => {
+                    const owned = gameState.portfolio[asset.id] || 0;
+                    if (owned > 0 && asset.yield > 0) {
+                        gameState.playerCash += Math.round((owned * asset.price * (asset.yield / 100)));
+                    }
+                });
+
+                gameState.multiplayerPlayers.forEach(p => p.ready = false);
+                updateReadyCountUI();
+
+                const newNW = calculateNetWorth(gameState.playerCash, gameState.portfolio);
+                document.getElementById('report-year-tag').innerText = `Year ${gameState.year - 1} Summary`;
+                document.getElementById('report-pnl').innerText = `Updated Net Worth: $${Math.round(newNW).toLocaleString()}`;
+                document.getElementById('report-networth').innerText = `$${Math.round(newNW).toLocaleString()}`;
+                document.getElementById('report-event-impact').innerText = gameState.currentNews.impactText;
+                document.getElementById('modal-year-report').classList.remove('hidden');
+
+                // Broadcast updated stats to room
+                sendMQTT({
+                    type: 'UPDATE_STATS',
+                    id: gameState.playerId,
+                    netWorth: newNW
+                });
+            }
+            else if (data.type === 'UPDATE_STATS') {
+                const p = gameState.multiplayerPlayers.find(player => player.id === data.id);
+                if (p) p.netWorth = data.netWorth;
+                renderLeaderboard();
+            }
+        }
+
+        function updateReadyCountUI() {
+            const readyCount = gameState.multiplayerPlayers.filter(p => p.ready).length;
+            const total = gameState.multiplayerPlayers.length;
+            document.getElementById('ready-badge').innerText = `${readyCount}/${total}`;
+            document.getElementById('advance-btn-text').innerText = gameState.readyStatus ? "WAITING FOR OTHERS..." : "READY TO ADVANCE";
+        }
+
+        function toggleReadyState() {
+            if (gameState.mode === 'solo') {
+                advanceTurnMaster();
+            } else {
+                gameState.readyStatus = !gameState.readyStatus;
+                sendMQTT({
+                    type: 'SET_READY_STATUS',
+                    id: gameState.playerId,
+                    ready: gameState.readyStatus
+                });
+            }
+        }
+
+        function advanceMultiplayerTurn() {
+            playSound('advance');
+            gameState.currentNews.apply(gameState.market);
+
+            Object.values(gameState.market).forEach(asset => {
+                const baseWave = (Math.random() - 0.48) * 0.15 * asset.beta;
+                asset.price = Math.max(5, Math.round(asset.price * (1 + baseWave)));
+                gameState.history[asset.id].push(asset.price);
+            });
+
+            const nextYear = gameState.year + 1;
+            const nextNews = gameState.newsDeck[(nextYear - 1) % gameState.newsDeck.length];
+
+            sendMQTT({
+                type: 'ADVANCE_YEAR_SYNC',
+                market: gameState.market,
+                history: gameState.history,
+                currentNews: nextNews,
+                year: nextYear
+            });
+        }
+
+        // --- QUANTITY CONTROLS ---
         function changeAssetQty(assetId, delta) {
             const input = document.getElementById(`qty-${assetId}`);
             if (!input) return;
@@ -656,9 +896,17 @@
             gameState.playerCash -= totalCost;
             gameState.portfolio[assetId] = (gameState.portfolio[assetId] || 0) + qty;
             playSound('buy');
-            showToast(`Executed BUY ${qty} ${asset.ticker}`, 'success');
+            showToast(`Bought ${qty} ${asset.ticker}`, 'success');
             renderMarketDesk();
             renderPortfolio();
+
+            if (gameState.mode === 'multiplayer') {
+                sendMQTT({
+                    type: 'UPDATE_STATS',
+                    id: gameState.playerId,
+                    netWorth: calculateNetWorth(gameState.playerCash, gameState.portfolio)
+                });
+            }
         }
 
         function sellAsset(assetId, qty = 1) {
@@ -674,9 +922,17 @@
             if (gameState.portfolio[assetId] <= 0) delete gameState.portfolio[assetId];
 
             playSound('sell');
-            showToast(`Executed SELL ${qty} ${asset.ticker}`, 'success');
+            showToast(`Sold ${qty} ${asset.ticker}`, 'success');
             renderMarketDesk();
             renderPortfolio();
+
+            if (gameState.mode === 'multiplayer') {
+                sendMQTT({
+                    type: 'UPDATE_STATS',
+                    id: gameState.playerId,
+                    netWorth: calculateNetWorth(gameState.playerCash, gameState.portfolio)
+                });
+            }
         }
 
         // --- MARKET RENDER ENGINE ---
@@ -696,7 +952,7 @@
             grid.innerHTML = '';
 
             const news = gameState.currentNews;
-            document.getElementById('pestle-category-badge').innerText = `${news.category} Event Wire`;
+            document.getElementById('pestle-category-badge').innerText = `${news.category} Market News`;
             document.getElementById('pestle-headline').innerText = news.headline;
             document.getElementById('pestle-description').innerText = news.description;
 
@@ -719,7 +975,7 @@
                             <div>
                                 <span class="text-[10px] font-mono uppercase text-slate-400 bg-obsidian border border-stroke px-1.5 py-0.5 rounded">${asset.category}</span>
                                 <h4 class="font-bold text-white text-base mt-1 hover:text-gain cursor-pointer transition" onclick="openAssetModal('${asset.id}')">${asset.name}</h4>
-                                <span class="text-xs text-slate-500 font-mono">${asset.ticker}</span>
+                                <span class="text-xs text-slate-400 font-mono">${asset.ticker}</span>
                             </div>
                             <div class="text-right">
                                 <span class="text-lg font-bold font-num text-white block">$${asset.price.toLocaleString()}</span>
@@ -781,7 +1037,7 @@
 
             const keys = Object.keys(gameState.portfolio);
             if (keys.length === 0) {
-                list.innerHTML = `<p class="text-slate-500 italic text-center py-4 font-mono text-[11px]">Zero active market positions.</p>`;
+                list.innerHTML = `<p class="text-slate-400 italic text-center py-4 font-mono text-[11px]">No active investments.</p>`;
             } else {
                 keys.forEach(id => {
                     const qty = gameState.portfolio[id];
@@ -793,7 +1049,7 @@
                     row.innerHTML = `
                         <div>
                             <span class="font-bold text-white block text-xs">${asset.name}</span>
-                            <span class="text-slate-500 font-num text-[10px]">${qty.toLocaleString()} @ $${asset.price}</span>
+                            <span class="text-slate-400 font-num text-[10px]">${qty.toLocaleString()} @ $${asset.price}</span>
                         </div>
                         <span class="font-num font-bold text-gain text-xs">$${val.toLocaleString()}</span>
                     `;
@@ -847,6 +1103,12 @@
                     const p = aiPortfolios[ai.id];
                     standings.push({ name: ai.name, netWorth: calculateNetWorth(p.cash, p.portfolio), isUser: false });
                 });
+            } else {
+                gameState.multiplayerPlayers.forEach(p => {
+                    const isUser = p.id === gameState.playerId;
+                    const nw = isUser ? calculateNetWorth(gameState.playerCash, gameState.portfolio) : (p.netWorth || 100000);
+                    standings.push({ name: p.name + (isUser ? ' (You)' : ''), netWorth: nw, isUser: isUser });
+                });
             }
 
             standings.sort((a, b) => b.netWorth - a.netWorth);
@@ -856,18 +1118,13 @@
                 item.className = `flex justify-between items-center p-2 rounded-lg border ${st.isUser ? 'bg-gain/10 border-gain/40' : 'bg-obsidian border-stroke'}`;
                 item.innerHTML = `
                     <div class="flex items-center gap-2">
-                        <span class="font-num text-[10px] font-bold text-slate-500">#${idx + 1}</span>
+                        <span class="font-num text-[10px] font-bold text-slate-400">#${idx + 1}</span>
                         <span class="font-bold text-xs ${st.isUser ? 'text-gain' : 'text-slate-300'}">${st.name}</span>
                     </div>
                     <span class="font-num font-bold text-gain text-xs">$${Math.round(st.netWorth).toLocaleString()}</span>
                 `;
                 list.appendChild(item);
             });
-        }
-
-        // --- TURN ADVANCEMENT ENGINE ---
-        function toggleReadyState() {
-            if (gameState.mode === 'solo') advanceTurnMaster();
         }
 
         function advanceTurnMaster() {
@@ -932,12 +1189,18 @@
         function triggerEndGamePodium() {
             confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
             let standings = [];
-            standings.push({ name: `${gameState.playerName} (You)`, netWorth: calculateNetWorth(gameState.playerCash, gameState.portfolio) });
 
             if (gameState.mode === 'solo') {
+                standings.push({ name: `${gameState.playerName} (You)`, netWorth: calculateNetWorth(gameState.playerCash, gameState.portfolio) });
                 AI_RIVALS.forEach(ai => {
                     const p = aiPortfolios[ai.id];
                     standings.push({ name: ai.name, netWorth: calculateNetWorth(p.cash, p.portfolio) });
+                });
+            } else {
+                gameState.multiplayerPlayers.forEach(p => {
+                    const isUser = p.id === gameState.playerId;
+                    const nw = isUser ? calculateNetWorth(gameState.playerCash, gameState.portfolio) : (p.netWorth || 100000);
+                    standings.push({ name: p.name, netWorth: nw });
                 });
             }
 
@@ -976,9 +1239,9 @@
 
             const metricsGrid = document.getElementById('modal-metrics-grid');
             metricsGrid.innerHTML = `
-                <div class="bg-obsidian p-2 rounded border border-stroke"><span class="text-slate-500 block">P/E</span><span class="text-white font-bold">${asset.pe}</span></div>
-                <div class="bg-obsidian p-2 rounded border border-stroke"><span class="text-slate-500 block">P/B</span><span class="text-white font-bold">${asset.pb}</span></div>
-                <div class="bg-obsidian p-2 rounded border border-stroke"><span class="text-slate-500 block">Beta</span><span class="text-accent font-bold">${asset.beta}</span></div>
+                <div class="bg-obsidian p-2 rounded border border-stroke"><span class="text-slate-400 block">P/E</span><span class="text-white font-bold">${asset.pe}</span></div>
+                <div class="bg-obsidian p-2 rounded border border-stroke"><span class="text-slate-400 block">P/B</span><span class="text-white font-bold">${asset.pb}</span></div>
+                <div class="bg-obsidian p-2 rounded border border-stroke"><span class="text-slate-400 block">Beta</span><span class="text-accent font-bold">${asset.beta}</span></div>
             `;
 
             const ctx = document.getElementById('chart-asset-history').getContext('2d');
